@@ -97,10 +97,10 @@ model WalletAddress {
   @@map("wallet_addresses")
 }
 
-// Deterministic challenge for signature-based key derivation
+// Secure random challenge for signature-based key derivation
 model KeyDerivationChallenge {
   id            String    @id @default(cuid())
-  challenge     String    @unique // Deterministic challenge string for consistent key derivation
+  challenge     String    @unique // Cryptographically secure random challenge
   walletAddress String    @unique // One challenge per wallet address
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

@@ -70,14 +70,16 @@ export class WagmiAuthManager {
     });
 
     if (nonceError || !nonceData?.nonce) {
-      throw new Error(`Failed to get SIWE nonce: ${nonceError?.message || 'Unknown error'}`);
+      throw new Error(
+        `Failed to get SIWE nonce: ${nonceError?.message || "Unknown error"}`
+      );
     }
 
     // Step 2: Create SIWE message (using exact format expected by better-auth)
-    const domain = 'localhost:3000'; // Match the domain in auth.ts
-    const uri = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const domain = "localhost:3000"; // Match the domain in auth.ts
+    const uri = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const issuedAt = new Date().toISOString();
-    
+
     const siweMessage = `${domain} wants you to sign in with your Ethereum account:
 ${this.address}
 
@@ -104,7 +106,9 @@ Issued At: ${issuedAt}`;
     });
 
     if (authError || !authData?.user) {
-      throw new Error(`SIWE authentication failed: ${authError?.message || 'Unknown error'}`);
+      throw new Error(
+        `SIWE authentication failed: ${authError?.message || "Unknown error"}`
+      );
     }
 
     this.session = authData;
@@ -114,17 +118,19 @@ Issued At: ${issuedAt}`;
     const requiresKeySetup = await this.checkRequiresKeySetup();
 
     // Step 3: Get deterministic challenge for key derivation (separate from SIWE auth)
-    const challengeResponse = await fetch('/api/auth/get-challenge', {
-      method: 'POST',
+    const challengeResponse = await fetch("/api/crypto/get-challenge", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         walletAddress: this.address,
       }),
     });
 
-    const responseData = await challengeResponse.json() as { challenge: string };
+    const responseData = (await challengeResponse.json()) as {
+      challenge: string;
+    };
     const { challenge } = responseData;
 
     // Step 4: Sign the key derivation challenge (different from SIWE signature)
@@ -151,8 +157,8 @@ Issued At: ${issuedAt}`;
    */
   private async checkRequiresKeySetup(): Promise<boolean> {
     try {
-      const response = await fetch("/api/auth/encrypted-keys", {
-        credentials: 'include', // Use session cookies instead of Bearer token
+      const response = await fetch("/api/crypto/encrypted-keys", {
+        credentials: "include", // Use session cookies instead of Bearer token
       });
       return response.status === 404; // Keys not found
     } catch {
@@ -165,7 +171,8 @@ Issued At: ${issuedAt}`;
    */
   private async setupNewUserKeys(signature: string): Promise<void> {
     // Derive encryption key from signature
-    const { keys, masterKeySalt, encryptionKeySalt } = await this.crypto.deriveKeysFromSignature(signature);
+    const { keys, masterKeySalt, encryptionKeySalt } =
+      await this.crypto.deriveKeysFromSignature(signature);
 
     // Generate keypairs
     const encryptionKeyPair = this.crypto.generateEncryptionKeyPair();
@@ -183,7 +190,7 @@ Issued At: ${issuedAt}`;
       metadata: {
         createdAt: new Date().toISOString(),
         walletAddress: this.address,
-      }
+      },
     });
 
     // Encrypt private keys with derived key
@@ -193,12 +200,12 @@ Issued At: ${issuedAt}`;
     );
 
     // Send to server
-    const response = await fetch('/api/auth/setup-keys', {
-      method: 'POST',
+    const response = await fetch("/api/crypto/setup-keys", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include', // Use session cookies
+      credentials: "include", // Use session cookies
       body: JSON.stringify({
         encryptedPrivateKeys: encrypted.ciphertext,
         encryptionNonce: encrypted.nonce,
@@ -210,7 +217,7 @@ Issued At: ${issuedAt}`;
     });
 
     if (!response.ok) {
-      throw new Error('Failed to setup keys');
+      throw new Error("Failed to setup keys");
     }
   }
 
@@ -219,15 +226,15 @@ Issued At: ${issuedAt}`;
    */
   private async loadExistingUserKeys(signature: string): Promise<void> {
     // Fetch encrypted keys and salts
-    const response = await fetch('/api/auth/encrypted-keys', {
-      credentials: 'include', // Use session cookies
+    const response = await fetch("/api/crypto/encrypted-keys", {
+      credentials: "include", // Use session cookies
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch keys');
+      throw new Error("Failed to fetch keys");
     }
 
-    const encryptedData = await response.json() as EncryptedKeysData;
+    const encryptedData = (await response.json()) as EncryptedKeysData;
 
     // Derive same encryption key using stored salts
     const { keys } = this.crypto.deriveKeysFromSignature(
@@ -289,7 +296,7 @@ Issued At: ${issuedAt}`;
     recipientPublicKey: string
   ): Promise<string> {
     if (!this.userKeys) {
-      throw new Error('Keys not loaded');
+      throw new Error("Keys not loaded");
     }
 
     const encrypted = await this.crypto.encryptAsymmetric(
