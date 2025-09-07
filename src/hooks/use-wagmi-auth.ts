@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAccount, useWalletClient, useChainId } from 'wagmi';
-import { WagmiAuthManager } from '@/lib/wagmi-auth-manager';
+import { WagmiAuthManager } from '@/lib/wagmi-auth';
 import type { UserKeys } from '@/lib/crypto';
 
 interface UseWagmiAuthReturn {

@@ -5,13 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Core Development
-- `npm run dev` - Start Next.js development server with Turbopack
-- `npm run build` - Generate Prisma client and build Next.js application
+- `npm run dev` - Start Next.js development server
+- `npm run build` - Generate Prisma client and build Next.js application  
 - `npm start` - Start production Next.js server
 - `npm run lint` - Run ESLint
 
 ### Database Operations
-- `npx prisma generate` - Generate Prisma client (outputs to `app/generated/prisma/`)
+- `npx prisma generate` - Generate Prisma client (outputs to default location)
 - `npx prisma db push` - Push schema changes to database
 - `npx tsx prisma/seed.ts` - Run database seeding script
 
@@ -28,7 +28,7 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 
 ### Database Architecture
 - **Database**: PostgreSQL with Prisma ORM
-- **Prisma Client Location**: Generated in `app/generated/prisma/` (non-standard location)
+- **Prisma Client Location**: Generated in `node_modules/.prisma/client/` (standard location)
 - **Extensions**: Prisma Accelerate for connection pooling and caching
 - **Schema**: User authentication system with wallet-based authentication via SIWE (Sign-In With Ethereum)
 
@@ -44,6 +44,8 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 - `Account`: OAuth/external account linking (prepared but not actively used)
 - `WalletAddress`: Multiple wallet addresses per user with chain ID support
 - `Verification`: General verification tokens system
+- `KeyDerivationChallenge`: Deterministic challenges for signature-based key derivation
+- `UserEncryptedKeys`: Encrypted private keys derived from user's wallet signature
 
 ### Frontend Architecture
 - **Framework**: Next.js 15 with App Router
@@ -51,10 +53,18 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 - **Components**: Located in `src/components/ui/` following shadcn/ui patterns
 - **State Management**: React hooks for client state
 
+### Cryptography Architecture
+- **Key Derivation**: HKDF-SHA256 from wallet signatures for deterministic key generation
+- **Symmetric Encryption**: XSalsa20-Poly1305 via TweetNaCl for message encryption
+- **Asymmetric Encryption**: Curve25519 for public-key operations
+- **Signing**: Ed25519 keypairs for message signing
+- **Implementation**: SignatureCrypto class in `src/lib/crypto.ts` provides unified crypto operations
+
 ### Key Integration Points
 - Prisma client is accessed via `src/lib/prisma.ts` with Accelerate extension
 - Authentication configuration in `src/lib/auth.ts` with SIWE plugin
 - Viem for Ethereum interactions and signature verification
+- Crypto operations centralized in `src/lib/crypto.ts` with TweetNaCl primitives
 
 ### Cloudflare-Specific Configuration
 - Worker main entry: `.open-next/worker.js`

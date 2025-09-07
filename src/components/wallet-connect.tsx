@@ -9,19 +9,21 @@ import { PhantomIcon } from "@/components/icons/phantom";
 import { MetamaskIcon } from "@/components/icons/metamask";
 import { CoinbaseIcon } from "@/components/icons/coinbase";
 import { WalletConnectIcon } from "@/components/icons/walletconnect";
-import { useWagmiAuth } from "@/hooks/useWagmiAuth";
-// import { QRModal } from "./qr-modal";
+import { useWagmiAuth } from "@/hooks/use-wagmi-auth";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import QRCode from 'qrcode';
 
 export function CustomWalletConnect() {
   const { connectors, connect, error } = useConnect();
   const { isConnected } = useAccount();
   const [processingWallet, setProcessingWallet] = useState<string | null>(null);
-  // const [qrModalOpen, setQrModalOpen] = useState(false);
-  // const [qrUri, setQrUri] = useState<string>("");
+  const [showingQR, setShowingQR] = useState(false);
+  const [qrUri, setQrUri] = useState<string>("");
+  const [qrWalletType, setQrWalletType] = useState<string>("");
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
   const {
     isAuthenticated,
@@ -49,21 +51,22 @@ export function CustomWalletConnect() {
 
   // Clear processing state when authentication completes successfully
   useEffect(() => {
-    if (isAuthenticated && processingWallet) {
+    if (isAuthenticated && (processingWallet || showingQR)) {
       setProcessingWallet(null);
-      // setQrModalOpen(false);
+      setShowingQR(false);
     }
-  }, [isAuthenticated, processingWallet]);
+  }, [isAuthenticated, processingWallet, showingQR]);
 
-  // Listen for WalletConnect display_uri event
+  // Generate QR code when URI changes
   useEffect(() => {
-    // For now, let's use the built-in WalletConnect modal
-    // We can implement custom QR modal later once we confirm WC is working
-    console.log(
-      "WalletConnect connectors available:",
-      connectors.find((c) => c.id === "walletConnect")
-    );
-  }, [connectors]);
+    if (qrUri && showingQR) {
+      QRCode.toDataURL(qrUri, { width: 256, margin: 2 })
+        .then(setQrCodeDataUrl)
+        .catch(console.error);
+    } else {
+      setQrCodeDataUrl('');
+    }
+  }, [qrUri, showingQR]);
 
   const handleWalletClick = async (
     walletType: string,
@@ -104,51 +107,43 @@ export function CustomWalletConnect() {
       console.log("isMetaMask:", window.ethereum?.isMetaMask);
       console.log("MetaMask connector:", connector);
 
-      // Check if MetaMask is available
-      if (typeof window !== "undefined" && !window.ethereum?.isMetaMask) {
-        console.log("MetaMask not detected, using WalletConnect");
-        // Show QR code for MetaMask mobile using WalletConnect
-        const wcConnector = connectors.find((c) => c.id === "walletConnect");
-        console.log("WalletConnect connector:", wcConnector);
-        if (wcConnector) {
-          setProcessingWallet("metamask");
-          connect(
-            { connector: wcConnector },
-            {
-              onSuccess: () => {
-                console.log("WalletConnect connection successful");
-              },
-              onError: (error) => {
-                console.log("WalletConnect connection error:", error);
-                setProcessingWallet(null);
-              },
-            }
-          );
-        } else {
-          console.log("No WalletConnect connector found");
-        }
+      // More robust MetaMask detection - check if it's actually MetaMask and not just claiming to be
+      const isActualMetaMask = typeof window !== "undefined" && 
+        window.ethereum?.isMetaMask && 
+        !window.ethereum?.isRainbow && 
+        !window.ethereum?.isCoinbaseWallet &&
+        connector; // Also check if we have a working connector
+
+      if (!isActualMetaMask) {
+        console.log("MetaMask not detected or no connector available, showing MetaMask mobile QR code");
+        
+        // Create MetaMask mobile deep link
+        const currentUrl = window.location.origin;
+        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace('https://', '').replace('http://', '')}`;
+        
+        // Show MetaMask QR code
+        setQrUri(metamaskDeepLink);
+        setQrWalletType("metamask");
+        setShowingQR(true);
+        setProcessingWallet(null);
         return;
       }
 
       console.log("MetaMask detected, using MetaMask connector");
       // If MetaMask is available, use the regular MetaMask connector
-      if (connector) {
-        setProcessingWallet(walletType);
-        connect(
-          { connector },
-          {
-            onSuccess: () => {
-              console.log("MetaMask connection successful");
-            },
-            onError: (error) => {
-              console.log("MetaMask connection error:", error);
-              setProcessingWallet(null);
-            },
-          }
-        );
-      } else {
-        console.log("No MetaMask connector found");
-      }
+      setProcessingWallet(walletType);
+      connect(
+        { connector },
+        {
+          onSuccess: () => {
+            console.log("MetaMask connection successful");
+          },
+          onError: (error) => {
+            console.log("MetaMask connection error:", error);
+            setProcessingWallet(null);
+          },
+        }
+      );
       return;
     }
 
@@ -227,6 +222,72 @@ export function CustomWalletConnect() {
     },
   ];
 
+  // Show QR code state
+  if (showingQR && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="absolute top-6 left-6">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/blanc.svg"
+              alt="Blanc"
+              width={120}
+              height={40}
+              className="h-5 w-auto"
+            />
+          </Link>
+        </div>
+
+        <div className="flex items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md relative">
+            <div className="absolute top-4 left-4 z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowingQR(false);
+                  setQrUri("");
+                  setQrWalletType("");
+                }}
+              >
+                <ArrowLeft className="size-4" />
+              </Button>
+            </div>
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center justify-center space-y-6">
+                <h2 className="text-xl font-semibold text-center">
+                  {qrWalletType === "metamask" ? "Open MetaMask Mobile" : "Scan with your wallet"}
+                </h2>
+                
+                {qrCodeDataUrl ? (
+                  <div className="flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={qrCodeDataUrl} 
+                      alt={`${qrWalletType === "metamask" ? "MetaMask" : "WalletConnect"} QR Code`}
+                      className="w-64 h-64 border-2 border-gray-200 rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-64 h-64 mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  </div>
+                )}
+                
+                <p className="text-sm text-gray-600 text-center">
+                  {qrWalletType === "metamask" 
+                    ? "Scan this QR code with MetaMask mobile app to connect to this dapp" 
+                    : "Open your mobile wallet and scan this QR code to connect"
+                  }
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // Show loading state during connection/authentication process
   if (processingWallet && !isAuthenticated) {
     let loadingText = "Connecting...";
@@ -264,7 +325,7 @@ export function CustomWalletConnect() {
                 size="sm"
                 onClick={() => {
                   setProcessingWallet(null);
-                  // setQrModalOpen(false);
+                  setShowingQR(false);
                 }}
               >
                 <ArrowLeft className="size-4" />
@@ -410,15 +471,6 @@ export function CustomWalletConnect() {
         </Card>
       </div>
 
-      {/* QR Modal temporarily disabled - using built-in WalletConnect modal */}
-      {/* <QRModal
-        uri={qrUri}
-        isOpen={qrModalOpen}
-        onClose={() => {
-          setQrModalOpen(false);
-          setProcessingWallet(null);
-        }}
-      /> */}
     </div>
   );
 }
