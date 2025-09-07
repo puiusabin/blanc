@@ -26,11 +26,32 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Background Pattern for Glassmorphism */}
+      <div className="absolute inset-0 opacity-40">
+        {/* Left side elements */}
+        <div className="absolute top-32 left-5 w-40 h-40 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-8 w-48 h-48 bg-indigo-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-32 left-12 w-44 h-44 bg-violet-500 rounded-full blur-3xl"></div>
+        
+        {/* Center elements */}
+        <div className="absolute top-20 left-1/2 w-36 h-36 bg-cyan-400 rounded-full blur-3xl"></div>
+        <div className="absolute top-2/3 left-1/3 w-40 h-40 bg-yellow-400 rounded-full blur-3xl"></div>
+        
+        {/* Right side elements */}
+        <div className="absolute top-60 right-20 w-56 h-56 bg-purple-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-44 h-44 bg-green-500 rounded-full blur-3xl"></div>
+        <div className="absolute top-3/4 right-1/3 w-36 h-36 bg-pink-400 rounded-full blur-3xl"></div>
+        
+        {/* Additional scattered elements */}
+        <div className="absolute top-10 right-1/4 w-32 h-32 bg-orange-400 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-1/3 w-38 h-38 bg-teal-400 rounded-full blur-3xl"></div>
+      </div>
+      
       <Navbar />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
@@ -67,7 +88,7 @@ export default function Home() {
               alt="Secure messaging dashboard"
               width={600}
               height={400}
-              className="rounded-lg shadow-2xl"
+              className="rounded-xl shadow-2xl"
               priority
             />
           </div>
