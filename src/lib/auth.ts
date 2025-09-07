@@ -13,6 +13,43 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: false,
   },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
+    updateAge: 60 * 60 * 24, // Update session every 24 hours
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes cache
+    },
+  },
+  cookies: {
+    sessionToken: {
+      name: "better-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      },
+    },
+    csrfToken: {
+      name: "better-auth.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax", 
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24, // 24 hours
+      },
+    },
+  },
+  csrf: {
+    enabled: true,
+    protection: "csrf",
+  },
+  rateLimit: {
+    enabled: true,
+    window: 60, // 1 minute window
+    max: 100, // Max 100 requests per window
+  },
   plugins: [
     // In auth.ts, ensure your SIWE config matches:
     siwe({

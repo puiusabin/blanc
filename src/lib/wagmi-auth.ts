@@ -3,10 +3,19 @@ import { siweClient } from "better-auth/client/plugins";
 import type { Address } from "viem";
 import { SignatureCrypto, type UserKeys } from "./crypto";
 
-const client = createAuthClient({
+export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   plugins: [siweClient()],
+  session: {
+    // Keep users logged in across browser sessions
+    rememberMe: true,
+  },
+  fetchOptions: {
+    credentials: "include", // Always include cookies for CSRF protection
+  },
 });
+
+const client = authClient;
 
 interface EncryptedKeysData {
   encryptedPrivateKeys: string;
@@ -172,7 +181,7 @@ Issued At: ${issuedAt}`;
   private async setupNewUserKeys(signature: string): Promise<void> {
     // Derive encryption key from signature
     const { keys, masterKeySalt, encryptionKeySalt } =
-      await this.crypto.deriveKeysFromSignature(signature);
+      this.crypto.deriveKeysFromSignature(signature);
 
     // Generate keypairs
     const encryptionKeyPair = this.crypto.generateEncryptionKeyPair();
@@ -284,6 +293,45 @@ Issued At: ${issuedAt}`;
   }
 
   /**
+   * Get current session
+   */
+  async getSession() {
+    const { data: session, error } = await client.getSession();
+    if (error) {
+      console.error("Session retrieval failed:", error);
+      return null;
+    }
+    this.session = session;
+    return session;
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  async isAuthenticated(): Promise<boolean> {
+    const session = await this.getSession();
+    return !!session?.user;
+  }
+
+  /**
+   * Refresh session to extend expiry
+   */
+  async refreshSession() {
+    try {
+      const session = await this.getSession();
+      if (session?.user) {
+        // Session is automatically refreshed when retrieved if needed
+        console.log("Session refreshed successfully");
+        return session;
+      }
+      return null;
+    } catch (error) {
+      console.error("Session refresh failed:", error);
+      return null;
+    }
+  }
+
+  /**
    * Get current keys
    */
   getKeys(): UserKeys | null {
@@ -299,7 +347,7 @@ Issued At: ${issuedAt}`;
       throw new Error("Keys not loaded");
     }
 
-    const encrypted = await this.crypto.encryptAsymmetric(
+    const encrypted = this.crypto.encryptAsymmetric(
       message,
       recipientPublicKey,
       this.userKeys.encryptionKeyPair.privateKey
