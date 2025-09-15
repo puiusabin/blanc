@@ -1,4 +1,4 @@
-import { createConfig, http } from "wagmi";
+import { createConfig, http, createStorage, cookieStorage } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import {
   metaMask,
@@ -45,4 +45,7 @@ export const wagmiConfig = createConfig({
     [mainnet.id]: http(),
   },
   ssr: true, // Enable SSR support for better performance
+  storage: createStorage({
+    storage: typeof window !== "undefined" ? localStorage : cookieStorage,
+  }),
 });

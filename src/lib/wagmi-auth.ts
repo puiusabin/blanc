@@ -164,7 +164,7 @@ Issued At: ${issuedAt}`;
   /**
    * Check if user needs key setup
    */
-  private async checkRequiresKeySetup(): Promise<boolean> {
+  async checkRequiresKeySetup(): Promise<boolean> {
     try {
       const response = await fetch("/api/crypto/encrypted-keys", {
         credentials: "include", // Use session cookies instead of Bearer token
@@ -233,7 +233,7 @@ Issued At: ${issuedAt}`;
   /**
    * Load existing user keys
    */
-  private async loadExistingUserKeys(signature: string): Promise<void> {
+  async loadExistingUserKeys(signature: string): Promise<void> {
     // Fetch encrypted keys and salts
     const response = await fetch("/api/crypto/encrypted-keys", {
       credentials: "include", // Use session cookies

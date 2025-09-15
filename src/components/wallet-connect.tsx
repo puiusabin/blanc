@@ -15,6 +15,7 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 
 // Wallet type definition
@@ -113,6 +114,7 @@ const getOrderedWallets = (
 export function CustomWalletConnect() {
   const { connectors, connect, error } = useConnect();
   const { isConnected } = useAccount();
+  const router = useRouter();
   const [processingWallet, setProcessingWallet] = useState<string | null>(null);
   const [showingQR, setShowingQR] = useState(false);
   const [qrUri, setQrUri] = useState<string>("");
@@ -124,7 +126,6 @@ export function CustomWalletConnect() {
     isAuthenticated,
     isLoading: authLoading,
     error: authError,
-    userKeys,
     authenticate,
   } = useWagmiAuth();
 
@@ -143,13 +144,23 @@ export function CustomWalletConnect() {
     processingWallet,
   ]);
 
-  // Clear processing state when authentication completes successfully
+  // Clear processing state and redirect when authentication completes successfully
   useEffect(() => {
     if (isAuthenticated && (processingWallet || showingQR)) {
       setProcessingWallet(null);
       setShowingQR(false);
+      // Redirect to mail page after successful authentication
+      router.push("/mail");
     }
-  }, [isAuthenticated, processingWallet, showingQR]);
+  }, [isAuthenticated, processingWallet, showingQR, router]);
+
+  // Also redirect if user becomes authenticated (covers existing keys loaded scenario)
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      console.log("User authenticated on auth page, redirecting to /mail");
+      router.push("/mail");
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   // Set client-side flag immediately to avoid hydration issues
   useEffect(() => {
@@ -381,69 +392,7 @@ export function CustomWalletConnect() {
     );
   }
 
-  // Show success state when authenticated
-  if (isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="absolute top-6 left-6">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/blanc.svg"
-              alt="Blanc"
-              width={120}
-              height={40}
-              className="h-5 w-auto"
-            />
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-center min-h-screen">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6">
-              <h1 className="text-2xl font-semibold text-center mb-6">
-                Welcome to blanc
-              </h1>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-center text-green-800">
-                    ✅ Connected & Authenticated
-                  </p>
-                </div>
-
-                {userKeys && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="font-semibold mb-2 text-center">
-                      🔐 Encryption Keys Loaded
-                    </h3>
-                    <details>
-                      <summary className="cursor-pointer text-sm text-blue-700 text-center">
-                        View Public Keys
-                      </summary>
-                      <div className="mt-2 space-y-2 text-xs">
-                        <div>
-                          <p className="font-medium">Encryption:</p>
-                          <code className="break-all text-xs bg-white p-1 rounded block">
-                            {userKeys.encryptionKeyPair.publicKey}
-                          </code>
-                        </div>
-                        <div>
-                          <p className="font-medium">Signing:</p>
-                          <code className="break-all text-xs bg-white p-1 rounded block">
-                            {userKeys.signingKeyPair.publicKey}
-                          </code>
-                        </div>
-                      </div>
-                    </details>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // Redirect happens in useEffect, so we don't need a success state UI here
 
   // Main wallet selection UI - show wallets in the correct order
   const wallets = getOrderedWallets(connectors, isClient);
