@@ -311,7 +311,8 @@ export async function generateSigningKeyPair(): Promise<GeneratePublicPrivateKey
 export async function encryptSymmetric(
   plaintext: string,
   key: string,
-  _?: string // Additional authenticated data (not used in TweetNaCl)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _additionalData?: string // Additional authenticated data (not used in TweetNaCl)
 ): Promise<EncryptedDataPayload> {
   await cryptoInstance.init();
   const result = cryptoInstance.encryptSymmetric(plaintext, key);
@@ -330,7 +331,8 @@ export async function encryptSymmetric(
 export async function decryptSymmetric(
   encrypted: EncryptedDataPayload,
   key: string,
-  _?: string // Additional authenticated data (not used in TweetNaCl)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _additionalData?: string // Additional authenticated data (not used in TweetNaCl)
 ): Promise<string> {
   await cryptoInstance.init();
   return cryptoInstance.decryptSymmetric(

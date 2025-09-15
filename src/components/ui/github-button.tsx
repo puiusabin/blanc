@@ -39,7 +39,7 @@ function useGitHubStars(repoUrl?: string) {
           throw new Error(`GitHub API error: ${response.status}`);
         }
         
-        const data = await response.json();
+        const data = await response.json() as { stargazers_count?: number };
         setStars(data.stargazers_count || 0);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch stars');
