@@ -115,6 +115,7 @@ export function CustomWalletConnect() {
   const { connectors, connect, error } = useConnect();
   const { isConnected } = useAccount();
   const router = useRouter();
+
   const [processingWallet, setProcessingWallet] = useState<string | null>(null);
   const [showingQR, setShowingQR] = useState(false);
   const [qrUri, setQrUri] = useState<string>("");
@@ -154,13 +155,23 @@ export function CustomWalletConnect() {
     }
   }, [isAuthenticated, processingWallet, showingQR, router]);
 
-  // Also redirect if user becomes authenticated (covers existing keys loaded scenario)
+  // DISABLED: Also redirect if user becomes authenticated (covers existing keys loaded scenario)
+  // This was causing redirect loops - let mail page handle auth checking instead
   useEffect(() => {
+    console.log("🔐 Auth page: Auth state check", {
+      isAuthenticated,
+      authLoading,
+      processingWallet,
+      showingQR,
+    });
+
     if (isAuthenticated && !authLoading) {
-      console.log("User authenticated on auth page, redirecting to /mail");
-      router.push("/mail");
+      console.log(
+        "🔐 Auth page: User authenticated (redirect disabled to prevent loop)",
+      );
+      // DISABLED to prevent redirect loop: router.push("/mail");
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, processingWallet, showingQR, router]);
 
   // Set client-side flag immediately to avoid hydration issues
   useEffect(() => {

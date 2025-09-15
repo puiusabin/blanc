@@ -21,13 +21,19 @@ export default function MailPage() {
 
   // Redirect to /auth if not authenticated (but only after loading is complete)
   useEffect(() => {
+    console.log("📧 Mail page: Auth state check", {
+      isLoading,
+      isAuthenticated,
+      hasUserKeys: !!userKeys,
+    });
+
     if (!isLoading && !isAuthenticated) {
       console.log(
-        "Mail page: Not authenticated after loading complete, redirecting to /auth",
+        "📧 Mail page: Not authenticated after loading complete, redirecting to /auth",
       );
       router.push("/auth");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, userKeys, router]);
 
   const copyToClipboard = async (text: string, keyType: string) => {
     try {
