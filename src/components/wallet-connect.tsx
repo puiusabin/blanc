@@ -9,12 +9,106 @@ import { PhantomIcon } from "@/components/icons/phantom";
 import { MetamaskIcon } from "@/components/icons/metamask";
 import { CoinbaseIcon } from "@/components/icons/coinbase";
 import { WalletConnectIcon } from "@/components/icons/walletconnect";
+import { RainbowIcon } from "@/components/icons/rainbow";
 import { useWagmiAuth } from "@/hooks/use-wagmi-auth";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import QRCode from 'qrcode';
+import { ArrowLeft, Wallet } from "lucide-react";
+import QRCode from "qrcode";
+
+// Wallet type definition
+interface WalletType {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  loadingIcon: React.ReactNode;
+  available: boolean;
+  connector: Connector | null;
+  isPhantom?: boolean;
+  isMetaMask?: boolean;
+  isCoinbase?: boolean;
+  isRainbow?: boolean;
+  isWalletConnect?: boolean;
+}
+
+// Define the fixed wallet order with their proper connectors
+const getOrderedWallets = (
+  connectors: readonly Connector[],
+  isClient: boolean,
+): WalletType[] => {
+  const wallets: WalletType[] = [];
+
+  // 1. Phantom - always show
+  wallets.push({
+    id: "phantom",
+    name: "Phantom",
+    icon: <PhantomIcon className="size-8 rounded-md" />,
+    loadingIcon: <PhantomIcon className="size-12 rounded-md" />,
+    available: true,
+    connector: connectors.find((c) => c.id === "injected") || null,
+    isPhantom: true,
+  });
+
+  // 2. MetaMask - always show
+  const metamaskConnector = connectors.find((c) => c.id === "io.metamask");
+  wallets.push({
+    id: "metamask",
+    name: "MetaMask",
+    icon: <MetamaskIcon className="size-8" />,
+    loadingIcon: <MetamaskIcon className="size-12" />,
+    available: true,
+    connector: metamaskConnector || null,
+    isMetaMask: true,
+  });
+
+  // 3. Coinbase - always show
+  const coinbaseConnector =
+    connectors.find((c) => c.id === "baseAccount") ||
+    connectors.find((c) => c.id === "coinbaseWallet");
+  wallets.push({
+    id: "coinbase",
+    name: "Coinbase",
+    icon: <CoinbaseIcon className="size-8 rounded-md" />,
+    loadingIcon: <CoinbaseIcon className="size-12 rounded-md" />,
+    available: true,
+    connector: coinbaseConnector || null,
+    isCoinbase: true,
+  });
+
+  // 4. Rainbow - show if available (only on client-side)
+  const injectedConnector = connectors.find((c) => c.id === "injected");
+  if (
+    isClient &&
+    typeof window !== "undefined" &&
+    window.ethereum?.isRainbow &&
+    injectedConnector
+  ) {
+    wallets.push({
+      id: "rainbow",
+      name: "Rainbow",
+      icon: <RainbowIcon className="size-8 rounded-md" />,
+      loadingIcon: <RainbowIcon className="size-12 rounded-md" />,
+      available: true,
+      connector: injectedConnector || null,
+      isRainbow: true,
+    });
+  }
+
+  // 5. WalletConnect - always show last
+  const wcConnector = connectors.find((c) => c.id === "walletConnect");
+  wallets.push({
+    id: "walletconnect",
+    name: "WalletConnect",
+    icon: <WalletConnectIcon className="size-9" />,
+    loadingIcon: <WalletConnectIcon className="size-14" />,
+    available: true,
+    connector: wcConnector || null,
+    isWalletConnect: true,
+  });
+
+  return wallets;
+};
 
 export function CustomWalletConnect() {
   const { connectors, connect, error } = useConnect();
@@ -23,7 +117,8 @@ export function CustomWalletConnect() {
   const [showingQR, setShowingQR] = useState(false);
   const [qrUri, setQrUri] = useState<string>("");
   const [qrWalletType, setQrWalletType] = useState<string>("");
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [isClient, setIsClient] = useState(false);
 
   const {
     isAuthenticated,
@@ -37,7 +132,6 @@ export function CustomWalletConnect() {
   useEffect(() => {
     if (isConnected && !isAuthenticated && !authLoading && processingWallet) {
       authenticate().finally(() => {
-        // Clear processing state after authentication attempt
         setProcessingWallet(null);
       });
     }
@@ -57,6 +151,11 @@ export function CustomWalletConnect() {
     }
   }, [isAuthenticated, processingWallet, showingQR]);
 
+  // Set client-side flag immediately to avoid hydration issues
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Generate QR code when URI changes
   useEffect(() => {
     if (qrUri && showingQR) {
@@ -64,64 +163,44 @@ export function CustomWalletConnect() {
         .then(setQrCodeDataUrl)
         .catch(console.error);
     } else {
-      setQrCodeDataUrl('');
+      setQrCodeDataUrl("");
     }
   }, [qrUri, showingQR]);
 
-  const handleWalletClick = async (
-    walletType: string,
-    connector?: Connector
-  ) => {
-    // Handle Phantom wallet separately
-    if (walletType === "phantom") {
-      // Check if Phantom is available
-      if (typeof window !== "undefined" && window.phantom?.ethereum) {
+  const handleWalletClick = async (wallet: WalletType) => {
+    // Handle Phantom wallet
+    if (wallet.isPhantom) {
+      if (typeof window !== "undefined" && window.ethereum?.isPhantom) {
         setProcessingWallet("phantom");
-        // Use MetaMask connector for Phantom (it's compatible)
-        const phantomConnector = connectors.find((c) => c.id === "io.metamask");
-        if (phantomConnector) {
+        if (wallet.connector) {
           connect(
-            { connector: phantomConnector },
+            { connector: wallet.connector },
             {
-              onSuccess: () => {
-                // Keep processingWallet set - authentication will happen in useEffect
-              },
-              onError: () => {
-                setProcessingWallet(null);
-              },
-            }
+              onSuccess: () => {},
+              onError: () => setProcessingWallet(null),
+            },
           );
         }
       } else {
-        // Redirect to Phantom website if not available
         window.open("https://phantom.app/", "_blank");
         return;
       }
       return;
     }
 
-    // Handle MetaMask wallet separately
-    if (walletType === "metamask") {
-      console.log("MetaMask button clicked");
-      console.log("window.ethereum:", window.ethereum);
-      console.log("isMetaMask:", window.ethereum?.isMetaMask);
-      console.log("MetaMask connector:", connector);
-
-      // More robust MetaMask detection - check if it's actually MetaMask and not just claiming to be
-      const isActualMetaMask = typeof window !== "undefined" && 
-        window.ethereum?.isMetaMask && 
-        !window.ethereum?.isRainbow && 
+    // Handle MetaMask wallet
+    if (wallet.isMetaMask) {
+      const isActualMetaMask =
+        typeof window !== "undefined" &&
+        window.ethereum?.isMetaMask &&
+        !window.ethereum?.isRainbow &&
         !window.ethereum?.isCoinbaseWallet &&
-        connector; // Also check if we have a working connector
+        wallet.connector;
 
       if (!isActualMetaMask) {
-        console.log("MetaMask not detected or no connector available, showing MetaMask mobile QR code");
-        
-        // Create MetaMask mobile deep link
         const currentUrl = window.location.origin;
-        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace('https://', '').replace('http://', '')}`;
-        
-        // Show MetaMask QR code
+        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace("https://", "").replace("http://", "")}`;
+
         setQrUri(metamaskDeepLink);
         setQrWalletType("metamask");
         setShowingQR(true);
@@ -129,98 +208,49 @@ export function CustomWalletConnect() {
         return;
       }
 
-      console.log("MetaMask detected, using MetaMask connector");
-      // If MetaMask is available, use the regular MetaMask connector
-      setProcessingWallet(walletType);
+      if (!wallet.connector) return;
+      setProcessingWallet("metamask");
       connect(
-        { connector },
+        { connector: wallet.connector },
         {
-          onSuccess: () => {
-            console.log("MetaMask connection successful");
-          },
-          onError: (error) => {
-            console.log("MetaMask connection error:", error);
-            setProcessingWallet(null);
-          },
-        }
+          onSuccess: () => {},
+          onError: () => setProcessingWallet(null),
+        },
       );
       return;
     }
 
-    // Handle WalletConnect to use normal flow
-    if (walletType === "walletconnect") {
-      if (!connector) return;
-      setProcessingWallet(walletType);
-
+    // Handle WalletConnect
+    if (wallet.isWalletConnect) {
+      if (!wallet.connector) return;
+      setProcessingWallet("walletconnect");
       connect(
-        { connector },
+        { connector: wallet.connector },
         {
-          onSuccess: () => {
-            // Keep processingWallet set - authentication will happen in useEffect
-          },
-          onError: () => {
-            setProcessingWallet(null);
-          },
-        }
+          onSuccess: () => {},
+          onError: () => setProcessingWallet(null),
+        },
       );
       return;
     }
 
-    if (!connector) return;
-
-    setProcessingWallet(walletType);
+    // Handle other wallets (Coinbase, Rainbow, etc.)
+    if (!wallet.connector) return;
+    setProcessingWallet(wallet.id);
 
     if (isConnected) {
-      // If already connected, just authenticate
       await authenticate();
       setProcessingWallet(null);
     } else {
-      // If not connected, connect first (then auto-authenticate via useEffect)
       connect(
-        { connector },
+        { connector: wallet.connector },
         {
-          onSuccess: () => {
-            // Keep processingWallet set - authentication will happen in useEffect
-          },
-          onError: () => {
-            setProcessingWallet(null);
-          },
-        }
+          onSuccess: () => {},
+          onError: () => setProcessingWallet(null),
+        },
       );
     }
   };
-
-  // Define the 4 wallet options
-  const walletOptions = [
-    {
-      id: "phantom",
-      name: "Phantom",
-      icon: <PhantomIcon className="size-8 rounded-md" />,
-      loadingIcon: <PhantomIcon className="size-12 rounded-md" />,
-      connector: null, // Handled separately
-    },
-    {
-      id: "metamask",
-      name: "MetaMask",
-      icon: <MetamaskIcon className="size-8" />,
-      loadingIcon: <MetamaskIcon className="size-12" />,
-      connector: connectors.find((c) => c.id === "io.metamask"),
-    },
-    {
-      id: "coinbase",
-      name: "Coinbase",
-      icon: <CoinbaseIcon className="size-8 rounded-md" />,
-      loadingIcon: <CoinbaseIcon className="size-12 rounded-md" />,
-      connector: connectors.find((c) => c.id === "baseAccount"),
-    },
-    {
-      id: "walletconnect",
-      name: "WalletConnect",
-      icon: <WalletConnectIcon className="size-9" />,
-      loadingIcon: <WalletConnectIcon className="size-14" />,
-      connector: connectors.find((c) => c.id === "walletConnect"),
-    },
-  ];
 
   // Show QR code state
   if (showingQR && !isAuthenticated) {
@@ -256,16 +286,19 @@ export function CustomWalletConnect() {
             <CardContent className="p-6">
               <div className="flex flex-col items-center justify-center space-y-6">
                 <h2 className="text-xl font-semibold text-center">
-                  {qrWalletType === "metamask" ? "Open MetaMask Mobile" : "Scan with your wallet"}
+                  {qrWalletType === "metamask"
+                    ? "Open MetaMask Mobile"
+                    : "Scan with your wallet"}
                 </h2>
-                
+
                 {qrCodeDataUrl ? (
                   <div className="flex justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={qrCodeDataUrl} 
+                    <Image
+                      src={qrCodeDataUrl}
                       alt={`${qrWalletType === "metamask" ? "MetaMask" : "WalletConnect"} QR Code`}
-                      className="w-64 h-64 border-2 border-gray-200 rounded-lg"
+                      width={256}
+                      height={256}
+                      className="border-2 border-gray-200 rounded-lg"
                     />
                   </div>
                 ) : (
@@ -273,12 +306,11 @@ export function CustomWalletConnect() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                   </div>
                 )}
-                
+
                 <p className="text-sm text-gray-600 text-center">
-                  {qrWalletType === "metamask" 
-                    ? "Scan this QR code with MetaMask mobile app to connect to this dapp" 
-                    : "Open your mobile wallet and scan this QR code to connect"
-                  }
+                  {qrWalletType === "metamask"
+                    ? "Scan this QR code with MetaMask mobile app to connect to this dapp"
+                    : "Open your mobile wallet and scan this QR code to connect"}
                 </p>
               </div>
             </CardContent>
@@ -297,11 +329,12 @@ export function CustomWalletConnect() {
       loadingText = "Generating encryption keys...";
     }
 
-    // Get the larger wallet icon for the processing wallet
-    const processingWalletOption = walletOptions.find(
-      (w) => w.id === processingWallet
+    // Get all wallets (base + detected)
+    const allWallets = getOrderedWallets(connectors, isClient);
+    const currentWallet = allWallets.find((w) => w.id === processingWallet);
+    const walletIcon = currentWallet?.loadingIcon || (
+      <Wallet className="size-12" />
     );
-    const walletIcon = processingWalletOption?.loadingIcon;
 
     return (
       <div className="min-h-screen bg-background">
@@ -412,7 +445,12 @@ export function CustomWalletConnect() {
     );
   }
 
-  // Main wallet selection UI
+  // Main wallet selection UI - show wallets in the correct order
+  const wallets = getOrderedWallets(connectors, isClient);
+
+  // Decide number of columns: if there are more than the 4 base wallets, cap to 4 columns
+  const columns = wallets.length > 4 ? 4 : Math.max(1, wallets.length);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="absolute top-6 left-6">
@@ -440,8 +478,14 @@ export function CustomWalletConnect() {
               </div>
             )}
 
-            <div className="flex gap-3">
-              {walletOptions.map((wallet) => {
+            {/* Use CSS Grid and an inline style for dynamic column count so we can cap at 4 columns when needed */}
+            <div
+              className="grid grid-cols-4 gap-3"
+              style={{
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              }}
+            >
+              {wallets.map((wallet) => {
                 const isProcessing = processingWallet === wallet.id;
                 const isDisabled = processingWallet !== null;
 
@@ -449,13 +493,8 @@ export function CustomWalletConnect() {
                   <Button
                     key={wallet.id}
                     variant="outline"
-                    className="flex-1 h-14 flex items-center justify-center"
-                    onClick={() =>
-                      handleWalletClick(
-                        wallet.id,
-                        wallet.connector || undefined
-                      )
-                    }
+                    className="w-full h-14 flex items-center justify-center"
+                    onClick={() => handleWalletClick(wallet)}
                     disabled={isDisabled}
                   >
                     {isProcessing ? (
@@ -470,7 +509,8 @@ export function CustomWalletConnect() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }
+
+export default CustomWalletConnect;
