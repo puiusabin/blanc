@@ -3,8 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
 import { siwe } from "better-auth/plugins";
 import { generateRandomString } from "better-auth/crypto";
-import { verifyMessage } from "@wagmi/core";
-import { wagmiConfig } from "./wagmi";
+import { verifyMessage } from "viem";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -60,7 +59,7 @@ export const auth = betterAuth({
       verifyMessage: async ({ message, signature, address }) => {
         try {
           console.log({ message, signature, address });
-          const isValid = await verifyMessage(wagmiConfig, {
+          const isValid = await verifyMessage({
             address: address as `0x${string}`,
             message,
             signature: signature as `0x${string}`,

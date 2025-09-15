@@ -1,7 +1,6 @@
 "use client";
 
 import { Navbar } from "@/components/navbar";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GithubButton } from "@/components/ui/github-button";
 import Image from "next/image";
@@ -33,21 +32,21 @@ export default function Home() {
         <div className="absolute top-32 left-5 w-40 h-40 bg-blue-500 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-8 w-48 h-48 bg-indigo-500 rounded-full blur-3xl"></div>
         <div className="absolute bottom-32 left-12 w-44 h-44 bg-violet-500 rounded-full blur-3xl"></div>
-        
+
         {/* Center elements */}
         <div className="absolute top-20 left-1/2 w-36 h-36 bg-cyan-400 rounded-full blur-3xl"></div>
         <div className="absolute top-2/3 left-1/3 w-40 h-40 bg-yellow-400 rounded-full blur-3xl"></div>
-        
+
         {/* Right side elements */}
         <div className="absolute top-60 right-20 w-56 h-56 bg-purple-500 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-44 h-44 bg-green-500 rounded-full blur-3xl"></div>
         <div className="absolute top-3/4 right-1/3 w-36 h-36 bg-pink-400 rounded-full blur-3xl"></div>
-        
+
         {/* Additional scattered elements */}
         <div className="absolute top-10 right-1/4 w-32 h-32 bg-orange-400 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-1/3 w-38 h-38 bg-teal-400 rounded-full blur-3xl"></div>
       </div>
-      
+
       <Navbar />
 
       {/* Hero Section */}

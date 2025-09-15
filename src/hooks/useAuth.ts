@@ -8,7 +8,7 @@ export interface AuthSession {
     id: string;
     name?: string;
     email?: string;
-    image?: string;
+    image?: string | null;
     // Add any other user properties you need
   };
   session: {

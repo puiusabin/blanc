@@ -6,6 +6,55 @@ import { Star } from 'lucide-react';
 import { motion, useInView, type SpringOptions, type UseInViewOptions } from 'motion/react';
 import { cn } from '@/lib/utils';
 
+// Hook to fetch GitHub repo stars
+function useGitHubStars(repoUrl?: string) {
+  const [stars, setStars] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!repoUrl) return;
+
+    // Extract owner and repo from GitHub URL
+    const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/\?#]+)/);
+    if (!match) {
+      setError('Invalid GitHub URL');
+      return;
+    }
+
+    const [, owner, repo] = match;
+    
+    const fetchStars = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setStars(data.stargazers_count || 0);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch stars');
+        setStars(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStars();
+  }, [repoUrl]);
+
+  return { stars, loading, error };
+}
+
 const githubButtonVariants = cva(
   'cursor-pointer relative overflow-hidden will-change-transform backface-visibility-hidden transform-gpu transition-transform duration-200 ease-out hover:scale-105 group whitespace-nowrap focus-visible:outline-hidden inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background disabled:pointer-events-none disabled:opacity-60 [&_svg]:shrink-0',
   {
@@ -91,6 +140,9 @@ function GithubButton({
   transition,
   ...props
 }: GithubButtonProps) {
+  const { stars: fetchedStars, loading } = useGitHubStars(repoUrl);
+  const effectiveTargetStars = fetchedStars ?? targetStars;
+  
   const [currentStars, setCurrentStars] = useState(initialStars);
   const [isAnimating, setIsAnimating] = useState(false);
   const [starProgress, setStarProgress] = useState(filled ? 100 : 0);
@@ -119,12 +171,12 @@ function GithubButton({
 
   // Start animation
   const startAnimation = useCallback(() => {
-    if (isAnimating || hasAnimated) return;
+    if (isAnimating || hasAnimated || effectiveTargetStars === 0) return;
 
     setIsAnimating(true);
     const startTime = Date.now();
     const startValue = 0; // Always start from 0 for number animation
-    const endValue = targetStars;
+    const endValue = effectiveTargetStars;
     const duration = animationDuration * 1000;
 
     const animate = () => {
@@ -154,17 +206,17 @@ function GithubButton({
     setTimeout(() => {
       requestAnimationFrame(animate);
     }, animationDelay * 1000);
-  }, [isAnimating, hasAnimated, targetStars, animationDuration, animationDelay]);
+  }, [isAnimating, hasAnimated, effectiveTargetStars, animationDuration, animationDelay]);
 
   // Use in-view detection if enabled
   const ref = React.useRef(null);
   const isInView = useInView(ref, inViewOptions);
 
-  // Reset animation state when targetStars changes
+  // Reset animation state when effectiveTargetStars changes
   useEffect(() => {
     setHasAnimated(false);
     setCurrentStars(initialStars);
-  }, [targetStars, initialStars]);
+  }, [effectiveTargetStars, initialStars]);
 
   // Auto-start animation or use in-view trigger
   useEffect(() => {
@@ -284,9 +336,9 @@ function GithubButton({
           }}
           className="tabular-nums"
         >
-          <span>{currentStars > 0 && formatNumber(currentStars)}</span>
+          <span>{loading ? '...' : currentStars > 0 && formatNumber(currentStars)}</span>
         </motion.div>
-        {fixedWidth && <span className="opacity-0 h-0 overflow-hidden tabular-nums">{formatNumber(targetStars)}</span>}
+        {fixedWidth && <span className="opacity-0 h-0 overflow-hidden tabular-nums">{formatNumber(effectiveTargetStars)}</span>}
       </div>
     </button>
   );
