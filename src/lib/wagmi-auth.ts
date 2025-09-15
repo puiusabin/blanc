@@ -60,7 +60,7 @@ export class WagmiAuthManager {
    * 2. Key derivation using deterministic challenge (separate signature for consistent keys)
    */
   async authenticate(
-    chainId: number
+    chainId: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<{ session: any; keys: UserKeys }> {
     if (!this.walletClient || !this.address) {
@@ -80,7 +80,7 @@ export class WagmiAuthManager {
 
     if (nonceError || !nonceData?.nonce) {
       throw new Error(
-        `Failed to get SIWE nonce: ${nonceError?.message || "Unknown error"}`
+        `Failed to get SIWE nonce: ${nonceError?.message || "Unknown error"}`,
       );
     }
 
@@ -116,7 +116,7 @@ Issued At: ${issuedAt}`;
 
     if (authError || !authData?.user) {
       throw new Error(
-        `SIWE authentication failed: ${authError?.message || "Unknown error"}`
+        `SIWE authentication failed: ${authError?.message || "Unknown error"}`,
       );
     }
 
@@ -181,7 +181,7 @@ Issued At: ${issuedAt}`;
   private async setupNewUserKeys(signature: string): Promise<void> {
     // Derive encryption key from signature
     const { keys, masterKeySalt, encryptionKeySalt } =
-      this.crypto.deriveKeysFromSignature(signature);
+      await this.crypto.deriveKeysFromSignature(signature);
 
     // Generate keypairs
     const encryptionKeyPair = this.crypto.generateEncryptionKeyPair();
@@ -205,7 +205,7 @@ Issued At: ${issuedAt}`;
     // Encrypt private keys with derived key
     const encrypted = this.crypto.encryptSymmetric(
       privateKeysBundle,
-      keys.encryptionKey
+      keys.encryptionKey,
     );
 
     // Send to server
@@ -246,10 +246,10 @@ Issued At: ${issuedAt}`;
     const encryptedData = (await response.json()) as EncryptedKeysData;
 
     // Derive same encryption key using stored salts
-    const { keys } = this.crypto.deriveKeysFromSignature(
+    const { keys } = await this.crypto.deriveKeysFromSignature(
       signature,
       encryptedData.masterKeySalt,
-      encryptedData.encryptionKeySalt
+      encryptedData.encryptionKeySalt,
     );
 
     // Decrypt private keys
@@ -258,7 +258,7 @@ Issued At: ${issuedAt}`;
         ciphertext: encryptedData.encryptedPrivateKeys,
         nonce: encryptedData.encryptionNonce,
       },
-      keys.encryptionKey
+      keys.encryptionKey,
     );
 
     const bundle = JSON.parse(decrypted);
@@ -341,7 +341,7 @@ Issued At: ${issuedAt}`;
   // Email encryption example
   async encryptMessage(
     message: string,
-    recipientPublicKey: string
+    recipientPublicKey: string,
   ): Promise<string> {
     if (!this.userKeys) {
       throw new Error("Keys not loaded");
@@ -350,7 +350,7 @@ Issued At: ${issuedAt}`;
     const encrypted = this.crypto.encryptAsymmetric(
       message,
       recipientPublicKey,
-      this.userKeys.encryptionKeyPair.privateKey
+      this.userKeys.encryptionKeyPair.privateKey,
     );
 
     return JSON.stringify(encrypted);

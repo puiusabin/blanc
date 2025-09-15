@@ -13,7 +13,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Database Operations
 - `npx prisma generate` - Generate Prisma client (outputs to default location)
 - `npx prisma db push` - Push schema changes to database
-- `npx tsx prisma/seed.ts` - Run database seeding script
+- `npx prisma migrate dev` - Create and apply development migrations
+- `npx prisma migrate reset` - Reset database and apply all migrations
+- `npx prisma studio` - Open Prisma Studio for database management
 
 ### Cloudflare Deployment
 - `npm run deploy` - Build and deploy to Cloudflare Workers
@@ -71,3 +73,21 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 - Static assets binding: `ASSETS` pointing to `.open-next/assets`
 - Compatibility flags: `nodejs_compat`, `global_fetch_strictly_public`
 - OpenNext configuration in `open-next.config.ts` (R2 caching available but commented out)
+
+## Project Structure
+
+### Key Directories
+- `src/app/` - Next.js App Router pages and API routes
+- `src/components/ui/` - Reusable UI components (shadcn/ui pattern)  
+- `src/components/` - Application-specific components
+- `src/lib/` - Core utilities and configurations
+- `src/hooks/` - Custom React hooks
+- `prisma/` - Database schema and migrations
+
+### Important Files
+- `src/lib/auth.ts` - better-auth configuration with SIWE
+- `src/lib/crypto.ts` - Cryptography operations (SignatureCrypto class)
+- `src/lib/prisma.ts` - Prisma client with Accelerate extension
+- `src/lib/wagmi.ts` - Wallet connection configuration
+- `open-next.config.ts` - Cloudflare deployment configuration
+- `wrangler.jsonc` - Cloudflare Worker configuration

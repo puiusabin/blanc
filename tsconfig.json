@@ -7,6 +7,7 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -21,10 +22,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": [
-        "./cloudflare-env.d.ts",
-        "node"
-    ]
+    "types": ["./cloudflare-env.d.ts", "node"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

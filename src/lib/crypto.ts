@@ -2,25 +2,25 @@
 // SIGNATURE-BASED KEY DERIVATION WITH TWEETNACL
 // ============================================
 
-import * as nacl from 'tweetnacl';
-import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
-import hkdf from 'futoin-hkdf';
-import { fromByteArray } from 'base64-js';
+import * as nacl from "tweetnacl";
+import { encodeBase64, decodeBase64 } from "tweetnacl-util";
+// Use built-in crypto for HKDF - compatible with both Node.js and Cloudflare Workers
+import { fromByteArray } from "base64-js";
 
 // Types
 export interface KeyPair {
-  publicKey: string;  // base64
+  publicKey: string; // base64
   privateKey: string; // base64
 }
 
 export interface EncryptedPayload {
   ciphertext: string; // base64
-  nonce: string;      // base64
+  nonce: string; // base64
 }
 
 export interface DerivedKeys {
-  masterKey: string;        // base64
-  encryptionKey: string;    // base64
+  masterKey: string; // base64
+  encryptionKey: string; // base64
 }
 
 export interface UserKeys {
@@ -43,11 +43,47 @@ export interface EncryptedDataPayload {
   };
 }
 
-// Constants from Skiff implementation with HKDF
+// Constants for native HKDF implementation
 const HKDF_LENGTH = 32;
 
 enum HkdfInfo {
-  PRIVATE_KEYS = 'PRIVATE_KEYS',
+  PRIVATE_KEYS = "PRIVATE_KEYS",
+}
+
+// Native HKDF implementation using Web Crypto API
+async function nativeHkdf(
+  ikm: string,
+  length: number,
+  salt: string,
+  info: string,
+): Promise<Uint8Array> {
+  // Convert inputs to Uint8Array
+  const ikmBytes = new TextEncoder().encode(ikm);
+  const saltBytes = new TextEncoder().encode(salt);
+  const infoBytes = new TextEncoder().encode(info);
+
+  // Import the input key material
+  const key = await crypto.subtle.importKey(
+    "raw",
+    ikmBytes,
+    { name: "HKDF" },
+    false,
+    ["deriveBits"],
+  );
+
+  // Derive the key using HKDF
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: saltBytes,
+      info: infoBytes,
+    },
+    key,
+    length * 8, // bits
+  );
+
+  return new Uint8Array(derivedBits);
 }
 
 // ============================================
@@ -97,56 +133,72 @@ export class SignatureCrypto {
   /**
    * Create key from signature using HKDF (adapted from Skiff)
    */
-  createKeyFromSignature(signature: string, salt: string): string {
+  async createKeyFromSignature(
+    signature: string,
+    salt: string,
+  ): Promise<string> {
     this.ensureInit();
-    
-    const privateKey = hkdf(signature, HKDF_LENGTH, {
+
+    const privateKey = await nativeHkdf(
+      signature,
+      HKDF_LENGTH,
       salt,
-      info: 'MASTER_KEY',
-      hash: 'SHA-256'
-    });
-    
+      "MASTER_KEY",
+    );
+
     return fromByteArray(privateKey);
   }
 
   /**
    * Create signature-derived secret using HKDF (adapted from Skiff)
    */
-  createSignatureDerivedSecret(masterSecret: string, salt: string): string {
+  async createSignatureDerivedSecret(
+    masterSecret: string,
+    salt: string,
+  ): Promise<string> {
     this.ensureInit();
-    
-    const privateKey = hkdf(masterSecret, HKDF_LENGTH, {
+
+    const privateKey = await nativeHkdf(
+      masterSecret,
+      HKDF_LENGTH,
       salt,
-      info: HkdfInfo.PRIVATE_KEYS,
-      hash: 'SHA-256'
-    });
-    
+      HkdfInfo.PRIVATE_KEYS,
+    );
+
     return fromByteArray(privateKey);
   }
 
   /**
    * Derive encryption keys from wallet signature using HKDF
    */
-  deriveKeysFromSignature(
+  async deriveKeysFromSignature(
     signature: string,
     masterKeySalt?: string,
-    encryptionKeySalt?: string
-  ): {
+    encryptionKeySalt?: string,
+  ): Promise<{
     keys: DerivedKeys;
     masterKeySalt: string;
     encryptionKeySalt: string;
-  } {
+  }> {
     this.ensureInit();
 
     // Generate or use provided salts
-    const masterSaltString = masterKeySalt || encodeBase64(nacl.randomBytes(16));
-    const encryptionSaltString = encryptionKeySalt || encodeBase64(nacl.randomBytes(32));
+    const masterSaltString =
+      masterKeySalt || encodeBase64(nacl.randomBytes(16));
+    const encryptionSaltString =
+      encryptionKeySalt || encodeBase64(nacl.randomBytes(32));
 
     // Step 1: Create master key from signature using HKDF
-    const masterKey = this.createKeyFromSignature(signature, masterSaltString);
+    const masterKey = await this.createKeyFromSignature(
+      signature,
+      masterSaltString,
+    );
 
     // Step 2: Derive encryption key using HKDF with different context
-    const encryptionKey = this.createSignatureDerivedSecret(masterKey, encryptionSaltString);
+    const encryptionKey = await this.createSignatureDerivedSecret(
+      masterKey,
+      encryptionSaltString,
+    );
 
     return {
       keys: {
@@ -172,21 +224,21 @@ export class SignatureCrypto {
    */
   encryptSymmetric(
     plaintext: string,
-    key: string // base64
+    key: string, // base64
   ): EncryptedPayload {
     this.ensureInit();
-    
+
     const keyBytes = decodeBase64(key);
     const messageBytes = new TextEncoder().encode(plaintext);
-    
+
     // Generate 24-byte nonce
     const nonce = nacl.randomBytes(24);
-    
+
     // Encrypt using secretbox (XSalsa20-Poly1305)
     const ciphertext = nacl.secretbox(messageBytes, nonce, keyBytes);
-    
+
     if (!ciphertext) {
-      throw new Error('Failed to encrypt message');
+      throw new Error("Failed to encrypt message");
     }
 
     return {
@@ -200,19 +252,23 @@ export class SignatureCrypto {
    */
   decryptSymmetric(
     encrypted: EncryptedPayload,
-    key: string // base64
+    key: string, // base64
   ): string {
     this.ensureInit();
-    
+
     const keyBytes = decodeBase64(key);
     const ciphertextBytes = decodeBase64(encrypted.ciphertext);
     const nonceBytes = decodeBase64(encrypted.nonce);
 
     // Decrypt using secretbox
-    const decrypted = nacl.secretbox.open(ciphertextBytes, nonceBytes, keyBytes);
-    
+    const decrypted = nacl.secretbox.open(
+      ciphertextBytes,
+      nonceBytes,
+      keyBytes,
+    );
+
     if (!decrypted) {
-      throw new Error('Failed to decrypt message');
+      throw new Error("Failed to decrypt message");
     }
 
     return new TextDecoder().decode(decrypted);
@@ -224,10 +280,10 @@ export class SignatureCrypto {
   encryptAsymmetric(
     plaintext: string,
     recipientPublicKey: string, // base64
-    senderPrivateKey: string // base64
+    senderPrivateKey: string, // base64
   ): EncryptedPayload {
     this.ensureInit();
-    
+
     const messageBytes = new TextEncoder().encode(plaintext);
     const recipientPubBytes = decodeBase64(recipientPublicKey);
     const senderPrivBytes = decodeBase64(senderPrivateKey);
@@ -236,10 +292,15 @@ export class SignatureCrypto {
     const nonce = nacl.randomBytes(24);
 
     // Encrypt using box (Curve25519 + XSalsa20-Poly1305)
-    const ciphertext = nacl.box(messageBytes, nonce, recipientPubBytes, senderPrivBytes);
-    
+    const ciphertext = nacl.box(
+      messageBytes,
+      nonce,
+      recipientPubBytes,
+      senderPrivBytes,
+    );
+
     if (!ciphertext) {
-      throw new Error('Failed to encrypt message asymmetrically');
+      throw new Error("Failed to encrypt message asymmetrically");
     }
 
     return {
@@ -254,19 +315,24 @@ export class SignatureCrypto {
   decryptAsymmetric(
     encrypted: EncryptedPayload,
     senderPublicKey: string, // base64
-    recipientPrivateKey: string // base64
+    recipientPrivateKey: string, // base64
   ): string {
     this.ensureInit();
-    
+
     const ciphertextBytes = decodeBase64(encrypted.ciphertext);
     const nonceBytes = decodeBase64(encrypted.nonce);
     const senderPubBytes = decodeBase64(senderPublicKey);
     const recipientPrivBytes = decodeBase64(recipientPrivateKey);
 
-    const decrypted = nacl.box.open(ciphertextBytes, nonceBytes, senderPubBytes, recipientPrivBytes);
-    
+    const decrypted = nacl.box.open(
+      ciphertextBytes,
+      nonceBytes,
+      senderPubBytes,
+      recipientPrivBytes,
+    );
+
     if (!decrypted) {
-      throw new Error('Failed to decrypt message asymmetrically');
+      throw new Error("Failed to decrypt message asymmetrically");
     }
 
     return new TextDecoder().decode(decrypted);
@@ -312,7 +378,7 @@ export async function encryptSymmetric(
   plaintext: string,
   key: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _additionalData?: string // Additional authenticated data (not used in TweetNaCl)
+  _additionalData?: string, // Additional authenticated data (not used in TweetNaCl)
 ): Promise<EncryptedDataPayload> {
   await cryptoInstance.init();
   const result = cryptoInstance.encryptSymmetric(plaintext, key);
@@ -332,7 +398,7 @@ export async function decryptSymmetric(
   encrypted: EncryptedDataPayload,
   key: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _additionalData?: string // Additional authenticated data (not used in TweetNaCl)
+  _additionalData?: string, // Additional authenticated data (not used in TweetNaCl)
 ): Promise<string> {
   await cryptoInstance.init();
   return cryptoInstance.decryptSymmetric(
@@ -340,7 +406,7 @@ export async function decryptSymmetric(
       ciphertext: encrypted.ciphertext,
       nonce: encrypted.nonce,
     },
-    key
+    key,
   );
 }
 
@@ -349,7 +415,7 @@ export async function decryptSymmetric(
  */
 export async function createKeyFromSignature(
   signature: string,
-  salt: string
+  salt: string,
 ): Promise<string> {
   await cryptoInstance.init();
   return cryptoInstance.createKeyFromSignature(signature, salt);
@@ -360,7 +426,7 @@ export async function createKeyFromSignature(
  */
 export async function createSignatureDerivedSecret(
   masterSecret: string,
-  salt: string
+  salt: string,
 ): Promise<string> {
   await cryptoInstance.init();
   return cryptoInstance.createSignatureDerivedSecret(masterSecret, salt);
@@ -371,7 +437,7 @@ export async function createSignatureDerivedSecret(
  */
 export async function createKeyFromSecret(
   secret: string,
-  salt: string
+  salt: string,
 ): Promise<string> {
   // Redirect to signature-based implementation
   return createKeyFromSignature(secret, salt);
@@ -382,7 +448,7 @@ export async function createKeyFromSecret(
  */
 export async function createPasswordDerivedSecret(
   masterSecret: string,
-  context: string
+  context: string,
 ): Promise<string> {
   // Redirect to signature-based implementation
   return createSignatureDerivedSecret(masterSecret, context);
@@ -391,7 +457,9 @@ export async function createPasswordDerivedSecret(
 /**
  * Convert string to encrypted payload
  */
-export function stringToEncryptedDataPayload(str: string): EncryptedDataPayload {
+export function stringToEncryptedDataPayload(
+  str: string,
+): EncryptedDataPayload {
   const parsed = JSON.parse(str);
   return {
     ciphertext: parsed.ciphertext,
@@ -403,7 +471,9 @@ export function stringToEncryptedDataPayload(str: string): EncryptedDataPayload 
 /**
  * Convert encrypted payload to string
  */
-export function encryptedDataPayloadToString(payload: EncryptedDataPayload): string {
+export function encryptedDataPayloadToString(
+  payload: EncryptedDataPayload,
+): string {
   return JSON.stringify({
     ciphertext: payload.ciphertext,
     nonce: payload.nonce,
