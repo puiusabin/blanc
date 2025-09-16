@@ -18,22 +18,33 @@ export default function MailPage() {
   const router = useRouter();
   const [showPrivateKeys, setShowPrivateKeys] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [hasWaitedForAuth, setHasWaitedForAuth] = useState(false);
 
-  // Redirect to /auth if not authenticated (but only after loading is complete)
+  // Add a grace period for authentication to complete before redirecting
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasWaitedForAuth(true);
+    }, 2000); // Wait 2 seconds for authentication to complete
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Redirect to /auth if not authenticated (but only after grace period)
   useEffect(() => {
     console.log("📧 Mail page: Auth state check", {
       isLoading,
       isAuthenticated,
       hasUserKeys: !!userKeys,
+      hasWaitedForAuth,
     });
 
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && hasWaitedForAuth) {
       console.log(
-        "📧 Mail page: Not authenticated after loading complete, redirecting to /auth",
+        "📧 Mail page: Not authenticated after grace period, redirecting to /auth",
       );
       router.push("/auth");
     }
-  }, [isLoading, isAuthenticated, userKeys, router]);
+  }, [isLoading, isAuthenticated, userKeys, hasWaitedForAuth, router]);
 
   const copyToClipboard = async (text: string, keyType: string) => {
     try {

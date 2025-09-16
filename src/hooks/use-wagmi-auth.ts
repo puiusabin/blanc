@@ -45,6 +45,14 @@ export function useWagmiAuth(): UseWagmiAuthReturn {
         return;
       }
 
+      // Skip if already authenticated to prevent redundant calls
+      if (isAuthenticated && userKeys) {
+        console.log("🚀 useWagmiAuth: Already authenticated, skipping check");
+        setIsLoading(false);
+        setHasInitialized(true);
+        return;
+      }
+
       try {
         // ALWAYS check better-auth session first - this is critical for /mail page auth
         const session = await authManager.getSession();
@@ -136,7 +144,16 @@ export function useWagmiAuth(): UseWagmiAuthReturn {
     };
 
     checkExistingAuth();
-  }, [isConnected, address, walletClient, authManager, keyStorage]);
+  }, [
+    isConnected,
+    address,
+    walletClient,
+    authManager,
+    keyStorage,
+    isAuthenticated,
+    userKeys,
+    hasInitialized,
+  ]);
 
   const authenticate = useCallback(async () => {
     if (!walletClient || !address || !isConnected) {

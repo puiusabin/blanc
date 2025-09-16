@@ -26,7 +26,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  runtime: "nodejs",
   // Apply middleware to protected routes
   matcher: [
     /*
