@@ -58,7 +58,6 @@ Traditional Email:           Blanc Email:
 
 ### ⚡ **Wallet-First Identity**
 - Use **MetaMask**, **Phantom**, **Coinbase**, **WalletConnect**, or any major wallet
-- Your wallet address is your email identity (`0x123...@blanc.is`)
 - ENS names supported (`vitalik.eth@blanc.is`)
 
 ### 🔒 **Strong Encryption**
