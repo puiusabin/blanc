@@ -31,11 +31,12 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/auth (auth API routes)
+     * - auth (auth page)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - / (home page where sign-in happens)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|$).*)",
+    "/((?!api/auth|auth|_next/static|_next/image|favicon.ico|$).*)",
   ],
 };
