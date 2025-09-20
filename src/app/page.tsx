@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/navbar";
 import { Badge } from "@/components/ui/badge";
 import { GithubButton } from "@/components/ui/github-button";
+import { WaitlistForm } from "@/components/waitlist-form";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -92,6 +93,17 @@ export default function Home() {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
             />
           </div>
+        </div>
+      </section>
+
+      {/* Waitlist Section */}
+      <section className="container mx-auto px-4 py-20 relative z-10">
+        <div className="max-w-2xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Join the waitlist
+          </h2>
+
+          <WaitlistForm className="max-w-md mx-auto" />
         </div>
       </section>
 

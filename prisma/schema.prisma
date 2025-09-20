@@ -15,20 +15,20 @@ datasource db {
 }
 
 model User {
-  id                String              @id @default(cuid())
-  name              String
-  email             String
-  emailVerified     Boolean
-  image             String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   // Relationships
-  sessions          Session[]
-  accounts          Account[]
-  walletAddresses   WalletAddress[]
-  encryptedKeys     UserEncryptedKeys?
-  keyDerivationChallenges    KeyDerivationChallenge[]
+  sessions                Session[]
+  accounts                Account[]
+  walletAddresses         WalletAddress[]
+  encryptedKeys           UserEncryptedKeys?
+  keyDerivationChallenges KeyDerivationChallenge[]
 
   @@unique([email])
   @@map("user")
@@ -42,10 +42,10 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  
+
   // Relationships
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("session")
 }
@@ -62,21 +62,21 @@ model Account {
   scope                 String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  
+
   // Relationships
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
 
 model Verification {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("verification")
 }
@@ -88,10 +88,10 @@ model WalletAddress {
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relationships
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, chainId, address])
   @@map("wallet_addresses")
@@ -99,44 +99,53 @@ model WalletAddress {
 
 // Secure random challenge for signature-based key derivation
 model KeyDerivationChallenge {
-  id            String    @id @default(cuid())
-  challenge     String    @unique // Cryptographically secure random challenge
-  walletAddress String    @unique // One challenge per wallet address
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
+  id            String   @id @default(cuid())
+  challenge     String   @unique // Cryptographically secure random challenge
+  walletAddress String   @unique // One challenge per wallet address
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   // Relationships
-  userId        String?   // Optional - may not have user yet during signup
-  user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId String? // Optional - may not have user yet during signup
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([walletAddress])
   @@map("key_derivation_challenges")
 }
 
 // Encrypted private keys derived from user's signature
 model UserEncryptedKeys {
-  id                    String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Encrypted data
-  encryptedPrivateKeys  String   // XSalsa20-Poly1305 encrypted private key bundle
-  encryptionNonce       String   // Encryption nonce (base64)
-  
+  encryptedPrivateKeys String // XSalsa20-Poly1305 encrypted private key bundle
+  encryptionNonce      String // Encryption nonce (base64)
+
   // Key derivation parameters
-  masterKeySalt         String   // Salt for master key derivation (base64)
-  encryptionKeySalt     String   // Salt for encryption key derivation (base64)
-  
+  masterKeySalt     String // Salt for master key derivation (base64)
+  encryptionKeySalt String // Salt for encryption key derivation (base64)
+
   // Public keys (safe to store)
-  encryptionPublicKey   String   // Curve25519 public key for encryption (base64)
-  signingPublicKey      String   // Ed25519 public key for signing (base64)
-  
+  encryptionPublicKey String // Curve25519 public key for encryption (base64)
+  signingPublicKey    String // Ed25519 public key for signing (base64)
+
   // Metadata
-  keyDerivationVersion  String   @default("hkdf-v1")
+  keyDerivationVersion String   @default("hkdf-v1")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  
+
   // Relationships
-  userId               String   @unique
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_encrypted_keys")
+}
+
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("waitlist")
 }
