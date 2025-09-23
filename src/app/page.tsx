@@ -100,7 +100,7 @@ export default function Home() {
       <section className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-2xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Join the waitlist
+            Get early access
           </h2>
 
           <WaitlistForm className="max-w-md mx-auto" />
