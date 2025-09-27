@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { useJoinWaitlist } from "@/hooks/api/use-waitlist";
 
 interface WaitlistFormProps {
   className?: string;
@@ -11,44 +12,23 @@ interface WaitlistFormProps {
 
 export function WaitlistForm({ className }: WaitlistFormProps) {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const joinWaitlistMutation = useJoinWaitlist();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    if (!email.trim()) return;
 
-    try {
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    joinWaitlistMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          setEmail("");
         },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = (await response.json()) as {
-        error?: string;
-        message?: string;
-        id?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to join waitlist");
-      }
-
-      setIsSuccess(true);
-      setEmail("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    );
   };
 
-  if (isSuccess) {
+  if (joinWaitlistMutation.isSuccess) {
     return (
       <div
         className={`flex items-center justify-center gap-2 text-green-600 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg py-3 px-4 ${className}`}
@@ -69,18 +49,22 @@ export function WaitlistForm({ className }: WaitlistFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={isLoading}
+            disabled={joinWaitlistMutation.isPending}
             className="w-full bg-background/50 backdrop-blur-sm border-border/50 focus:border-blue-500/50 transition-colors h-12"
           />
-          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+          {joinWaitlistMutation.error && (
+            <p className="text-sm text-red-600 mt-1">
+              {joinWaitlistMutation.error.message}
+            </p>
+          )}
         </div>
         <Button
           type="submit"
-          disabled={isLoading || !email.trim()}
+          disabled={joinWaitlistMutation.isPending || !email.trim()}
           className="whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           size="lg"
         >
-          {isLoading ? (
+          {joinWaitlistMutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               Joining...

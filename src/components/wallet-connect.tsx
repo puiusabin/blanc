@@ -10,6 +10,12 @@ import { MetamaskIcon } from "@/components/icons/metamask";
 import { CoinbaseIcon } from "@/components/icons/coinbase";
 import { WalletConnectIcon } from "@/components/icons/walletconnect";
 import { RainbowIcon } from "@/components/icons/rainbow";
+import { GenericWalletIcon } from "@/components/icons/generic-wallet";
+import {
+  detectInjectedWallets,
+  isWalletAvailable,
+  getWalletDownloadUrl,
+} from "@/lib/wallet-detection";
 import { useWagmiAuth } from "@/hooks/use-wagmi-auth";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import Image from "next/image";
@@ -26,77 +32,100 @@ interface WalletType {
   loadingIcon: React.ReactNode;
   available: boolean;
   connector: Connector | null;
-  isPhantom?: boolean;
-  isMetaMask?: boolean;
-  isCoinbase?: boolean;
-  isRainbow?: boolean;
+  isDetected?: boolean;
+  downloadUrl?: string;
   isWalletConnect?: boolean;
 }
 
-// Define the fixed wallet order with their proper connectors
+// Get wallet icon component for known wallets
+const getWalletIcon = (walletId: string, className: string = "size-8") => {
+  switch (walletId) {
+    case "metamask":
+      return <MetamaskIcon className={className} />;
+    case "rainbow":
+      return <RainbowIcon className={`${className} rounded-md`} />;
+    case "coinbase":
+      return <CoinbaseIcon className={`${className} rounded-md`} />;
+    case "phantom":
+      return <PhantomIcon className={`${className} rounded-md`} />;
+    default:
+      return <GenericWalletIcon className={className} walletName={walletId} />;
+  }
+};
+
+// Define the wallet detection and ordering
 const getOrderedWallets = (
   connectors: readonly Connector[],
   isClient: boolean,
 ): WalletType[] => {
   const wallets: WalletType[] = [];
-
-  // 1. Phantom - always show
-  wallets.push({
-    id: "phantom",
-    name: "Phantom",
-    icon: <PhantomIcon className="size-8 rounded-md" />,
-    loadingIcon: <PhantomIcon className="size-12 rounded-md" />,
-    available: true,
-    connector: connectors.find((c) => c.id === "injected") || null,
-    isPhantom: true,
-  });
-
-  // 2. MetaMask - always show
-  const metamaskConnector = connectors.find((c) => c.id === "io.metamask");
-  wallets.push({
-    id: "metamask",
-    name: "MetaMask",
-    icon: <MetamaskIcon className="size-8" />,
-    loadingIcon: <MetamaskIcon className="size-12" />,
-    available: true,
-    connector: metamaskConnector || null,
-    isMetaMask: true,
-  });
-
-  // 3. Coinbase - always show
-  const coinbaseConnector =
-    connectors.find((c) => c.id === "baseAccount") ||
-    connectors.find((c) => c.id === "coinbaseWallet");
-  wallets.push({
-    id: "coinbase",
-    name: "Coinbase",
-    icon: <CoinbaseIcon className="size-8 rounded-md" />,
-    loadingIcon: <CoinbaseIcon className="size-12 rounded-md" />,
-    available: true,
-    connector: coinbaseConnector || null,
-    isCoinbase: true,
-  });
-
-  // 4. Rainbow - show if available (only on client-side)
   const injectedConnector = connectors.find((c) => c.id === "injected");
-  if (
-    isClient &&
-    typeof window !== "undefined" &&
-    window.ethereum?.isRainbow &&
-    injectedConnector
-  ) {
+
+  // Always show core wallets first (whether detected or not)
+  const coreWallets = [
+    {
+      id: "metamask",
+      name: "MetaMask",
+      connectorId: "io.metamask",
+      fallbackConnector: injectedConnector,
+    },
+    {
+      id: "coinbase",
+      name: "Coinbase Wallet",
+      connectorId: "coinbaseWallet",
+      fallbackConnector: injectedConnector,
+    },
+    {
+      id: "phantom",
+      name: "Phantom",
+      connectorId: "injected",
+      fallbackConnector: injectedConnector,
+    },
+  ];
+
+  // Add core wallets
+  coreWallets.forEach(({ id, name, connectorId, fallbackConnector }) => {
+    const connector =
+      connectors.find((c) => c.id === connectorId) || fallbackConnector;
+    const isDetected = isClient && isWalletAvailable(id);
+
     wallets.push({
-      id: "rainbow",
-      name: "Rainbow",
-      icon: <RainbowIcon className="size-8 rounded-md" />,
-      loadingIcon: <RainbowIcon className="size-12 rounded-md" />,
+      id,
+      name,
+      icon: getWalletIcon(id),
+      loadingIcon: getWalletIcon(id, "size-12"),
       available: true,
-      connector: injectedConnector || null,
-      isRainbow: true,
+      connector: connector || null,
+      isDetected,
+      downloadUrl: getWalletDownloadUrl(id),
+    });
+  });
+
+  // Dynamically detect and add other injected wallets
+  if (isClient && injectedConnector) {
+    const detectedWallets = detectInjectedWallets();
+
+    // Filter out wallets we already added as core wallets
+    const coreWalletIds = new Set(coreWallets.map((w) => w.id));
+    const additionalWallets = detectedWallets.filter(
+      (w) => !coreWalletIds.has(w.id),
+    );
+
+    additionalWallets.forEach((detectedWallet) => {
+      wallets.push({
+        id: detectedWallet.id,
+        name: detectedWallet.name,
+        icon: getWalletIcon(detectedWallet.id),
+        loadingIcon: getWalletIcon(detectedWallet.id, "size-12"),
+        available: true,
+        connector: injectedConnector,
+        isDetected: true,
+        downloadUrl: getWalletDownloadUrl(detectedWallet.id),
+      });
     });
   }
 
-  // 5. WalletConnect - always show last
+  // Always add WalletConnect last
   const wcConnector = connectors.find((c) => c.id === "walletConnect");
   wallets.push({
     id: "walletconnect",
@@ -150,28 +179,9 @@ export function CustomWalletConnect() {
     if (isAuthenticated && (processingWallet || showingQR)) {
       setProcessingWallet(null);
       setShowingQR(false);
-      // Redirect to mail page after successful authentication
       router.push("/mail");
     }
   }, [isAuthenticated, processingWallet, showingQR, router]);
-
-  // DISABLED: Also redirect if user becomes authenticated (covers existing keys loaded scenario)
-  // This was causing redirect loops - let mail page handle auth checking instead
-  useEffect(() => {
-    console.log("🔐 Auth page: Auth state check", {
-      isAuthenticated,
-      authLoading,
-      processingWallet,
-      showingQR,
-    });
-
-    if (isAuthenticated && !authLoading) {
-      console.log(
-        "🔐 Auth page: User authenticated (redirect disabled to prevent loop)",
-      );
-      // DISABLED to prevent redirect loop: router.push("/mail");
-    }
-  }, [isAuthenticated, authLoading, processingWallet, showingQR, router]);
 
   // Set client-side flag immediately to avoid hydration issues
   useEffect(() => {
@@ -190,58 +200,6 @@ export function CustomWalletConnect() {
   }, [qrUri, showingQR]);
 
   const handleWalletClick = async (wallet: WalletType) => {
-    // Handle Phantom wallet
-    if (wallet.isPhantom) {
-      if (typeof window !== "undefined" && window.ethereum?.isPhantom) {
-        setProcessingWallet("phantom");
-        if (wallet.connector) {
-          connect(
-            { connector: wallet.connector },
-            {
-              onSuccess: () => {},
-              onError: () => setProcessingWallet(null),
-            },
-          );
-        }
-      } else {
-        window.open("https://phantom.app/", "_blank");
-        return;
-      }
-      return;
-    }
-
-    // Handle MetaMask wallet
-    if (wallet.isMetaMask) {
-      const isActualMetaMask =
-        typeof window !== "undefined" &&
-        window.ethereum?.isMetaMask &&
-        !window.ethereum?.isRainbow &&
-        !window.ethereum?.isCoinbaseWallet &&
-        wallet.connector;
-
-      if (!isActualMetaMask) {
-        const currentUrl = window.location.origin;
-        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace("https://", "").replace("http://", "")}`;
-
-        setQrUri(metamaskDeepLink);
-        setQrWalletType("metamask");
-        setShowingQR(true);
-        setProcessingWallet(null);
-        return;
-      }
-
-      if (!wallet.connector) return;
-      setProcessingWallet("metamask");
-      connect(
-        { connector: wallet.connector },
-        {
-          onSuccess: () => {},
-          onError: () => setProcessingWallet(null),
-        },
-      );
-      return;
-    }
-
     // Handle WalletConnect
     if (wallet.isWalletConnect) {
       if (!wallet.connector) return;
@@ -256,7 +214,39 @@ export function CustomWalletConnect() {
       return;
     }
 
-    // Handle other wallets (Coinbase, Rainbow, etc.)
+    // Handle detected wallets
+    if (wallet.isDetected && wallet.connector) {
+      setProcessingWallet(wallet.id);
+      connect(
+        { connector: wallet.connector },
+        {
+          onSuccess: () => {},
+          onError: () => setProcessingWallet(null),
+        },
+      );
+      return;
+    }
+
+    // Handle undetected wallets - show download option or QR code
+    if (!wallet.isDetected) {
+      if (wallet.id === "metamask") {
+        const currentUrl = window.location.origin;
+        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace("https://", "").replace("http://", "")}`;
+
+        setQrUri(metamaskDeepLink);
+        setQrWalletType("metamask");
+        setShowingQR(true);
+        return;
+      }
+
+      // For other undetected wallets, open download URL
+      if (wallet.downloadUrl) {
+        window.open(wallet.downloadUrl, "_blank");
+      }
+      return;
+    }
+
+    // Fallback for other cases
     if (!wallet.connector) return;
     setProcessingWallet(wallet.id);
 
@@ -351,7 +341,6 @@ export function CustomWalletConnect() {
       loadingText = "Generating encryption keys...";
     }
 
-    // Get all wallets (base + detected)
     const allWallets = getOrderedWallets(connectors, isClient);
     const currentWallet = allWallets.find((w) => w.id === processingWallet);
     const walletIcon = currentWallet?.loadingIcon || (
@@ -403,13 +392,11 @@ export function CustomWalletConnect() {
     );
   }
 
-  // Redirect happens in useEffect, so we don't need a success state UI here
-
   // Main wallet selection UI - show wallets in the correct order
   const wallets = getOrderedWallets(connectors, isClient);
 
-  // Decide number of columns: if there are more than the 4 base wallets, cap to 4 columns
-  const columns = wallets.length > 4 ? 4 : Math.max(1, wallets.length);
+  // Decide number of columns: cap to 4 columns max for better layout
+  const columns = Math.min(4, Math.max(1, wallets.length));
 
   return (
     <div className="min-h-screen bg-background">
@@ -438,9 +425,8 @@ export function CustomWalletConnect() {
               </div>
             )}
 
-            {/* Use CSS Grid and an inline style for dynamic column count so we can cap at 4 columns when needed */}
             <div
-              className="grid grid-cols-4 gap-3"
+              className="grid gap-3"
               style={{
                 gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
               }}
@@ -453,7 +439,7 @@ export function CustomWalletConnect() {
                   <Button
                     key={wallet.id}
                     variant="outline"
-                    className="w-full h-14 flex items-center justify-center"
+                    className="w-full h-14 [&_svg]:!size-8"
                     onClick={() => handleWalletClick(wallet)}
                     disabled={isDisabled}
                   >
