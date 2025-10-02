@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -14,133 +11,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User with wallet-based authentication
 model User {
-  id            String   @id @default(cuid())
-  name          String
-  email         String
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(cuid())
+  address   String   @unique // Primary wallet address (checksummed)
+  ensName   String?  // ENS name if available
+  ensAvatar String?  // ENS avatar URL if available
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
-  sessions                Session[]
-  accounts                Account[]
-  walletAddresses         WalletAddress[]
-  encryptedKeys           UserEncryptedKeys?
-  keyDerivationChallenges KeyDerivationChallenge[]
+  sessions Session[]
 
-  @@unique([email])
+  @@index([address])
   @@map("user")
 }
 
+// HTTP-only cookie sessions
 model Session {
   id        String   @id @default(cuid())
-  token     String   @unique
+  userId    String
+  address   String   // Wallet address for this session
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
 
   // Relationships
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([address])
   @@map("session")
 }
 
-model Account {
-  id                    String    @id @default(cuid())
-  accountId             String
-  providerId            String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  // Relationships
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("account")
-}
-
-model Verification {
-  id         String   @id @default(cuid())
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@map("verification")
-}
-
-model WalletAddress {
-  id        String   @id @default(cuid())
-  address   String   @unique
-  chainId   Int
-  isPrimary Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relationships
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, chainId, address])
-  @@map("wallet_addresses")
-}
-
-// Secure random challenge for signature-based key derivation
-model KeyDerivationChallenge {
-  id            String   @id @default(cuid())
-  challenge     String   @unique // Cryptographically secure random challenge
-  walletAddress String   @unique // One challenge per wallet address
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relationships
-  userId String? // Optional - may not have user yet during signup
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([walletAddress])
-  @@map("key_derivation_challenges")
-}
-
-// Encrypted private keys derived from user's signature
-model UserEncryptedKeys {
-  id String @id @default(cuid())
-
-  // Encrypted data
-  encryptedPrivateKeys String // XSalsa20-Poly1305 encrypted private key bundle
-  encryptionNonce      String // Encryption nonce (base64)
-
-  // Key derivation parameters
-  masterKeySalt     String // Salt for master key derivation (base64)
-  encryptionKeySalt String // Salt for encryption key derivation (base64)
-
-  // Public keys (safe to store)
-  encryptionPublicKey String // Curve25519 public key for encryption (base64)
-  signingPublicKey    String // Ed25519 public key for signing (base64)
-
-  // Metadata
-  keyDerivationVersion String   @default("hkdf-v1")
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  // Relationships
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_encrypted_keys")
-}
-
+// Waitlist for early access
 model Waitlist {
   id        String   @id @default(cuid())
   email     String   @unique

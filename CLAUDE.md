@@ -41,32 +41,23 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 - **Email/Password**: Disabled - wallet-only authentication
 
 ### Database Models
-- `User`: Core user entity with wallet addresses, no email authentication
-- `Session`: User sessions with IP and user agent tracking
-- `Account`: OAuth/external account linking (prepared but not actively used)
-- `WalletAddress`: Multiple wallet addresses per user with chain ID support
-- `Verification`: General verification tokens system
-- `KeyDerivationChallenge`: Deterministic challenges for signature-based key derivation
-- `UserEncryptedKeys`: Encrypted private keys derived from user's wallet signature
+- `User`: Core user entity with single wallet address (checksummed), ENS name/avatar support
+- `Session`: HTTP-only cookie sessions with wallet address and expiry tracking
+- `Waitlist`: Early access email collection for pre-launch signups
 
 ### Frontend Architecture
 - **Framework**: Next.js 15 with App Router
 - **Styling**: Tailwind CSS v4 with Radix UI components
 - **Components**: Located in `src/components/ui/` following shadcn/ui patterns
-- **State Management**: React hooks for client state
-
-### Cryptography Architecture
-- **Key Derivation**: HKDF-SHA256 from wallet signatures for deterministic key generation
-- **Symmetric Encryption**: XSalsa20-Poly1305 via TweetNaCl for message encryption
-- **Asymmetric Encryption**: Curve25519 for public-key operations
-- **Signing**: Ed25519 keypairs for message signing
-- **Implementation**: SignatureCrypto class in `src/lib/crypto.ts` provides unified crypto operations
+- **State Management**: TanStack Query for server state, React hooks for client state
+- **Data Fetching**: Centralized API hooks in `src/hooks/api/` with caching and error handling
 
 ### Key Integration Points
 - Prisma client is accessed via `src/lib/prisma.ts` with Accelerate extension
 - Authentication configuration in `src/lib/auth.ts` with SIWE plugin
 - Viem for Ethereum interactions and signature verification
-- Crypto operations centralized in `src/lib/crypto.ts` with TweetNaCl primitives
+- TanStack Query configuration in `src/components/providers.tsx` with React Query DevTools
+- Dynamic wallet detection system in `src/lib/wallet-detection.ts` supporting 20+ wallets
 
 ### Cloudflare-Specific Configuration
 - Worker main entry: `.open-next/worker.js`
@@ -78,16 +69,21 @@ This is a Next.js application configured for deployment on **Cloudflare Workers*
 
 ### Key Directories
 - `src/app/` - Next.js App Router pages and API routes
-- `src/components/ui/` - Reusable UI components (shadcn/ui pattern)  
+- `src/components/ui/` - Reusable UI components (shadcn/ui pattern)
 - `src/components/` - Application-specific components
 - `src/lib/` - Core utilities and configurations
 - `src/hooks/` - Custom React hooks
+- `src/hooks/api/` - TanStack Query API hooks for data fetching
 - `prisma/` - Database schema and migrations
+- `archive/` - Archived code preserved for future reference
 
 ### Important Files
 - `src/lib/auth.ts` - better-auth configuration with SIWE
-- `src/lib/crypto.ts` - Cryptography operations (SignatureCrypto class)
 - `src/lib/prisma.ts` - Prisma client with Accelerate extension
 - `src/lib/wagmi.ts` - Wallet connection configuration
+- `src/lib/wallet-detection.ts` - Dynamic wallet detection for 20+ wallets
+- `src/components/providers.tsx` - TanStack Query and Wagmi providers setup
+- `src/hooks/api/index.ts` - Centralized API hooks exports
 - `open-next.config.ts` - Cloudflare deployment configuration
 - `wrangler.jsonc` - Cloudflare Worker configuration
+- `archive/crypto-system/` - Archived encryption system (~1,000 LOC) for future use
