@@ -159,20 +159,8 @@ export function CustomWalletConnect() {
     authenticate,
   } = useWagmiAuth();
 
-  // Auto-authenticate when wallet connects
-  useEffect(() => {
-    if (isConnected && !isAuthenticated && !authLoading && processingWallet) {
-      authenticate().finally(() => {
-        setProcessingWallet(null);
-      });
-    }
-  }, [
-    isConnected,
-    isAuthenticated,
-    authLoading,
-    authenticate,
-    processingWallet,
-  ]);
+  // Removed auto-authenticate - user must explicitly sign in
+  // This improves UX by not surprising users with signature requests
 
   // Clear processing state and redirect when authentication completes successfully
   useEffect(() => {
@@ -207,7 +195,7 @@ export function CustomWalletConnect() {
       connect(
         { connector: wallet.connector },
         {
-          onSuccess: () => {},
+          onSuccess: () => setProcessingWallet(null),
           onError: () => setProcessingWallet(null),
         },
       );
@@ -220,7 +208,7 @@ export function CustomWalletConnect() {
       connect(
         { connector: wallet.connector },
         {
-          onSuccess: () => {},
+          onSuccess: () => setProcessingWallet(null),
           onError: () => setProcessingWallet(null),
         },
       );
@@ -249,18 +237,24 @@ export function CustomWalletConnect() {
     // Fallback for other cases
     if (!wallet.connector) return;
     setProcessingWallet(wallet.id);
+    connect(
+      { connector: wallet.connector },
+      {
+        onSuccess: () => setProcessingWallet(null),
+        onError: () => setProcessingWallet(null),
+      },
+    );
+  };
 
-    if (isConnected) {
+  const handleSignIn = async () => {
+    if (!isConnected) return;
+    setProcessingWallet("signing");
+    try {
       await authenticate();
+    } catch (error) {
+      console.error("Sign in failed:", error);
+    } finally {
       setProcessingWallet(null);
-    } else {
-      connect(
-        { connector: wallet.connector },
-        {
-          onSuccess: () => {},
-          onError: () => setProcessingWallet(null),
-        },
-      );
     }
   };
 
@@ -384,6 +378,56 @@ export function CustomWalletConnect() {
                   </div>
                 </div>
                 <p className="text-lg font-medium text-center">{loadingText}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show "Sign In" button if wallet is connected but not authenticated
+  if (isConnected && !isAuthenticated && !authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="absolute top-6 left-6">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/blanc.svg"
+              alt="Blanc"
+              width={120}
+              height={40}
+              className="h-5 w-auto"
+            />
+          </Link>
+        </div>
+
+        <div className="flex items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center space-y-6">
+                <div className="size-16 rounded-full bg-green-50 flex items-center justify-center">
+                  <Wallet className="size-8 text-green-600" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-semibold">Wallet Connected</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Sign in to access your encrypted email
+                  </p>
+                </div>
+                {authError && (
+                  <div className="w-full p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    {authError}
+                  </div>
+                )}
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={handleSignIn}
+                  disabled={processingWallet === "signing"}
+                >
+                  {processingWallet === "signing" ? "Signing In..." : "Sign In"}
+                </Button>
               </div>
             </CardContent>
           </Card>
