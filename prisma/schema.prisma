@@ -30,6 +30,7 @@ model User {
 // HTTP-only cookie sessions
 model Session {
   id        String   @id @default(cuid())
+  token     String   @unique // Required by better-auth
   userId    String
   address   String   // Wallet address for this session
   expiresAt DateTime
@@ -52,4 +53,16 @@ model Waitlist {
   updatedAt DateTime @updatedAt
 
   @@map("waitlist")
+}
+
+// Verification tokens - required by better-auth
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
 }
