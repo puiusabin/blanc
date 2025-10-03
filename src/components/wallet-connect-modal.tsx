@@ -208,45 +208,92 @@ export function WalletConnectModal({ onClose }: WalletConnectModalProps) {
   }
 
   const wallets = getOrderedWallets(connectors, isClient);
-  const columns = Math.min(4, Math.max(1, wallets.length));
+  const detectedWallets = wallets.filter(w => w.isDetected);
+  const otherWallets = wallets.filter(w => !w.isDetected);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Connect your wallet</DialogTitle>
+          <DialogTitle className="text-center text-lg font-semibold">Connect a wallet</DialogTitle>
         </DialogHeader>
 
-        {(error || authError) && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error?.message || authError}
-          </div>
-        )}
+        <div className="space-y-4 pb-4">
+          {(error || authError) && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error?.message || authError}
+            </div>
+          )}
 
-        <div
-          className="grid gap-3 pb-4"
-          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-        >
-          {wallets.map((wallet) => {
-            const isProcessing = processingWallet === wallet.id;
-            const isDisabled = processingWallet !== null;
+          {/* Detected Wallets - Full Width Buttons */}
+          {detectedWallets.length > 0 && (
+            <div className="space-y-2">
+              {detectedWallets.map((wallet) => {
+                const isProcessing = processingWallet === wallet.id;
+                const isDisabled = processingWallet !== null;
 
-            return (
-              <Button
-                key={wallet.id}
-                variant="outline"
-                className="w-full h-14 [&_svg]:!size-8"
-                onClick={() => handleWalletClick(wallet)}
-                disabled={isDisabled}
-              >
-                {isProcessing ? (
-                  <div className="size-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                ) : (
-                  wallet.icon
-                )}
-              </Button>
-            );
-          })}
+                return (
+                  <Button
+                    key={wallet.id}
+                    variant="outline"
+                    className="w-full h-14 justify-between text-left font-normal hover:bg-accent"
+                    onClick={() => handleWalletClick(wallet)}
+                    disabled={isDisabled}
+                  >
+                    <div className="flex items-center gap-3">
+                      {isProcessing ? (
+                        <div className="size-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                      ) : (
+                        wallet.icon
+                      )}
+                      <span className="font-medium">{wallet.name}</span>
+                    </div>
+                    <span className="text-xs text-green-600 font-medium">Detected</span>
+                  </Button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Other Wallets Section */}
+          {otherWallets.length > 0 && (
+            <div className="space-y-3">
+              {detectedWallets.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground font-medium">Other wallets</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                {otherWallets.map((wallet) => {
+                  const isProcessing = processingWallet === wallet.id;
+                  const isDisabled = processingWallet !== null;
+
+                  return (
+                    <Button
+                      key={wallet.id}
+                      variant="outline"
+                      className="w-full h-14 justify-between text-left font-normal hover:bg-accent"
+                      onClick={() => handleWalletClick(wallet)}
+                      disabled={isDisabled}
+                    >
+                      <div className="flex items-center gap-3">
+                        {isProcessing ? (
+                          <div className="size-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                        ) : (
+                          wallet.icon
+                        )}
+                        <span className="font-medium">{wallet.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Install</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
