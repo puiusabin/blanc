@@ -298,7 +298,7 @@ Issued At: ${issuedAt}`;
   async getSession() {
     const { data: session, error } = await client.getSession();
     if (error) {
-      console.error("Session retrieval failed:", error);
+      // Don't log error on first visit (no session exists yet)
       return null;
     }
     this.session = session;
