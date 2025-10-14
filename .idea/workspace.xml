@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AIAssistantCustomInstructionsStorage">
+    <option name="instructions">
+      <map>
+        <entry key="AIAssistant.VCS.GenerateCommitMessage">
+          <value>
+            <AIAssistantStoredInstruction>
+              <option name="actionId" value="AIAssistant.VCS.GenerateCommitMessage" />
+              <option name="content" value="Avoid overly verbose descriptions or unnecessary details.&#10;&lt;type&gt;(&lt;scope&gt;): &lt;short imperative subject&gt;" />
+            </AIAssistantStoredInstruction>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/simplekit.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/web3-provider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/web3-provider.tsx" afterDir="false" />
+    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,11 +112,26 @@
       <updated>1759519684666</updated>
       <workItem from="1759519685749" duration="4568000" />
       <workItem from="1759922439468" duration="2161000" />
-      <workItem from="1760358895125" duration="5071000" />
+      <workItem from="1760358895125" duration="7007000" />
     </task>
+    <task id="LOCAL-00001" summary="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project.">
+      <option name="closed" value="true" />
+      <created>1760456820471</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1760456820471</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add UI components: Badge, Button, Dialog, Drawer, DropdownMenu, Popover&#10;&#10;- Implement reusable UI components using shadcn/ui&#10;- Add support for TailwindCSS and class utilities" />
+    <MESSAGE value="Add foundational UI components and configuration&#10;&#10;- Introduced various UI components using shadcn/ui (Badge, Button, Dialog, Drawer, DropdownMenu, Popover).&#10;- Configured Tailwind CSS for component styling with updated `components.json`.&#10;- Set up shared utility functions for class merging (`cn`).&#10;- Included project guidance in `CLAUDE.md`.&#10;- Updated .idea settings for development environment compatibility." />
+    <MESSAGE value="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project." />
   </component>
 </project>
