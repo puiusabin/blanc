@@ -7,6 +7,7 @@ import { cookieToInitialState } from 'wagmi'
 
 import { getConfig } from '@/lib/wagmi'
 import { Web3Provider } from "@/components/web3-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,9 +22,16 @@ export default async function RootLayout(props: { children: ReactNode }) {
         (await headers()).get('cookie'),
     )
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
-        <Web3Provider initialState={initialState}>{props.children}</Web3Provider>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <Web3Provider initialState={initialState}>{props.children}</Web3Provider>
+        </ThemeProvider>
         </body>
         </html>
     )

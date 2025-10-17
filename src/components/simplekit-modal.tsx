@@ -89,7 +89,7 @@ const SimpleKitModalContent = ({
     return (
         <SimpleKitModalContent
             className={cn(
-                "rounded-t-3xl sm:rounded-3xl md:max-w-[360px] [&>button]:right-[26px] [&>button]:top-[26px]",
+                "md:max-w-[360px] [&>button]:right-[26px] [&>button]:top-[26px]",
                 className,
             )}
             onOpenAutoFocus={(e) => e.preventDefault()}
@@ -156,15 +156,15 @@ const SimpleKitModalBody = ({
                                 ...props
                             }: SimpleKitModalProps) => {
     return (
-        <ScrollArea
+        <div
             className={cn(
-                "h-[234px] max-h-[300px] px-6 md:-mr-4 md:h-full md:min-h-[260px] md:px-0 md:pr-4",
+                "px-6 md:px-0",
                 className,
             )}
             {...props}
         >
             {children}
-        </ScrollArea>
+        </div>
     );
 };
 

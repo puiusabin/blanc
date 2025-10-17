@@ -24,6 +24,7 @@ import {
 } from "wagmi";
 import { formatEther } from "viem";
 import { Check, ChevronLeft, Copy, RotateCcw } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const MODAL_CLOSE_DURATION = 320;
 const RECENT_CONNECTOR_KEY = "simplekit-recent-connector";
@@ -121,7 +122,7 @@ function ConnectWalletButton() {
     const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
 
     return (
-        <Button onClick={simplekit.toggleModal} className="rounded-xl">
+        <Button onClick={simplekit.toggleModal} className="">
             {simplekit.isConnected ? (
                 <>
                     {ensAvatar && <img src={ensAvatar} alt="ENS Avatar" />}
@@ -163,11 +164,10 @@ function Account() {
                     Account modal for your connected Web3 wallet.
                 </SimpleKitModalDescription>
             </SimpleKitModalHeader>
-            <SimpleKitModalBody className="h-[280px]">
-                <div className="flex w-full flex-col items-center justify-center gap-8 md:pt-5">
+            <SimpleKitModalBody className="py-6">
+                <div className="flex w-full flex-col items-center justify-center gap-8">
                     <div className="size-24 flex items-center justify-center">
                         <img
-                            className="rounded-full"
                             src={`https://avatar.vercel.sh/${address}?size=150`}
                             alt="User gradient avatar"
                         />
@@ -185,7 +185,7 @@ function Account() {
                         </p>
                     </div>
 
-                    <Button className="w-full rounded-xl" onClick={handleDisconnect}>
+                    <Button className="w-full" onClick={handleDisconnect}>
                         Disconnect
                     </Button>
                 </div>
@@ -224,11 +224,11 @@ function WalletConnecting() {
     return (
         <div className="flex w-full flex-col items-center justify-center gap-9 md:pt-5">
             {context.pendingConnector?.icon && (
-                <div className="size-[116px] relative flex items-center justify-center rounded-2xl border p-3">
+                <div className="size-[116px] relative flex items-center justify-center border p-3">
                     <img
                         src={context.pendingConnector?.icon}
                         alt={context.pendingConnector?.name}
-                        className="size-full overflow-hidden rounded-2xl"
+                        className="size-full overflow-hidden"
                     />
                     {context.isConnectorError ? <RetryConnectorButton /> : null}
                 </div>
@@ -253,7 +253,7 @@ function WalletOptions() {
     const { connectors, connect } = useConnectors();
 
     return (
-        <div className="flex flex-col gap-3.5">
+        <div className="grid grid-cols-4 gap-3.5">
             {connectors.map((connector) => (
                 <WalletOption
                     key={connector.uid}
@@ -270,10 +270,8 @@ function WalletOptions() {
 }
 
 function WalletOption(props: { connector: Connector; onClick: () => void }) {
-    const context = React.useContext(SimpleKitContext);
     const [ready, setReady] = React.useState(false);
     const [isDetected, setIsDetected] = React.useState(false);
-    const isRecent = context.recentConnectorId === props.connector.id;
 
     React.useEffect(() => {
         async function checkReady() {
@@ -297,34 +295,32 @@ function WalletOption(props: { connector: Connector; onClick: () => void }) {
     }, [props.connector]);
 
     return (
-        <Button
-            disabled={!ready}
-            onClick={props.onClick}
-            size="lg"
-            variant="secondary"
-            className="justify-between rounded-xl px-4 py-7 text-base font-semibold"
-        >
-            <div className="flex items-center gap-2">
-                <p>{props.connector.name}</p>
-                {isRecent && (
-                    <Badge variant="outline" className="text-xs">
-                        Recent
-                    </Badge>
-                )}
-            </div>
-            {props.connector.icon && (
-                <div className="relative">
-                    <img
-                        src={props.connector.icon}
-                        alt={props.connector.name}
-                        className="size-8 overflow-hidden rounded-[6px]"
-                    />
-                    {isDetected && (
-                        <span className="absolute -top-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-secondary" />
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    disabled={!ready}
+                    onClick={props.onClick}
+                    variant="ghost"
+                    className="relative aspect-square h-auto w-full p-3 flex flex-col items-center justify-center gap-2"
+                >
+                    {props.connector.icon && (
+                        <div className="relative w-full aspect-square">
+                            <img
+                                src={props.connector.icon}
+                                alt={props.connector.name}
+                                className="size-full overflow-hidden rounded-md"
+                            />
+                            {isDetected && (
+                                <span className="absolute -top-1 -right-1 size-3 bg-green-500 rounded-full border-2 border-background" />
+                            )}
+                        </div>
                     )}
-                </div>
-            )}
-        </Button>
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+                {props.connector.name}
+            </TooltipContent>
+        </Tooltip>
     );
 }
 
@@ -369,7 +365,7 @@ function BackChevron() {
 
     return (
         <button
-            className="absolute left-[26px] top-[42px] z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground md:top-[26px]"
+            className="absolute left-[26px] top-[42px] z-50 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground md:top-[26px]"
             onClick={handleClick}
         >
             <ChevronLeft className="h-4 w-4" />
@@ -397,7 +393,7 @@ function RetryConnectorButton() {
         <Button
             size="icon"
             variant="secondary"
-            className="group absolute -bottom-2 -right-2 rounded-full bg-muted p-1.5 shadow"
+            className="group absolute -bottom-2 -right-2 p-1.5 shadow"
             onClick={handleClick}
         >
             <RotateCcw className="size-4 transition-transform group-hover:-rotate-45" />
@@ -509,8 +505,19 @@ function useConnectors() {
             finalConnectors.push(walletConnectConnector);
         }
 
+        // Move recent connector to first position
+        if (context.recentConnectorId) {
+            const recentIndex = finalConnectors.findIndex(
+                (c) => c.id === context.recentConnectorId
+            );
+            if (recentIndex > 0) {
+                const [recentConnector] = finalConnectors.splice(recentIndex, 1);
+                finalConnectors.unshift(recentConnector);
+            }
+        }
+
         return finalConnectors;
-    }, [connectors]);
+    }, [connectors, context.recentConnectorId]);
 
     return { connectors: sortedConnectors, connect };
 }

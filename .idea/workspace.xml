@@ -18,7 +18,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="chore(idea): update workspace settings with custom instructions" />
+    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="chore(idea): sync workspace settings adjustments">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/simplekit.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,18 +37,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "puiusabin"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;puiusabin&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/puiusabin/blanc.git",
-    "accountId": "040bbdca-70a0-44a9-b959-9b07264493d7"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/puiusabin/blanc.git&quot;,
+    &quot;accountId&quot;: &quot;040bbdca-70a0-44a9-b959-9b07264493d7&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -47,27 +57,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "recode",
-    "js.debugger.nextJs.config.created.client": "true",
-    "js.debugger.nextJs.config.created.server": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/sabinpuiu/WebstormProjects/untitled3",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "ts.external.directory.path": "/Users/sabinpuiu/WebstormProjects/untitled3/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;recode&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -110,7 +120,8 @@
       <updated>1759519684666</updated>
       <workItem from="1759519685749" duration="4568000" />
       <workItem from="1759922439468" duration="2161000" />
-      <workItem from="1760358895125" duration="7375000" />
+      <workItem from="1760358895125" duration="11541000" />
+      <workItem from="1760692533137" duration="4495000" />
     </task>
     <task id="LOCAL-00001" summary="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project.">
       <option name="closed" value="true" />
@@ -128,7 +139,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760458913601</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="chore(idea): sync workspace settings adjustments">
+      <option name="closed" value="true" />
+      <created>1760459118127</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1760459118127</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -139,6 +158,7 @@
     <MESSAGE value="Add foundational UI components and configuration&#10;&#10;- Introduced various UI components using shadcn/ui (Badge, Button, Dialog, Drawer, DropdownMenu, Popover).&#10;- Configured Tailwind CSS for component styling with updated `components.json`.&#10;- Set up shared utility functions for class merging (`cn`).&#10;- Included project guidance in `CLAUDE.md`.&#10;- Updated .idea settings for development environment compatibility." />
     <MESSAGE value="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project." />
     <MESSAGE value="chore(idea): update workspace settings with custom instructions" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore(idea): update workspace settings with custom instructions" />
+    <MESSAGE value="chore(idea): sync workspace settings adjustments" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore(idea): sync workspace settings adjustments" />
   </component>
 </project>
