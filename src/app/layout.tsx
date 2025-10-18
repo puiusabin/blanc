@@ -1,15 +1,14 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { GeistMono } from 'geist/font/mono'
 import { headers } from 'next/headers'
 import { type ReactNode } from 'react'
 import { cookieToInitialState } from 'wagmi'
+import { Plus } from 'lucide-react'
 
 import { getConfig } from '@/lib/wagmi'
 import { Web3Provider } from "@/components/web3-provider";
 import { ThemeProvider } from "@/components/theme-provider";
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: 'Create Wagmi',
@@ -23,14 +22,31 @@ export default async function RootLayout(props: { children: ReactNode }) {
     )
     return (
         <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
+        <body className={GeistMono.className}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
         >
-            <Web3Provider initialState={initialState}>{props.children}</Web3Provider>
+            <Web3Provider initialState={initialState}>
+                <div className="flex flex-row min-h-screen">
+                    {/* Left spacing column with border */}
+                    <div className="hidden lg:block w-16 border-r shrink-0 relative">
+                        <Plus className="size-7 text-muted-foreground absolute right-0" style={{ bottom: '20%', transform: 'translate(50%, 50%)' }} />
+                    </div>
+
+                    {/* Main content */}
+                    <div className="flex-1">
+                        {props.children}
+                    </div>
+
+                    {/* Right spacing column with border */}
+                    <div className="hidden lg:block w-16 border-l shrink-0 relative">
+                        <Plus className="size-7 text-muted-foreground absolute left-0" style={{ top: '20%', transform: 'translate(-50%, -50%)' }} />
+                    </div>
+                </div>
+            </Web3Provider>
         </ThemeProvider>
         </body>
         </html>
