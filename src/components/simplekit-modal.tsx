@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import {
     Dialog,
     DialogClose,
@@ -86,10 +87,25 @@ const SimpleKitModalContent = ({
     const isDesktop = useMediaQuery(desktop);
     const SimpleKitModalContent = isDesktop ? DialogContent : DrawerContent;
 
+    if (isDesktop) {
+        return (
+            <SimpleKitModalContent
+                className={cn(
+                    "md:max-w-[500px] p-0 gap-0 [&>button]:hidden",
+                    className,
+                )}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                {...props}
+            >
+                {children}
+            </SimpleKitModalContent>
+        );
+    }
+
     return (
         <SimpleKitModalContent
             className={cn(
-                "md:max-w-[360px] [&>button]:right-[26px] [&>button]:top-[26px]",
+                "[&>button]:right-[26px] [&>button]:top-[26px]",
                 className,
             )}
             onOpenAutoFocus={(e) => e.preventDefault()}
@@ -127,7 +143,7 @@ const SimpleKitModalHeader = ({
 
     return (
         <SimpleKitModalHeader
-            className={cn("space-y-0 pb-6 md:pb-3", className)}
+            className={cn("space-y-0 pb-6 md:pb-4 md:px-6", className)}
             {...props}
         >
             {children}
@@ -158,7 +174,7 @@ const SimpleKitModalBody = ({
     return (
         <div
             className={cn(
-                "px-6 md:px-0",
+                "px-6 md:px-6",
                 className,
             )}
             {...props}

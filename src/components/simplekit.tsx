@@ -23,8 +23,10 @@ import {
     useBalance,
 } from "wagmi";
 import { formatEther } from "viem";
-import { Check, ChevronLeft, Copy, RotateCcw } from "lucide-react";
+import { Check, ChevronLeft, Copy, RotateCcw, Plus, XIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SimpleKitModalClose } from "@/components/simplekit-modal";
+import Link from "next/link";
 
 const MODAL_CLOSE_DURATION = 320;
 const RECENT_CONNECTOR_KEY = "simplekit-recent-connector";
@@ -198,23 +200,62 @@ function Connectors() {
     const context = React.useContext(SimpleKitContext);
 
     return (
-        <>
-            <SimpleKitModalHeader>
-                <BackChevron />
-                <SimpleKitModalTitle>
-                    {context.pendingConnector?.name ?? "Connect Wallet"}
-                </SimpleKitModalTitle>
-                <SimpleKitModalDescription className="sr-only">
-                    Connect your Web3 wallet or create a new one.
-                </SimpleKitModalDescription>
-            </SimpleKitModalHeader>
-            <SimpleKitModalBody>
-                {context.pendingConnector ? <WalletConnecting /> : <WalletOptions />}
-            </SimpleKitModalBody>
-            <SimpleKitModalFooter>
-                <div className="h-0" />
-            </SimpleKitModalFooter>
-        </>
+        <div className="flex flex-col h-full min-w-0">
+            {/* Top border row */}
+            <div className="flex h-16 shrink-0 border-b relative">
+                <div className="w-16 border-r relative" />
+                <div className="flex-1 flex items-center justify-center">
+                    <SimpleKitModalTitle>
+                        {context.pendingConnector?.name ?? "Connect Wallet"}
+                    </SimpleKitModalTitle>
+                    <SimpleKitModalDescription className="sr-only">
+                        Connect your Web3 wallet or create a new one.
+                    </SimpleKitModalDescription>
+                </div>
+                <div className="w-16 border-l relative">
+                    <SimpleKitModalClose asChild>
+                        <button className="absolute inset-0 flex items-center justify-center hover:bg-accent transition-colors">
+                            <XIcon className="size-4" />
+                            <span className="sr-only">Close</span>
+                        </button>
+                    </SimpleKitModalClose>
+                </div>
+            </div>
+
+            {/* Main content row */}
+            <div className="flex flex-row flex-1 min-h-0">
+                {/* Left border column */}
+                <div className="w-16 shrink-0 border-r relative">
+                    <Plus className="size-7 text-muted-foreground absolute right-0" style={{ bottom: '20%', transform: 'translate(50%, 50%)' }} />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <BackChevron />
+                    {context.pendingConnector ? <WalletConnecting /> : <WalletOptions />}
+                </div>
+
+                {/* Right border column */}
+                <div className="w-16 shrink-0 border-l relative">
+                    <Plus className="size-7 text-muted-foreground absolute left-0" style={{ top: '20%', transform: 'translate(-50%, -50%)' }} />
+                </div>
+            </div>
+
+            {/* Bottom border row */}
+            <div className="flex h-16 shrink-0 border-t relative">
+                <div className="w-16 border-r relative" />
+                <div className="flex-1 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <Link href="/terms" className="hover:underline">
+                        Terms
+                    </Link>
+                    <span>&</span>
+                    <Link href="/privacy" className="hover:underline">
+                        Privacy
+                    </Link>
+                </div>
+                <div className="w-16 border-l relative" />
+            </div>
+        </div>
     );
 }
 
@@ -252,19 +293,34 @@ function WalletOptions() {
     const context = React.useContext(SimpleKitContext);
     const { connectors, connect } = useConnectors();
 
+    const totalRows = Math.ceil(connectors.length / 4);
+
     return (
-        <div className="grid grid-cols-4 gap-3.5">
-            {connectors.map((connector) => (
-                <WalletOption
-                    key={connector.uid}
-                    connector={connector}
-                    onClick={() => {
-                        context.setIsConnectorError(false);
-                        context.setPendingConnector(connector);
-                        connect({ connector });
-                    }}
-                />
-            ))}
+        <div className="grid grid-cols-4">
+            {connectors.map((connector, index) => {
+                const isLastColumn = (index % 4) === 3;
+                const currentRow = Math.floor(index / 4);
+                const isLastRow = currentRow === totalRows - 1;
+
+                return (
+                    <div
+                        key={connector.uid}
+                        className={`
+                            ${!isLastColumn ? 'border-r' : ''}
+                            ${!isLastRow ? 'border-b' : ''}
+                        `}
+                    >
+                        <WalletOption
+                            connector={connector}
+                            onClick={() => {
+                                context.setIsConnectorError(false);
+                                context.setPendingConnector(connector);
+                                connect({ connector });
+                            }}
+                        />
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -301,10 +357,10 @@ function WalletOption(props: { connector: Connector; onClick: () => void }) {
                     disabled={!ready}
                     onClick={props.onClick}
                     variant="ghost"
-                    className="relative aspect-square h-auto w-full p-3 flex flex-col items-center justify-center gap-2"
+                    className="relative aspect-square h-full w-full rounded-none p-4 flex flex-col items-center justify-center gap-2 hover:bg-accent"
                 >
                     {props.connector.icon && (
-                        <div className="relative w-full aspect-square">
+                        <div className="relative w-full aspect-square max-w-[40px]">
                             <img
                                 src={props.connector.icon}
                                 alt={props.connector.name}
