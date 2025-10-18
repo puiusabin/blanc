@@ -18,14 +18,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): add advanced sidebar, breadcrumb, and input components&#10;&#10;Implemented feature-rich AppSidebar and supporting reusable components including Breadcrumb, Command, Input, and InputGroup for enhanced navigation and interactivity. Introduced initial dashboard page with the AppSidebar.">
+    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links.">
       <change afterPath="$PROJECT_DIR$/img.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/img_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img_2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/simplekit.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/simplekit.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/app-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/app-sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/sheet.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,7 +155,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760788941667</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links.">
+      <option name="closed" value="true" />
+      <created>1760794688144</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1760794688144</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,6 +178,7 @@
     <MESSAGE value="feat(ui): add reusable UI components for theme and interactivity&#10;&#10;Added Switch, ThemeProvider, ThemeToggle, and Tooltip components for enhanced theme control and interactivity. Updated `globals.css` with extended font, spacing, and color configurations." />
     <MESSAGE value="feat(ui): add advanced reusable UI components and initial sidebar implementation" />
     <MESSAGE value="feat(ui): add advanced sidebar, breadcrumb, and input components&#10;&#10;Implemented feature-rich AppSidebar and supporting reusable components including Breadcrumb, Command, Input, and InputGroup for enhanced navigation and interactivity. Introduced initial dashboard page with the AppSidebar." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): add advanced sidebar, breadcrumb, and input components&#10;&#10;Implemented feature-rich AppSidebar and supporting reusable components including Breadcrumb, Command, Input, and InputGroup for enhanced navigation and interactivity. Introduced initial dashboard page with the AppSidebar." />
+    <MESSAGE value="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links." />
   </component>
 </project>

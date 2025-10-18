@@ -6,8 +6,8 @@ import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
+function Sheet({ modal = true, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+  return <SheetPrimitive.Root data-slot="sheet" modal={modal} {...props} />
 }
 
 function SheetTrigger({
@@ -48,17 +48,32 @@ function SheetContent({
   className,
   children,
   side = "right",
+  showOverlay = true,
+  modal = true,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
+  showOverlay?: boolean
+  modal?: boolean
 }) {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      {showOverlay && <SheetOverlay />}
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        onPointerDownOutside={(e) => {
+          if (!modal) {
+            e.preventDefault()
+          }
+        }}
+        onInteractOutside={(e) => {
+          if (!modal) {
+            e.preventDefault()
+          }
+        }}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+          !modal && "pointer-events-auto",
           side === "right" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
           side === "left" &&
