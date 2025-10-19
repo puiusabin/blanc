@@ -18,14 +18,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links.">
-      <change afterPath="$PROJECT_DIR$/img.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img_1.png" afterDir="false" />
+    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/app-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/app-sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/inbox/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/inbox/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/sheet.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,27 +51,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "recode",
-    "js.debugger.nextJs.config.created.client": "true",
-    "js.debugger.nextJs.config.created.server": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/sabinpuiu/WebstormProjects/untitled3/public",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "ts.external.directory.path": "/Users/sabinpuiu/WebstormProjects/untitled3/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;recode&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3/public&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public" />
@@ -122,6 +117,7 @@
       <workItem from="1759922439468" duration="2161000" />
       <workItem from="1760358895125" duration="11541000" />
       <workItem from="1760692533137" duration="4495000" />
+      <workItem from="1760892555682" duration="1511000" />
     </task>
     <task id="LOCAL-00001" summary="feat(ui): add reusable UI components and configurations&#10;&#10;Introduced reusable component implementations, including Badge, Button, Dialog, Drawer, Popover, and DropdownMenu. Added component library setup and associated configurations for the project.">
       <option name="closed" value="true" />
@@ -163,7 +159,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760794688144</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox.">
+      <option name="closed" value="true" />
+      <created>1760799474761</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1760799474762</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -179,6 +183,7 @@
     <MESSAGE value="feat(ui): add advanced reusable UI components and initial sidebar implementation" />
     <MESSAGE value="feat(ui): add advanced sidebar, breadcrumb, and input components&#10;&#10;Implemented feature-rich AppSidebar and supporting reusable components including Breadcrumb, Command, Input, and InputGroup for enhanced navigation and interactivity. Introduced initial dashboard page with the AppSidebar." />
     <MESSAGE value="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links." />
+    <MESSAGE value="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox." />
   </component>
 </project>

@@ -3,13 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RotateCw } from "lucide-react"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet"
 
 // Mock email data
 const emails = [
@@ -68,7 +61,6 @@ export default function InboxPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetWidth, setSheetWidth] = useState(600)
   const [isResizing, setIsResizing] = useState(false)
-  const [isTransitioning, setIsTransitioning] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const toggleEmail = (id: number) => {
@@ -103,17 +95,10 @@ export default function InboxPage() {
   }
 
   const handleEmailClick = (email: typeof emails[0]) => {
-    if (sheetOpen && selectedEmail?.id !== email.id) {
-      // Animate transition when switching emails
-      setIsTransitioning(true)
-      setTimeout(() => {
-        setSelectedEmail(email)
-        setIsTransitioning(false)
-      }, 150)
-    } else {
-      setSelectedEmail(email)
+    if (!sheetOpen) {
       setSheetOpen(true)
     }
+    setSelectedEmail(email)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -211,42 +196,46 @@ export default function InboxPage() {
         })}
       </div>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen} modal={false}>
-        <SheetContent
-          className="p-0"
-          style={{ width: `${sheetWidth}px`, maxWidth: '90vw' }}
-          showOverlay={false}
+      <div
+        className={`fixed inset-y-0 right-0 z-50 flex flex-col gap-4 bg-background border-l shadow-lg transition-transform duration-150 ease-in-out ${
+          sheetOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        style={{ width: `${sheetWidth}px`, maxWidth: '90vw' }}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setSheetOpen(false)}
+          className="absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
         >
-          {selectedEmail && (
-            <>
-              {/* Resize handle */}
-              <div
-                className="absolute left-0 top-0 h-full cursor-ew-resize z-10"
-                onMouseDown={handleMouseDown}
-                style={{ width: '4px', touchAction: 'none', marginLeft: '-2px' }}
-              />
+          <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          <span className="sr-only">Close</span>
+        </button>
 
-              <div
-                className={`flex flex-col h-full pl-2 transition-opacity duration-150 ${
-                  isTransitioning ? 'opacity-0' : 'opacity-100'
-                }`}
-              >
-                <SheetHeader className="pt-4">
-                  <SheetTitle>{selectedEmail.subject}</SheetTitle>
-                  <SheetDescription>
-                    From: {selectedEmail.from} • {selectedEmail.time}
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="flex-1 overflow-auto p-4">
-                  <div className="whitespace-pre-wrap text-sm">
-                    {selectedEmail.content}
-                  </div>
-                </div>
+        {/* Resize handle */}
+        <div
+          className="absolute left-0 top-0 h-full cursor-ew-resize z-10"
+          onMouseDown={handleMouseDown}
+          style={{ width: '4px', touchAction: 'none', marginLeft: '-2px' }}
+        />
+
+        {selectedEmail && (
+          <div key={selectedEmail.id} className="flex flex-col h-full pl-2 animate-in fade-in-0 duration-100">
+            <div className="flex flex-col gap-1.5 p-4 pt-4">
+              <h2 className="font-semibold">{selectedEmail.subject}</h2>
+              <p className="text-muted-foreground text-sm">
+                From: {selectedEmail.from} • {selectedEmail.time}
+              </p>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              <div className="whitespace-pre-wrap text-sm">
+                {selectedEmail.content}
               </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   )
 }
