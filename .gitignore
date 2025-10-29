@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -10,11 +10,12 @@
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
 /build
+dist/
 
 # misc
 .DS_Store
@@ -24,9 +25,14 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
+.env.development
+.env.production
+!.env.example
 
 # vercel
 .vercel
@@ -36,10 +42,38 @@ yarn-error.log*
 next-env.d.ts
 
 # OpenNext
-/.open-next
+.open-next/
 
 # wrangler files
-.wrangler
-.env.development
-!.dev.vars.example
-!.env.example
+.wrangler/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+docker/volumes/
+*.log
+
+# Haraka
+services/haraka/config/dkim/*.key
+services/haraka/config/dkim/*.private
+services/haraka/queue/
+services/haraka/logs/
+
+# TLS certificates
+*.key
+*.crt
+*.pem
+!services/haraka/config/dkim/README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

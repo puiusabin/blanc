@@ -1,0 +1,19 @@
+{
+  "name": "haraka-mail-service",
+  "version": "1.0.0",
+  "description": "Haraka mail server with PostgreSQL and wallet authentication",
+  "main": "index.js",
+  "scripts": {
+    "start": "haraka -c /app/config",
+    "dev": "haraka -c ./config"
+  },
+  "dependencies": {
+    "haraka": "^3.0.4",
+    "pg": "^8.11.3",
+    "openpgp": "^5.11.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

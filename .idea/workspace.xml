@@ -7,7 +7,7 @@
           <value>
             <AIAssistantStoredInstruction>
               <option name="actionId" value="AIAssistant.VCS.GenerateCommitMessage" />
-              <option name="content" value="Avoid overly verbose descriptions or unnecessary details.&#10;&lt;type&gt;(&lt;scope&gt;): &lt;short imperative subject&gt;" />
+              <option name="content" value="&lt;type&gt;(&lt;scope&gt;): &lt;short imperative subject&gt;" />
             </AIAssistantStoredInstruction>
           </value>
         </entry>
@@ -18,10 +18,69 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox.">
+    <list default="true" id="26a78ebd-31fb-4f6b-8f8f-472e0df62053" name="Changes" comment="&#10;chore(ui): remove unused UI components and assets&#10;&#10;Deleted obsolete components (e.g., AppSidebar, Badge, Button, Breadcrumb) and unused assets (e.g., SVG logos, Cloudflare type definitions) to clean up the codebase and improve maintainability.">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/dashboard/inbox/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/inbox/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/sheet.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloudflare-env.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/eslint.config.mjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/img.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/open-next.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/postcss.config.mjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/_headers" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blancicob.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/blancicow.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/file.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/globe.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vercel.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/window.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/inbox/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/app-sidebar.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/search-form.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/simplekit-modal.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/simplekit.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/theme-provider.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/theme-toggle.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/badge.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/breadcrumb.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/button.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/checkbox.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/command.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/dialog.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/drawer.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/dropdown-menu.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/input-group.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/input.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/kbd.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/label.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/popover.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/scroll-area.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/separator.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/sheet.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/sidebar.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/skeleton.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/switch.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/textarea.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/tooltip.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/version-switcher.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/web3-provider.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hooks/use-mobile.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/utils.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/wagmi.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wrangler.jsonc" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,27 +110,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;recode&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3/public&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/sabinpuiu/WebstormProjects/untitled3/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "recode",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/sabinpuiu/WebstormProjects/untitled3/public",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "ts.external.directory.path": "/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public" />
@@ -184,6 +243,9 @@
     <MESSAGE value="feat(ui): add advanced sidebar, breadcrumb, and input components&#10;&#10;Implemented feature-rich AppSidebar and supporting reusable components including Breadcrumb, Command, Input, and InputGroup for enhanced navigation and interactivity. Introduced initial dashboard page with the AppSidebar." />
     <MESSAGE value="feat(ui): enhance modal, grid, and layout implementation&#10;&#10;Refined modal structure with new style updates and responsiveness. Improved grid design for wallet connectors and updated layout with a header and enhanced footer links." />
     <MESSAGE value="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(ui): add inbox page with email interactions and reusable checkbox&#10;&#10;Implemented an inbox page with interactive email functionalities, including selection, hover effects, and a resizable detail sheet. Added a reusable Checkbox component and integrated Radix UI for accessibility enhancements. Redirected dashboard base to the inbox." />
+    <MESSAGE value="feat(ui): enhance email attachments and add spinner component&#10;&#10;Implemented enhanced attachment management with download functionality for individual and multiple files. Introduced a Spinner component for loading indicators. Improved inbox viewer with responsive layout updates and keyboard shortcuts for navigation and actions." />
+    <MESSAGE value="chore(ui): remove unused components and assets&#10;&#10;Deleted redundant components (e.g., AppSidebar, Badge, Breadcrumb, Button, Checkbox) and unused assets (e.g., SVGs, type definitions) to declutter the codebase." />
+    <MESSAGE value="chore(ui): remove unused components, assets, and type definitions&#10;&#10;Deleted AppSidebar, Badge, Breadcrumb, Button, Checkbox components, SVG assets, and Cloudflare type definitions to clean up unused code and simplify the codebase." />
+    <option name="LAST_COMMIT_MESSAGE" value="chore(ui): remove unused components, assets, and type definitions&#10;&#10;Deleted AppSidebar, Badge, Breadcrumb, Button, Checkbox components, SVG assets, and Cloudflare type definitions to clean up unused code and simplify the codebase." />
   </component>
 </project>

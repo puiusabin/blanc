@@ -1,0 +1,12 @@
+# Haraka Plugin Load Order
+# Core plugins
+tls
+# Authentication
+auth/postgres_wallet
+# Recipient validation
+rcpt_to.postgres
+# Data processing
+data.postgres_metadata
+data.pgp_encrypt_store
+# Queue
+queue/postgres_queue

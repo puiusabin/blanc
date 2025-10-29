@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: mail-postgres
+    environment:
+      POSTGRES_DB: maildb
+      POSTGRES_USER: mailuser
+      POSTGRES_PASSWORD: mailpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - mail-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mailuser -d maildb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Haraka Mail Server
+  haraka:
+    build:
+      context: ../services/haraka
+      dockerfile: Dockerfile
+    container_name: mail-haraka
+    environment:
+      DATABASE_URL: postgresql://mailuser:mailpass@postgres:5432/maildb
+      NODE_ENV: development
+      HARAKA_DOMAIN: localhost
+    ports:
+      - "25:25"
+      - "587:587"
+      - "465:465"
+    volumes:
+      - ../services/haraka/config:/app/config
+      - ../services/haraka/plugins:/app/plugins
+    networks:
+      - mail-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Next.js Web App (development)
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile.dev
+    container_name: mail-web
+    environment:
+      DATABASE_URL: postgresql://mailuser:mailpass@postgres:5432/maildb
+      NEXTJS_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - mail-network
+    depends_on:
+      - postgres
+      - haraka
+
+networks:
+  mail-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

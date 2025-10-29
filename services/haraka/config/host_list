@@ -1,0 +1,5 @@
+# Allowed hosts for email delivery
+# Add your domains here (one per line)
+# Example:
+# example.com
+# mail.example.com
