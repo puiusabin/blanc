@@ -1,0 +1,24 @@
+{
+  "name": "@blanc/database",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --skip-generate",
+    "db:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed"
+  },
+  "devDependencies": {
+    "prisma": "^6.18.0",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "@prisma/extension-accelerate": "^2.0.2"
+  }
+}

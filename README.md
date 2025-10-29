@@ -1,36 +1,34 @@
-# Mail Service Monorepo
+# Blanc - Web3 Mail Application
 
-A monorepo containing a Next.js web application with Web3 wallet integration and a Haraka mail server with PostgreSQL backend.
+A modern monorepo containing a Next.js web application with Web3 wallet integration, Prisma database layer, and Haraka mail server.
 
 ## Project Structure
 
 ```
-mail-service/
+blanc/
 ├── apps/
-│   └── web/                    # Next.js application
+│   └── web/                           # @blanc/web - Next.js application
 │       ├── src/
 │       ├── public/
-│       ├── package.json
-│       └── README.md
-├── services/
-│   └── haraka/                 # Haraka mail server
-│       ├── config/             # Haraka configuration
-│       ├── plugins/            # Custom Haraka plugins
-│       ├── Dockerfile
 │       └── package.json
-├── docker/
-│   ├── docker-compose.yml      # Local development
-│   ├── docker-compose.prod.yml # Production
-│   └── nginx/
-│       └── nginx.conf
-├── scripts/
-│   ├── setup-local.sh          # Local setup script
-│   ├── deploy-server.sh        # Deployment script
-│   └── init-db.sql             # Database initialization
-└── .github/
-    └── workflows/
-        ├── deploy-app.yml      # Web app CI/CD
-        └── deploy-haraka.yml   # Haraka CI/CD
+├── packages/
+│   ├── database/                      # @blanc/database - Prisma ORM
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
+│   │   ├── src/
+│   │   │   ├── client.ts              # Singleton PrismaClient
+│   │   │   └── index.ts               # Exports
+│   │   └── package.json
+│   └── typescript-config/             # @blanc/typescript-config - Shared TS configs
+│       ├── base.json
+│       ├── nextjs.json
+│       └── react.json
+├── services/
+│   └── haraka/                        # @blanc/mail-server - Haraka SMTP
+│       ├── config/
+│       ├── plugins/
+│       └── package.json
+└── package.json                       # Root workspace
 ```
 
 ## Quick Start
@@ -38,196 +36,345 @@ mail-service/
 ### Prerequisites
 
 - Node.js 18+
-- Docker & Docker Compose
+- PostgreSQL database (local or hosted via Prisma Postgres)
 - Git
 
-### Local Development Setup
+### Setup
 
-1. **Clone the repository**
+1. **Clone and install**
    ```bash
    git clone <repository-url>
-   cd mail-service
+   cd blanc
+   npm install
    ```
 
-2. **Run setup script**
+2. **Configure environment**
    ```bash
-   npm run setup
+   # Root database URL
+   cp .env.example .env
+
+   # Web app configuration
+   cp apps/web/.env.example apps/web/.env.development
    ```
 
-3. **Configure environment variables**
-   - Copy `.env.example` to `.env` and update values
-   - Copy `apps/web/.env.example` to `apps/web/.env.development`
-   - Copy `services/haraka/.env.example` to `services/haraka/.env`
-
-4. **Start Docker services**
+3. **Set up database**
    ```bash
-   npm run docker:up
+   # Generate Prisma Client
+   npm run db:generate
+
+   # Push schema to database (development)
+   npm run db:push
    ```
 
-5. **Start the web app**
+4. **Start development**
    ```bash
-   npm run dev:web
+   npm run dev
    ```
 
-Visit http://localhost:3000 to see the web app.
+Visit http://localhost:3000
 
-## Available Scripts
+## Available Commands
 
-### Root Scripts
+### Development
 
-- `npm run dev` - Start web app in development mode
-- `npm run dev:web` - Start web app
-- `npm run dev:haraka` - Start Haraka server
-- `npm run build` - Build web app
-- `npm run deploy:web` - Deploy web app to Cloudflare
-- `npm run docker:up` - Start all Docker services
-- `npm run docker:down` - Stop all Docker services
-- `npm run docker:logs` - View Docker logs
-- `npm run docker:prod` - Start production Docker services
-- `npm run setup` - Run local setup script
-- `npm run clean` - Clean build artifacts and dependencies
+```bash
+npm run dev              # Generate Prisma Client + start web app
+npm run dev:web          # Start web app only
+npm run dev:mail         # Start Haraka mail server
+```
 
-### Web App (apps/web)
+### Build & Deploy
 
+```bash
+npm run build            # Build web app for production
+npm run deploy           # Deploy web app to Cloudflare Workers
+npm run preview          # Preview Cloudflare deployment locally
+```
+
+### Database
+
+```bash
+npm run db:generate      # Generate Prisma Client
+npm run db:push          # Push schema changes (development)
+npm run db:migrate       # Create and run migrations
+npm run db:studio        # Open Prisma Studio
+npm run db:seed          # Seed database
+```
+
+### Code Quality
+
+```bash
+npm run lint             # Lint code
+npm run lint:fix         # Fix linting issues
+npm run type-check       # TypeScript type checking
+npm run format           # Format code with Prettier
+npm run check            # Run type-check + lint
+```
+
+### Cleanup
+
+```bash
+npm run clean            # Clean all workspaces
+npm run clean:deep       # Deep clean (all node_modules, build artifacts)
+```
+
+## Workspace Packages
+
+### @blanc/web (apps/web)
+
+Next.js 15 application with:
+- **Framework**: App Router, React 19, Turbopack
+- **Deployment**: Cloudflare Workers via OpenNext
+- **Web3**: wagmi 2.x + viem for wallet integration
+- **UI**: shadcn/ui components, Tailwind CSS v4
+- **State**: TanStack Query
+- **Database**: Integrated with `@blanc/database`
+
+**Development:**
 ```bash
 cd apps/web
-npm run dev          # Development server
-npm run build        # Production build
-npm run lint         # Lint code
-npm run deploy       # Deploy to Cloudflare
+npm run dev              # Start dev server
+npm run build            # Production build
+npm run type-check       # Type checking
+npm run clean            # Clean build artifacts
 ```
 
-### Haraka (services/haraka)
+### @blanc/database (packages/database)
 
-```bash
-cd services/haraka
-npm run dev          # Start Haraka in development
-npm start            # Start Haraka in production
-```
-
-## Services
-
-### Web Application
-
-- **Framework**: Next.js 15
-- **Deployment**: Cloudflare Workers (via OpenNext)
-- **Web3**: wagmi + viem
-- **UI**: shadcn/ui with Tailwind CSS
-- **Port**: 3000
-
-See [apps/web/README.md](apps/web/README.md) for more details.
-
-### Haraka Mail Server
-
-- **Mail Server**: Haraka
+Prisma ORM package with:
+- **Version**: Prisma 6.x
 - **Database**: PostgreSQL
-- **Authentication**: Wallet-based
-- **Encryption**: PGP
+- **Extensions**: Prisma Accelerate for connection pooling
+- **Output**: `packages/database/generated/prisma` (gitignored)
+
+**Exports:**
+```typescript
+import { prisma } from "@blanc/database";        // PrismaClient singleton
+import type { User, Post } from "@blanc/database"; // Generated types
+```
+
+**Usage in apps:**
+```typescript
+// Add to package.json dependencies
+{
+  "dependencies": {
+    "@blanc/database": "*"
+  }
+}
+
+// Use in code
+import { prisma } from "@blanc/database";
+
+const users = await prisma.user.findMany();
+```
+
+**Scripts:**
+```bash
+cd packages/database
+npm run db:generate      # Generate client
+npm run db:push          # Push schema
+npm run db:migrate       # Run migrations
+npm run db:studio        # Open Studio
+```
+
+### @blanc/typescript-config (packages/typescript-config)
+
+Shared TypeScript configurations:
+- `base.json` - Base configuration
+- `nextjs.json` - Next.js specific (extends base)
+- `react.json` - React specific (extends base)
+
+**Usage:**
+```json
+{
+  "extends": "@blanc/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+### @blanc/mail-server (services/haraka)
+
+Haraka SMTP server with:
+- **Authentication**: Wallet-based (custom plugin)
+- **Database**: PostgreSQL via `@blanc/database`
+- **Encryption**: PGP support
 - **Ports**: 25 (SMTP), 587 (Submission), 465 (SMTPS)
 
-### PostgreSQL Database
+**Scripts:**
+```bash
+cd services/haraka
+npm run dev              # Development mode
+npm start                # Production mode
+npm run clean            # Clean queue/logs
+```
 
-- **Port**: 5432
-- **Default DB**: maildb
-- **Schema**: See `scripts/init-db.sql`
+## Database Setup
 
-## Docker Services
+### Option 1: Local PostgreSQL
 
-### Development (docker-compose.yml)
+1. Install PostgreSQL
+2. Create database:
+   ```sql
+   CREATE DATABASE blanc;
+   ```
+3. Update `.env`:
+   ```bash
+   DATABASE_URL="postgresql://user:password@localhost:5432/blanc"
+   ```
 
-- PostgreSQL database
-- Haraka mail server
-- Next.js web app (with hot reload)
+### Option 2: Prisma Postgres (Recommended)
 
-### Production (docker-compose.prod.yml)
+1. Sign up at https://console.prisma.io
+2. Create new database
+3. Copy connection string to `.env`:
+   ```bash
+   DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=YOUR_API_KEY"
+   ```
 
-- PostgreSQL database
-- Haraka mail server
-- Nginx reverse proxy
+### Working with Schema
+
+Edit `packages/database/prisma/schema.prisma`:
+
+```prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}
+```
+
+After changes:
+```bash
+npm run db:generate      # Regenerate client
+npm run db:push          # Apply to database
+```
 
 ## Environment Variables
 
-### Root (.env)
-
+### Root `.env`
 ```bash
-POSTGRES_DB=maildb
-POSTGRES_USER=mailuser
-POSTGRES_PASSWORD=changeme
-DATABASE_URL=postgresql://mailuser:changeme@localhost:5432/maildb
-HARAKA_DOMAIN=mail.example.com
+DATABASE_URL="postgresql://user:password@localhost:5432/blanc"
 ```
 
-### Web App (apps/web/.env.development)
-
+### `apps/web/.env.development`
 ```bash
+# WalletConnect (get from https://cloud.walletconnect.com)
 NEXT_PUBLIC_WC_PROJECT_ID=your_project_id
-STALWART_DOMAIN=mail.example.com
+
+# Database (optional, inherits from root)
+DATABASE_URL="postgresql://user:password@localhost:5432/blanc"
 ```
 
-### Haraka (services/haraka/.env)
+## Monorepo Workflow
+
+### Adding Dependencies
+
+**To a specific workspace:**
+```bash
+npm install <package> --workspace=@blanc/web
+npm install -D <package> --workspace=@blanc/database
+```
+
+**To root (shared dev tools):**
+```bash
+npm install -D <package> -w
+```
+
+### Inter-package Dependencies
+
+Packages reference each other using workspace protocol:
+```json
+{
+  "dependencies": {
+    "@blanc/database": "*",
+    "@blanc/typescript-config": "*"
+  }
+}
+```
+
+### Running Workspace Scripts
 
 ```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/maildb
-NODE_ENV=development
-HARAKA_DOMAIN=mail.example.com
+# From root
+npm run dev --workspace=@blanc/web
+
+# Or use shortcuts
+npm run dev:web
+npm run dev:mail
 ```
+
+### Development Best Practices
+
+1. **Always generate Prisma Client first:**
+   ```bash
+   npm run db:generate
+   ```
+
+2. **Use workspace dependencies:**
+   - Reference other packages with `@blanc/*`
+   - Use `"*"` version for workspace packages
+
+3. **Run quality checks before committing:**
+   ```bash
+   npm run check          # Type-check + lint
+   npm run format         # Format code
+   ```
+
+4. **Clean when switching branches:**
+   ```bash
+   npm run clean
+   ```
 
 ## Deployment
 
-### Web App to Cloudflare
+### Web App (Cloudflare Workers)
 
 ```bash
-cd apps/web
 npm run deploy
 ```
 
-Or use GitHub Actions workflow: `.github/workflows/deploy-app.yml`
+**Requirements:**
+- Cloudflare account with Workers
+- Set environment variables:
+  - `CLOUDFLARE_API_TOKEN`
+  - `CLOUDFLARE_ACCOUNT_ID`
 
-### Haraka to Production Server
-
-```bash
-./scripts/deploy-server.sh
-```
-
-Or use GitHub Actions workflow: `.github/workflows/deploy-haraka.yml`
-
-## Database Schema
-
-The database includes:
-
-- `users` - User accounts with wallet addresses
-- `email_metadata` - Metadata for received emails
-- `email_queue` - Queue for email processing
-
-See `scripts/init-db.sql` for full schema.
-
-## Haraka Configuration
-
-Configuration files in `services/haraka/config/`:
-
-- `plugins` - Plugin load order
-- `smtp.ini` - SMTP server settings
-- `host_list` - Allowed domains
-- `tls.ini` - TLS configuration
-- `dkim/` - DKIM keys
-
-## Custom Haraka Plugins
-
-Located in `services/haraka/plugins/`:
-
-- `auth/postgres_wallet.js` - Wallet-based authentication
-- `rcpt_to.postgres.js` - Recipient validation
-- `data.postgres_metadata.js` - Store email metadata
-- `data.pgp_encrypt_store.js` - PGP encryption
-- `queue/postgres_queue.js` - PostgreSQL queue
+**Or use GitHub Actions:**
+- Workflow: `.github/workflows/deploy-app.yml`
+- Triggers on push to main
 
 ## Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Test locally with Docker
-4. Submit a pull request
+1. Create feature branch
+2. Make changes
+3. Run quality checks: `npm run check`
+4. Format code: `npm run format`
+5. Test locally
+6. Submit PR
+
+## Package Naming Convention
+
+All packages use the `@blanc` scope:
+- `@blanc/web` - Web application
+- `@blanc/database` - Database/ORM layer
+- `@blanc/typescript-config` - Shared TypeScript configs
+- `@blanc/mail-server` - Mail server service
 
 ## License
 
-ISC
+GNU General Public License v3.0

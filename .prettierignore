@@ -1,0 +1,14 @@
+node_modules
+.next
+.open-next
+.wrangler
+dist
+build
+coverage
+*.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.env*
+!.env.example
+generated/

@@ -2,34 +2,45 @@
   "name": "blanc",
   "version": "1.0.0",
   "private": true,
-  "description": "Monorepo for blanc",
+  "description": "Blanc - Web3 mail application monorepo",
   "scripts": {
-    "dev": "npm run dev --workspace=apps/web",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "dev:haraka": "npm run dev --workspace=services/haraka",
-    "build": "npm run build --workspace=apps/web",
-    "build:web": "npm run build --workspace=apps/web",
-    "lint": "npm run lint --workspace=apps/web",
-    "deploy:web": "npm run deploy --workspace=apps/web",
-    "docker:up": "cd docker && docker-compose up -d",
-    "docker:down": "cd docker && docker-compose down",
-    "docker:logs": "cd docker && docker-compose logs -f",
-    "docker:prod": "cd docker && docker-compose -f docker-compose.prod.yml up -d",
-    "setup": "./scripts/setup-local.sh",
-    "clean": "rm -rf apps/web/.next apps/web/node_modules services/haraka/node_modules node_modules"
+    "dev": "npm run db:generate && npm run dev:web",
+    "dev:web": "npm run dev --workspace=@blanc/web",
+    "dev:mail": "npm run dev --workspace=@blanc/mail-server",
+    "build": "npm run db:generate && npm run build:web",
+    "build:web": "npm run build --workspace=@blanc/web",
+    "lint": "npm run lint --workspace=@blanc/web",
+    "lint:fix": "npm run lint --workspace=@blanc/web -- --fix",
+    "type-check": "npm run type-check --workspace=@blanc/web",
+    "deploy": "npm run deploy --workspace=@blanc/web",
+    "preview": "npm run preview --workspace=@blanc/web",
+    "db:generate": "npm run db:generate --workspace=@blanc/database",
+    "db:migrate": "npm run db:migrate --workspace=@blanc/database",
+    "db:push": "npm run db:push --workspace=@blanc/database",
+    "db:studio": "npm run db:studio --workspace=@blanc/database",
+    "db:seed": "npm run db:seed --workspace=@blanc/database",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "clean:deep": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.next' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+    "install:all": "npm install",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "check": "npm run type-check && npm run lint"
   },
   "workspaces": [
     "apps/*",
+    "packages/*",
     "services/*"
   ],
   "keywords": [
+    "blanc",
     "mail",
-    "haraka",
-    "nextjs",
     "web3",
+    "nextjs",
+    "prisma",
     "monorepo"
   ],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {}
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "extends": "@blanc/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true
+  },
+  "include": ["src/**/*", "prisma/schema.prisma"],
+  "exclude": ["node_modules", "dist", "generated"]
+}
