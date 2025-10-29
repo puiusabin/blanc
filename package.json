@@ -2,28 +2,29 @@
   "name": "blanc",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "description": "Blanc - Web3 mail application monorepo",
   "scripts": {
-    "dev": "npm run db:generate && npm run dev:web",
-    "dev:web": "npm run dev --workspace=@blanc/web",
-    "dev:mail": "npm run dev --workspace=@blanc/mail-server",
-    "build": "npm run db:generate && npm run build:web",
-    "build:web": "npm run build --workspace=@blanc/web",
-    "lint": "npm run lint --workspace=@blanc/web",
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@blanc/web",
+    "dev:mail": "turbo run dev --filter=@blanc/mail-server",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@blanc/web",
+    "lint": "turbo run lint",
     "lint:fix": "npm run lint --workspace=@blanc/web -- --fix",
-    "type-check": "npm run type-check --workspace=@blanc/web",
-    "deploy": "npm run deploy --workspace=@blanc/web",
-    "preview": "npm run preview --workspace=@blanc/web",
-    "db:generate": "npm run db:generate --workspace=@blanc/database",
-    "db:migrate": "npm run db:migrate --workspace=@blanc/database",
-    "db:push": "npm run db:push --workspace=@blanc/database",
-    "db:studio": "npm run db:studio --workspace=@blanc/database",
-    "db:seed": "npm run db:seed --workspace=@blanc/database",
-    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "type-check": "turbo run type-check",
+    "deploy": "turbo run deploy --filter=@blanc/web",
+    "preview": "turbo run preview --filter=@blanc/web",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "db:push": "turbo run db:push",
+    "db:studio": "turbo run db:studio",
+    "db:seed": "turbo run db:seed",
+    "clean": "turbo run clean && rm -rf node_modules",
     "clean:deep": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.next' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
     "install:all": "npm install",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "check": "npm run type-check && npm run lint"
+    "check": "turbo run type-check lint"
   },
   "workspaces": [
     "apps/*",
@@ -41,6 +42,7 @@
   "author": "",
   "license": "GPL-3.0",
   "devDependencies": {
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "turbo": "^2.5.8"
   }
 }
