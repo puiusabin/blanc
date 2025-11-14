@@ -44,6 +44,9 @@ next-env.d.ts
 # OpenNext
 .open-next/
 
+# Turborepo
+.turbo/
+
 # wrangler files
 .wrangler/
 
