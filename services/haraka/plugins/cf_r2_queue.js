@@ -7,8 +7,12 @@ var AWS = require("aws-sdk"),
     async = require("async"),
     Transform = require('stream').Transform,
     { v4: uuidv4 } = require('uuid'),
-    { prisma } = require("@blanc/database"),
+    { PrismaClient } = require("@blanc/database/generated/prisma"),
+    { withAccelerate } = require("@prisma/extension-accelerate"),
     pgpHandler = require("./pgp_handler");
+
+// Initialize Prisma client with Accelerate extension
+var prisma = new PrismaClient().$extends(withAccelerate());
 
 exports.register = function () {
     var plugin = this;

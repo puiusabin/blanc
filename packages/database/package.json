@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./generated/prisma": "./generated/prisma/index.js"
   },
   "scripts": {
     "db:generate": "prisma generate",

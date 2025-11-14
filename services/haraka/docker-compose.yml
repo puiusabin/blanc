@@ -2,20 +2,17 @@ version: '3.8'
 
 services:
   haraka:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: instrumentisto/haraka:latest
     container_name: blanc-haraka
+    working_dir: /etc/haraka
     ports:
       - "25:25"      # SMTP
       - "587:587"    # Submission (STARTTLS)
     volumes:
-      # Mount for development (hot reload)
-      - ./config:/etc/haraka/config:ro
-      - ./plugins:/etc/haraka/plugins:ro
-      # Persistent storage for queue and logs
-      - ./queue:/etc/haraka/queue
-      - ./logs:/etc/haraka/logs
+      # Mount entire service directory
+      - .:/etc/haraka
+      # Mount @blanc/database package from monorepo
+      - ../../packages/database:/etc/haraka/node_modules/@blanc/database
     environment:
       # Database connection
       DATABASE_URL: ${DATABASE_URL}
@@ -29,6 +26,7 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
     env_file:
       - .env
+    command: sh -c "npm install --production && haraka -c /etc/haraka"
     restart: unless-stopped
     networks:
       - blanc-network

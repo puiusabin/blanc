@@ -1,20 +1,19 @@
 FROM instrumentisto/haraka:latest
 
 # Set working directory
-WORKDIR /etc/haraka
+WORKDIR /app
 
 # Copy package files for dependencies
 COPY package*.json ./
 
-# Install Node.js dependencies (including @blanc/database link)
-RUN npm install --production
+# Install only public npm dependencies (excluding @blanc/database)
+RUN npm install --omit=dev --ignore-scripts aws-sdk openpgp uuid || true
 
-# Copy Haraka configuration files
-COPY config/ ./config/
-COPY plugins/ ./plugins/
-COPY docs/ ./docs/
+# Note: @blanc/database will be mounted as a volume from the host
+# This allows for live updates during development
 
-# Create runtime directories
+# Copy Haraka configuration files to /etc/haraka
+WORKDIR /etc/haraka
 RUN mkdir -p ./queue ./logs
 
 # Expose SMTP ports

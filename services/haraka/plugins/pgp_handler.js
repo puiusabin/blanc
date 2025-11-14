@@ -4,7 +4,11 @@
 
 const openpgp = require('openpgp');
 const { Transform } = require('stream');
-const { prisma } = require('@blanc/database');
+const { PrismaClient } = require('@blanc/database/generated/prisma');
+const { withAccelerate } = require('@prisma/extension-accelerate');
+
+// Initialize Prisma client with Accelerate extension
+const prisma = new PrismaClient().$extends(withAccelerate());
 
 /**
  * Get active PGP public key for a user
