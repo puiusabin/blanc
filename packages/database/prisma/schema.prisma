@@ -1,15 +1,93 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma Schema for Blanc Email Service
+// Includes: User accounts, Email storage, Aliases, PGP Keys
+// Database: Prisma Postgres (managed PostgreSQL)
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum PlanType {
+  FREE
+  PREMIUM
+}
+
+enum EmailStatus {
+  STORED
+  DELETED
+  QUARANTINED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  planType      PlanType  @default(FREE)
+  quotaBytes    BigInt    // 2GB for FREE, 20GB for PREMIUM
+  usedBytes     BigInt    @default(0)
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  emails        Email[]
+  aliases       Alias[]   @relation("AliasTarget")
+  pgpKeys       PGPKey[]
+
+  @@index([email])
+  @@index([active])
+}
+
+model Email {
+  id            String       @id @default(uuid())
+  messageId     String?      // RFC Message-ID header
+  userId        String
+  fromAddress   String
+  toAddress     String       // The actual delivery address (after alias resolution)
+  subject       String?
+  dateReceived  DateTime     @default(now())
+  sizeBytes     BigInt
+  r2Path        String       // Path in R2 bucket
+  encrypted     Boolean      @default(false)
+  status        EmailStatus  @default(STORED)
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dateReceived(sort: Desc)])
+  @@index([messageId])
+  @@index([r2Path])
+}
+
+model Alias {
+  id            String    @id @default(uuid())
+  aliasAddress  String    @unique  // The alias email address
+  targetUserId  String                // User who receives the mail
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  targetUser    User      @relation("AliasTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([aliasAddress])
+  @@index([targetUserId])
+}
+
+model PGPKey {
+  id            String    @id @default(uuid())
+  userId        String
+  publicKey     String    @db.Text  // Armored public key
+  privateKey    String?   @db.Text  // Armored private key (optional, for web client decryption)
+  fingerprint   String
+  algorithm     String    // e.g., "rsa4096", "ed25519"
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime?
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, active])
+  @@index([fingerprint])
 }

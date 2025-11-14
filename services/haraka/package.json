@@ -1,0 +1,42 @@
+{
+  "name": "@blanc/mail-server",
+  "version": "0.1.0",
+  "description": "Haraka SMTP server for Blanc freemium email service",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker compose up --build",
+    "start": "docker compose up -d",
+    "stop": "docker compose down",
+    "restart": "docker compose restart",
+    "logs": "docker compose logs -f haraka",
+    "logs:tail": "docker compose logs --tail=100 haraka",
+    "seed": "node scripts/seed.js",
+    "shell": "docker compose exec haraka sh",
+    "build": "docker compose build",
+    "clean": "docker compose down -v && rm -rf queue/* logs/*"
+  },
+  "keywords": [
+    "haraka",
+    "smtp",
+    "email",
+    "mail-server",
+    "cloudflare-r2"
+  ],
+  "author": "Blanc",
+  "license": "MIT",
+  "dependencies": {
+    "@blanc/database": "*",
+    "aws-sdk": "^2.1692.0",
+    "openpgp": "^5.11.0",
+    "uuid": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puiusabin/blanc.git",
+    "directory": "services/haraka"
+  }
+}

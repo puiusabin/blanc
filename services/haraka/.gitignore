@@ -1,0 +1,38 @@
+# Environment variables (contains secrets)
+.env
+.env.*
+!.env.example
+
+# Haraka runtime directories
+queue/
+logs/
+*.log
+
+# Config files with secrets
+config/cf_r2_queue.json
+
+# PGP/TLS keys
+config/dkim/*.key
+config/dkim/*.private
+*.pem
+*.key
+*.private
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

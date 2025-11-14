@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  haraka:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blanc-haraka
+    ports:
+      - "25:25"      # SMTP
+      - "587:587"    # Submission (STARTTLS)
+    volumes:
+      # Mount for development (hot reload)
+      - ./config:/etc/haraka/config:ro
+      - ./plugins:/etc/haraka/plugins:ro
+      # Persistent storage for queue and logs
+      - ./queue:/etc/haraka/queue
+      - ./logs:/etc/haraka/logs
+    environment:
+      # Database connection
+      DATABASE_URL: ${DATABASE_URL}
+      # Cloudflare R2 credentials
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_BUCKET: ${R2_BUCKET:-mail-storage}
+      # Optional overrides
+      ENCRYPTION_ENABLED: ${ENCRYPTION_ENABLED:-false}
+      NODE_ENV: ${NODE_ENV:-production}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - blanc-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  blanc-network:
+    driver: bridge
