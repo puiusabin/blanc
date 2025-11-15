@@ -71,7 +71,7 @@ const data = {
       items: [
         {
           title: "Inbox",
-          url: "/dashboard/inbox",
+          url: "/mail/inbox",
           icon: Inbox,
         },
         {

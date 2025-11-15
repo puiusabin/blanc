@@ -78,3 +78,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+*storybook.log
+storybook-static
