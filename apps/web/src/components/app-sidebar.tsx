@@ -129,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <DialogTitle className="sr-only">Settings</DialogTitle>
           <div className="flex flex-col h-full min-w-0">
             {/* Top border row */}
-            <div className="flex h-16 shrink-0 border-b relative">
+            <div className="flex h-14 shrink-0 border-b relative">
               <div className="w-16 border-r relative" />
               <div className="flex-1" />
               <div className="w-16 border-l relative">
@@ -226,7 +226,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
 
             {/* Bottom border row */}
-            <div className="flex h-16 shrink-0 border-t relative">
+            <div className="flex h-14 shrink-0 border-t relative">
               <div className="w-16 border-r relative" />
               <div className="flex-1" />
               <div className="w-16 border-l relative" />
@@ -236,22 +236,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Dialog>
 
       <Sidebar {...props}>
-      <SidebarHeader className="border-b h-16 flex flex-row items-center px-4">
+      <SidebarHeader className="border-b h-14 flex flex-row items-center px-4">
         <Image
           src="/blancicow.svg"
           alt="blanc logo"
-          width={24}
-          height={24}
+          width={20}
+          height={20}
           className="hidden dark:block"
         />
         <Image
           src="/blancicob.svg"
           alt="blanc logo"
-          width={24}
-          height={24}
+          width={20}
+          height={20}
           className="dark:hidden"
         />
-        <span className="font-semibold text-xl">blanc</span>
+        <span className="text-lg">blanc</span>
       </SidebarHeader>
       <SidebarContent>
         {/* Top buttons without section */}

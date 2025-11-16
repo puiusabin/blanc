@@ -8,22 +8,22 @@ export default function Home() {
   return (
       <div className="relative flex min-h-screen flex-col">
         {/* Header with logo */}
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <Image
             src="/blancicow.svg"
             alt="blanc logo"
-            width={24}
-            height={24}
+            width={20}
+            height={20}
             className="hidden dark:block"
           />
           <Image
             src="/blancicob.svg"
             alt="blanc logo"
-            width={24}
-            height={24}
+            width={20}
+            height={20}
             className="dark:hidden"
           />
-          <span className="font-semibold text-xl">blanc</span>
+          <span className="text-lg">blanc</span>
           <div className="ml-auto">
             <ThemeToggle />
           </div>

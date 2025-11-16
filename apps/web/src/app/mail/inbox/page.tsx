@@ -8,6 +8,7 @@ import { EmailListHeader } from "@/components/mail/email-list/email-list-header"
 import { EmailList } from "@/components/mail/email-list/email-list"
 import { EmailDetail } from "@/components/mail/email-detail/email-detail"
 import { ResizableEmailPanel } from "@/components/mail/email-panel/resizable-email-panel"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function InboxPage() {
   const { emails, refetch } = useEmails({ folder: "inbox" })
@@ -33,7 +34,7 @@ export default function InboxPage() {
   }
 
   return (
-    <>
+    <div className="flex flex-col h-svh">
       <EmailListHeader
         title="Inbox"
         selectedCount={selection.selectedIds.size}
@@ -43,12 +44,14 @@ export default function InboxPage() {
         onRefresh={refetch}
       />
 
-      <EmailList
-        emails={emails}
-        selectedIds={selection.selectedIds}
-        onSelect={selection.selectOne}
-        onEmailClick={handleEmailClick}
-      />
+      <ScrollArea className="flex-1 min-h-0">
+        <EmailList
+          emails={emails}
+          selectedIds={selection.selectedIds}
+          onSelect={selection.selectOne}
+          onEmailClick={handleEmailClick}
+        />
+      </ScrollArea>
 
       <ResizableEmailPanel isOpen={!!selectedEmail} onClose={handleClosePanel}>
         {selectedEmail && (
@@ -63,6 +66,6 @@ export default function InboxPage() {
           />
         )}
       </ResizableEmailPanel>
-    </>
+    </div>
   )
 }
