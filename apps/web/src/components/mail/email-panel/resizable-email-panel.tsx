@@ -90,14 +90,16 @@ export function ResizableEmailPanel({
         )}
         style={{ width: `${width}px`, maxWidth: "90vw" }}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 rounded-sm opacity-70 hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none transition-opacity"
-          aria-label="Close"
-        >
-          <X className="size-4" />
-        </button>
+        {/* Header section */}
+        <div className="h-14 border-b flex items-center justify-end px-6">
+          <button
+            onClick={onClose}
+            className="rounded-sm opacity-70 hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none transition-opacity"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
         {/* Resize handle */}
         <div
@@ -114,7 +116,7 @@ export function ResizableEmailPanel({
         />
 
         {/* Content */}
-        <div className="flex flex-col h-full pl-2">{children}</div>
+        <div className="flex flex-col flex-1 pl-2">{children}</div>
       </div>
     </>
   );
