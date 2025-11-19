@@ -57,6 +57,10 @@
       "cache": false,
       "env": ["DATABASE_URL"]
     },
+    "storybook": {
+      "cache": false,
+      "persistent": true
+    },
     "clean": {
       "cache": false
     }

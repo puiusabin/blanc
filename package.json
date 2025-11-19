@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@blanc/web",
+    "dev:web:story": "turbo run dev storybook --filter=@blanc/web",
     "dev:mail": "turbo run dev --filter=@blanc/mail-server",
+    "storybook": "turbo run storybook",
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@blanc/web",
     "lint": "turbo run lint",
