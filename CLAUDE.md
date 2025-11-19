@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Project Statistics
 
 - **Primary language**: TypeScript
-- **Active since**: August 2025 (3.5 months)
+- **Active since**: August 2025 (~3.5 months)
 - **Total commits**: 86 commits
 - **Architecture**: Monorepo with 3 workspaces (apps, packages, services)
 - **Lines of code**: ~6,000 (web app), ~300 (Haraka plugins)
@@ -18,156 +18,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Privacy-focused email service with wallet-based authentication, built for edge deployment (Cloudflare Workers) with decentralized identity and optional PGP encryption.
 
-## Quick Start
+## Quick Start & Commands
 
-### Prerequisites
-
-- Node.js 18+ (specified in Haraka service)
-- PostgreSQL database
-- npm 10.9.2 (enforced by `packageManager` field)
-- WalletConnect Project ID (https://cloud.walletconnect.com)
-- Cloudflare account (for R2 and Workers deployment)
-
-### Initial Setup
-
-```bash
-# Clone repository
-git clone <repo-url>
-cd blanc
-
-# Install dependencies (monorepo)
-npm install
-
-# Set up environment variables
-cp .env.example .env
-cp apps/web/.env.example apps/web/.env.development
-cp services/haraka/.env.example services/haraka/.env
-
-# Configure DATABASE_URL in root .env
-# Configure NEXT_PUBLIC_WC_PROJECT_ID in apps/web/.env.development
-
-# Generate Prisma Client (REQUIRED before dev/build)
-npm run db:generate
-
-# Push schema to development database
-npm run db:push
-
-# Verify installation
-npm run type-check
-```
-
-### First Run
-
-```bash
-# Terminal 1: Start web app (with Turbopack)
-npm run dev
-
-# Terminal 2: Start Haraka email service (Docker)
-cd services/haraka
-npm run dev
-
-# Web app: http://localhost:3000
-# Storybook: npm run storybook (http://localhost:6006)
-```
-
-## Essential Commands
-
-### Development
-
-```bash
-# Start all services (monorepo)
-npm run dev
-
-# Start specific workspace
-npm run dev:web              # Web app only
-npm run dev:mail             # Haraka service only
-
-# Development server (web app)
-cd apps/web
-npm run dev                  # Next.js with Turbopack
-
-# Component development
-npm run storybook            # Storybook on port 6006
-
-# Email service
-cd services/haraka
-npm run dev                  # Docker Compose (ports 25, 587)
-```
-
-### Database Operations
-
-```bash
-# Generate Prisma Client (run after schema changes)
-npm run db:generate
-
-# Development: push schema changes
-npm run db:push              # Fast, no migration files
-
-# Production: create migration
-npm run db:migrate           # Creates migration files
-
-# Prisma Studio (GUI)
-npm run db:studio            # http://localhost:5555
-
-# Reset database (DESTRUCTIVE)
-npm run db:reset
-```
-
-### Testing
-
-```bash
-# Type checking
-npm run type-check           # All workspaces
-cd apps/web && npm run type-check  # Web app only
-
-# Linting
-npm run lint                 # All workspaces
-npm run lint:fix             # Auto-fix issues
-
-# Component tests (web app)
-cd apps/web
-npm run test                 # Vitest + Storybook tests
-
-# Code formatting
-npm run format               # Prettier on all files
-```
-
-### Build & Deployment
-
-```bash
-# Build all workspaces
-npm run build
-
-# Build specific workspace
-turbo run build --filter=@blanc/web
-
-# Deploy to Cloudflare Workers
-cd apps/web
-npm run deploy               # Build + Deploy
-
-# Preview deployment locally
-npm run preview              # OpenNext preview mode
-
-# Generate Cloudflare types
-npm run cf-typegen           # Updates cloudflare-env.d.ts
-
-# Clean build artifacts
-npm run clean                # Removes .next, .open-next, .turbo
-```
-
-### Haraka Email Testing
-
-```bash
-# Send test email (requires swaks)
-# From services/haraka/README.md:72
-swaks --to test@blanc.is \
-  --from sender@example.com \
-  --server localhost:587 \
-  --body "Test email body"
-
-# View Haraka logs
-docker logs -f haraka-dev    # Follow logs
-```
+For setup instructions and available commands, see [README.md](README.md).
 
 ## Monorepo Architecture
 
@@ -190,7 +43,7 @@ blanc/
 │       │   │   │   ├── email-detail/ # Email detail panel
 │       │   │   │   ├── email-list/   # Email list with items
 │       │   │   │   └── email-panel/  # Resizable email panel
-│       │   │   ├── ui/               # shadcn/ui components (43+)
+│       │   │   ├── ui/               # shadcn/ui components (~21)
 │       │   │   ├── simplekit.tsx     # Web3 wallet connection (363 lines)
 │       │   │   ├── simplekit-modal.tsx  # Responsive modal (desktop/mobile)
 │       │   │   └── app-sidebar.tsx   # Main application sidebar
@@ -286,7 +139,7 @@ blanc/
 
 ### UI & Styling
 
-- **shadcn/ui** - 43+ components (New York style)
+- **shadcn/ui** - ~21 components (New York style)
   - Built on Radix UI primitives
   - Components: Dialog, Dropdown Menu, Sidebar, Popover, etc.
 - **Tailwind CSS v4** - Latest with @tailwindcss/postcss
@@ -493,57 +346,14 @@ mail-storage/
 
 **File**: `packages/database/prisma/schema.prisma`
 
-```prisma
-model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  planType      PlanType  @default(FREE)
-  quotaBytes    BigInt    // 2GB for FREE, 20GB for PREMIUM
-  usedBytes     BigInt    @default(0)
-  active        Boolean   @default(true)
+The schema defines 4 models: **User**, **Email**, **Alias**, and **PGPKey**. Key architecture decisions:
 
-  emails        Email[]
-  aliases       Alias[]
-  pgpKeys       PGPKey[]
-}
+- **Users** have quota management (FREE: 2GB, PREMIUM: 20GB) with `usedBytes` tracking
+- **Emails** store metadata only; blobs in R2 at path `{userId}/{year}/{month}/{emailId}.eml.gz`
+- **Aliases** enable email forwarding (e.g., `hello@blanc.is` → `test@blanc.is`)
+- **PGPKeys** support optional end-to-end encryption
 
-model Email {
-  id            String       @id @default(uuid())
-  messageId     String?      // RFC Message-ID header
-  userId        String
-  fromAddress   String
-  toAddress     String       // Actual delivery address (after alias resolution)
-  subject       String?
-  dateReceived  DateTime     @default(now())
-  sizeBytes     BigInt
-  r2Path        String       // Path in R2 bucket
-  encrypted     Boolean      @default(false)
-  status        EmailStatus  @default(STORED)
-
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, dateReceived(sort: Desc)])
-  @@index([r2Path])
-}
-
-model Alias {
-  id            String    @id @default(uuid())
-  aliasAddress  String    @unique  // hello@blanc.is
-  targetUserId  String               // → test@blanc.is
-
-  user          User      @relation(fields: [targetUserId], references: [id], onDelete: Cascade)
-}
-
-model PGPKey {
-  id            String    @id @default(uuid())
-  userId        String
-  publicKey     String    // PEM format
-  privateKey    String?   // Optional, for web client decryption
-  fingerprint   String
-
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-```
+For full schema details, see `packages/database/prisma/schema.prisma`.
 
 ### Haraka Configuration
 
@@ -1096,17 +906,15 @@ describe("Button Component", () => {
 **CI Pipeline** (`.github/workflows/deploy-app.yml`):
 
 1. **Lint** - ESLint validation
-2. **Build** - TypeScript compilation
-3. **Deploy** - Cloudflare Workers
+2. **Test** - Vitest execution
+3. **Build** - TypeScript compilation
+4. **Deploy** - Cloudflare Workers
 
 **Missing from CI**:
 
-- ❌ Test execution
 - ❌ Coverage reporting
 - ❌ E2E tests
 - ❌ Accessibility validation
-
-**Pre-commit Hooks**: Not configured (no Husky setup)
 
 ### Recommendations for Testing
 
@@ -1601,23 +1409,9 @@ export const prisma = new PrismaClient().$extends(withAccelerate());
 
 **Status**: Commented out (not enabled)
 
-**Decision Rationale**: Undocumented (TODO: clarify)
+**Decision Rationale**: Disabled by choice for simplicity. See `open-next.config.ts` for enable instructions and documentation link.
 
 **Performance Impact**: No edge caching of Next.js incremental static regeneration
-
-#### Wrangler App Name
-
-**File**: `apps/web/wrangler.jsonc:7`
-
-```jsonc
-{
-  "name": "my-next-app", // Default, should be customized
-}
-```
-
-**Impact**: Cloudflare Workers deployment name
-
-**Action Required**: Update to actual app name before production deployment
 
 ### Storybook & Testing
 
@@ -1625,19 +1419,11 @@ export const prisma = new PrismaClient().$extends(withAccelerate());
 
 **Location**: `apps/web/src/components/ui/__tests__/button.test.tsx`
 
-**Coverage**: 43+ components in `ui/`, only Button tested
+**Coverage**: ~21 components in `ui/`, only Button tested
 
 **Why**: Recent Storybook adoption (Nov 2025), testing infrastructure setup incomplete
 
 **Mitigation**: Use Storybook stories as visual regression tests until unit tests expand
-
-#### Tests Not in CI
-
-**Status**: No test execution in `.github/workflows/deploy-app.yml`
-
-**Risk**: Code merged without test validation
-
-**Action Required**: Add test step to CI pipeline
 
 #### Accessibility in Warning Mode
 
@@ -1654,22 +1440,6 @@ a11y: {
 **Action Required**: Switch to `test: 'error'` once violations addressed
 
 ### Environment Variables
-
-#### Stalwart vs Haraka Confusion
-
-**File**: `apps/web/.env.example:7-13`
-
-```bash
-# Stalwart Mail Server Configuration
-STALWART_DOMAIN=mail.example.com
-STALWART_JMAP_URL=https://mail.example.com/.well-known/jmap
-```
-
-**Issue**: Project uses Haraka, not Stalwart
-
-**Status**: Outdated documentation
-
-**Action Required**: Update `.env.example` to remove Stalwart references
 
 #### WalletConnect Project ID Required
 
@@ -1715,12 +1485,6 @@ const emails = getMockEmailsByFolder(folder);
 
 ## Known Issues & Gaps
 
-### Documentation Inconsistencies
-
-1. **Font Mismatch**: README says Geist, CLAUDE.md (old) says Inter - need to verify actual font
-2. **Mail Server**: `apps/web/.env.example` references Stalwart, but project uses Haraka
-3. **Wrangler Name**: Default "my-next-app" needs customization
-
 ### Missing Documentation
 
 1. **API Documentation**: No documentation for email API endpoints (planned but not implemented)
@@ -1730,10 +1494,8 @@ const emails = getMockEmailsByFolder(folder);
 
 ### Infrastructure Gaps
 
-1. **No Pre-commit Hooks**: No Husky/lint-staged for automated quality checks
-2. **No Test Execution in CI**: Tests configured but not run in GitHub Actions
-3. **No Coverage Thresholds**: Coverage tracking enabled but no enforcement
-4. **No E2E Tests**: Playwright installed but no end-to-end test suite
+1. **No Coverage Thresholds**: Coverage tracking enabled but no enforcement
+2. **No E2E Tests**: Playwright installed but no end-to-end test suite
 
 ### Security Concerns
 

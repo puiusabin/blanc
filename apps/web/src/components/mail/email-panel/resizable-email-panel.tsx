@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface ResizableEmailPanelProps {
-  isOpen: boolean
-  onClose: () => void
-  children: React.ReactNode
-  defaultWidth?: number
-  minWidth?: number
-  maxWidthPercent?: number
-  className?: string
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  defaultWidth?: number;
+  minWidth?: number;
+  maxWidthPercent?: number;
+  className?: string;
 }
 
 export function ResizableEmailPanel({
@@ -19,69 +19,66 @@ export function ResizableEmailPanel({
   onClose,
   children,
   defaultWidth = 600,
-  minWidth = 300,
+  minWidth = 400,
   maxWidthPercent = 90,
   className,
 }: ResizableEmailPanelProps) {
-  const [width, setWidth] = useState(defaultWidth)
-  const [isResizing, setIsResizing] = useState(false)
+  const [width, setWidth] = useState(defaultWidth);
+  const [isResizing, setIsResizing] = useState(false);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsResizing(true)
-  }
+    e.preventDefault();
+    setIsResizing(true);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return
+      if (!isResizing) return;
 
-      const newWidth = window.innerWidth - e.clientX
-      const maxWidth = window.innerWidth * (maxWidthPercent / 100)
+      const newWidth = window.innerWidth - e.clientX;
+      const maxWidth = window.innerWidth * (maxWidthPercent / 100);
 
       if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setWidth(newWidth)
+        setWidth(newWidth);
       }
-    }
+    };
 
     const handleMouseUp = () => {
-      setIsResizing(false)
-    }
+      setIsResizing(false);
+    };
 
     if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove)
-      document.addEventListener("mouseup", handleMouseUp)
-      document.body.style.cursor = "ew-resize"
-      document.body.style.userSelect = "none"
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
 
       return () => {
-        document.removeEventListener("mousemove", handleMouseMove)
-        document.removeEventListener("mouseup", handleMouseUp)
-        document.body.style.cursor = ""
-        document.body.style.userSelect = ""
-      }
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
     }
-  }, [isResizing, minWidth, maxWidthPercent])
+  }, [isResizing, minWidth, maxWidthPercent]);
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose()
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isOpen, onClose])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   return (
     <>
       {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 transition-opacity"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/20 z-40 transition-opacity" onClick={onClose} />
       )}
 
       {/* Panel */}
@@ -120,5 +117,5 @@ export function ResizableEmailPanel({
         <div className="flex flex-col h-full pl-2">{children}</div>
       </div>
     </>
-  )
+  );
 }
