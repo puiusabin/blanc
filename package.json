@@ -24,7 +24,8 @@
     "clean:deep": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.next' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
     "install:all": "npm install",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "check": "turbo run type-check lint"
+    "check": "turbo run type-check lint",
+    "prepare": "husky || true"
   },
   "workspaces": [
     "apps/*",
@@ -42,7 +43,18 @@
   "author": "",
   "license": "GPL-3.0",
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
     "prettier": "^3.4.2",
     "turbo": "^2.5.8"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "cd apps/web && eslint --fix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }
