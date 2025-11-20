@@ -1,14 +1,15 @@
-import { Checkbox } from "@/components/ui/checkbox"
-import { RotateCw } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox";
+import { RotateCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface EmailListHeaderProps {
-  title?: string
-  selectedCount?: number
-  totalCount?: number
-  allSelected?: boolean
-  onSelectAll?: (selected: boolean) => void
-  onRefresh?: () => void
-  showRefresh?: boolean
+  title?: string;
+  selectedCount?: number;
+  totalCount?: number;
+  allSelected?: boolean;
+  onSelectAll?: (selected: boolean) => void;
+  onRefresh?: () => void;
+  showRefresh?: boolean;
 }
 
 export function EmailListHeader({
@@ -21,10 +22,10 @@ export function EmailListHeader({
   showRefresh = true,
 }: EmailListHeaderProps) {
   const handleCheckboxChange = (checked: boolean | "indeterminate") => {
-    onSelectAll?.(checked === true)
-  }
+    onSelectAll?.(checked === true);
+  };
 
-  const isIndeterminate = selectedCount > 0 && selectedCount < totalCount
+  const isIndeterminate = selectedCount > 0 && selectedCount < totalCount;
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
@@ -33,20 +34,18 @@ export function EmailListHeader({
           checked={allSelected}
           ref={(el) => {
             if (el) {
-              el.indeterminate = isIndeterminate
+              el.indeterminate = isIndeterminate;
             }
           }}
           onCheckedChange={handleCheckboxChange}
-          className="mr-2"
+          className={cn(
+            "data-[state=checked]:!bg-blue-500 data-[state=checked]:!border-blue-500",
+            "mr-2"
+          )}
           aria-label="Select all emails"
         />
       )}
-      <h1 className="text-lg font-semibold">{title}</h1>
-      {selectedCount > 0 && (
-        <span className="text-sm text-muted-foreground">
-          ({selectedCount} selected)
-        </span>
-      )}
+      <h1 className="text-md font-medium">{title}</h1>
       <div className="flex-1" />
       {showRefresh && (
         <button
@@ -58,5 +57,5 @@ export function EmailListHeader({
         </button>
       )}
     </header>
-  )
+  );
 }

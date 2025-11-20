@@ -76,11 +76,6 @@ export function ResizableEmailPanel({
 
   return (
     <>
-      {/* Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/10 z-40 transition-opacity pointer-events-none" />
-      )}
-
       {/* Panel */}
       <div
         className={cn(
