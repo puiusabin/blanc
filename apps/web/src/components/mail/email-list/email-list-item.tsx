@@ -61,7 +61,7 @@ export function EmailListItem({
     >
       {/* Checkbox */}
       <div
-        className="mr-2 -my-3 py-3 -mx-2 px-2 cursor-pointer flex items-center"
+        className="-my-3 py-3 -mx-2 px-2 cursor-pointer flex items-center"
         onClick={(e) => {
           e.stopPropagation();
           onSelect(!isSelected);
@@ -80,43 +80,50 @@ export function EmailListItem({
 
       {/* Unread indicator */}
       <div className="w-6 shrink-0 flex items-center justify-center">
-        {!email.isRead && <div className="size-2 rounded-full bg-blue-500" />}
+        {!email.isRead && <div className="size-1.5 rounded-full bg-blue-500" />}
       </div>
 
       {/* Sender */}
       <div className="w-40 shrink-0">
-        <span className={cn("text-sm", !email.isRead && "font-medium")}>{email.from.name}</span>
+        <span
+          className={cn(
+            "text-sm",
+            !email.isRead && "font-semibold",
+            email.isRead && "text-muted-foreground"
+          )}
+        >
+          {email.from.name}
+        </span>
       </div>
 
       {/* Subject and Preview */}
       <div className="flex-1 min-w-0 text-sm truncate ml-4">
-        <span className={cn(!email.isRead && "font-semibold")}>{email.subject}</span>
-        <span className="text-muted-foreground"> {email.preview}</span>
+        <span
+          className={cn(!email.isRead && "font-semibold", email.isRead && "text-muted-foreground")}
+        >
+          {email.subject}
+        </span>
+        <span
+          className={cn(
+            !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
+          )}
+        >
+          {" "}
+          — {email.preview}
+        </span>
       </div>
 
       {/* Timestamp */}
       <div className="w-24 shrink-0 text-right ml-4">
-        <span className="text-xs text-muted-foreground">{formatTimestamp(email.timestamp)}</span>
+        <span
+          className={cn(
+            "text-xs",
+            !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
+          )}
+        >
+          {formatTimestamp(email.timestamp)}
+        </span>
       </div>
-
-      {/* Attachments indicator */}
-      {email.hasAttachments && (
-        <div className="ml-2 shrink-0">
-          <svg
-            className="size-4 text-muted-foreground"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-            />
-          </svg>
-        </div>
-      )}
     </div>
   );
 }
