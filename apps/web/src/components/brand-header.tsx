@@ -1,33 +1,29 @@
-import Image from "next/image"
-import { cn } from "@/lib/utils"
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface BrandHeaderProps {
-  className?: string
-  showName?: boolean
-  size?: "sm" | "md" | "lg"
+  className?: string;
+  showName?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
 const sizeConfig = {
   sm: {
     image: 14,
-    text: "text-sm",
+    text: "text-sm font-semibold",
   },
   md: {
     image: 20,
-    text: "text-lg",
+    text: "text-lg font-semibold",
   },
   lg: {
     image: 28,
-    text: "text-xl",
+    text: "text-xl font-semibold",
   },
-}
+};
 
-export function BrandHeader({
-  className,
-  showName = true,
-  size = "md"
-}: BrandHeaderProps) {
-  const config = sizeConfig[size]
+export function BrandHeader({ className, showName = true, size = "md" }: BrandHeaderProps) {
+  const config = sizeConfig[size];
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -45,9 +41,7 @@ export function BrandHeader({
         height={config.image}
         className="dark:hidden"
       />
-      {showName && (
-        <span className={cn(config.text)}>blanc</span>
-      )}
+      {showName && <span className={cn(config.text)}>blanc</span>}
     </div>
-  )
+  );
 }
