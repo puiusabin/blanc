@@ -1,29 +1,15 @@
 import { ConnectWalletButton } from "@/components/simplekit";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandHeader } from "@/components/brand-header";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col">
       {/* Header with logo */}
       <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <Image
-          src="/blancicow.svg"
-          alt="blanc logo"
-          width={20}
-          height={20}
-          className="hidden dark:block"
-        />
-        <Image
-          src="/blancicob.svg"
-          alt="blanc logo"
-          width={20}
-          height={20}
-          className="dark:hidden"
-        />
-        <span className="text-lg font-semibold">blanc</span>
+        <BrandHeader size="md" />
         <div className="ml-auto">
           <ThemeToggle />
         </div>

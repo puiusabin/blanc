@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import Image from "next/image";
+import { BrandHeader } from "@/components/brand-header";
 import {
   SquarePen,
   Search,
@@ -241,21 +241,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <Sidebar {...props}>
         <SidebarHeader className="border-b h-14 flex flex-row items-center px-4">
-          <Image
-            src="/blancicow.svg"
-            alt="blanc logo"
-            width={20}
-            height={20}
-            className="hidden dark:block"
-          />
-          <Image
-            src="/blancicob.svg"
-            alt="blanc logo"
-            width={20}
-            height={20}
-            className="dark:hidden"
-          />
-          <span className="text-lg font-semibold">blanc</span>
+          <BrandHeader size="md" />
         </SidebarHeader>
         <SidebarContent>
           {/* Top buttons without section */}
