@@ -3,13 +3,13 @@
 import * as React from "react";
 
 import {
-  SimpleKitModal,
-  SimpleKitModalBody,
-  SimpleKitModalContent,
-  SimpleKitModalDescription,
-  SimpleKitModalHeader,
-  SimpleKitModalTitle,
-} from "@/components/simplekit-modal";
+  WalletKitModal,
+  WalletKitModalBody,
+  WalletKitModalContent,
+  WalletKitModalDescription,
+  WalletKitModalHeader,
+  WalletKitModalTitle,
+} from "@/components/walletkit-modal";
 import { Button } from "@/components/ui/button";
 import {
   type Connector,
@@ -23,13 +23,13 @@ import {
 import { formatEther } from "viem";
 import { Check, ChevronLeft, Copy, RotateCcw, Plus, XIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { SimpleKitModalClose } from "@/components/simplekit-modal";
+import { WalletKitModalClose } from "@/components/walletkit-modal";
 import Link from "next/link";
 
 const MODAL_CLOSE_DURATION = 320;
-const RECENT_CONNECTOR_KEY = "simplekit-recent-connector";
+const RECENT_CONNECTOR_KEY = "walletkit-recent-connector";
 
-const SimpleKitContext = React.createContext<{
+const WalletKitContext = React.createContext<{
   pendingConnector: Connector | null;
   setPendingConnector: React.Dispatch<React.SetStateAction<Connector | null>>;
   isConnectorError: boolean;
@@ -49,7 +49,7 @@ const SimpleKitContext = React.createContext<{
   setRecentConnectorId: () => null,
 });
 
-function SimpleKitProvider(props: { children: React.ReactNode }) {
+function WalletKitProvider(props: { children: React.ReactNode }) {
   const { status, address, connector } = useAccount();
   const [pendingConnector, setPendingConnector] = React.useState<Connector | null>(null);
   const [isConnectorError, setIsConnectorError] = React.useState(false);
@@ -90,7 +90,7 @@ function SimpleKitProvider(props: { children: React.ReactNode }) {
   }, [status, connector, pendingConnector]);
 
   return (
-    <SimpleKitContext.Provider
+    <WalletKitContext.Provider
       value={{
         pendingConnector,
         setPendingConnector,
@@ -103,25 +103,25 @@ function SimpleKitProvider(props: { children: React.ReactNode }) {
       }}
     >
       {props.children}
-      <SimpleKitModal open={open} onOpenChange={setOpen}>
-        <SimpleKitModalContent>{isConnected ? <Account /> : <Connectors />}</SimpleKitModalContent>
-      </SimpleKitModal>
-    </SimpleKitContext.Provider>
+      <WalletKitModal open={open} onOpenChange={setOpen}>
+        <WalletKitModalContent>{isConnected ? <Account /> : <Connectors />}</WalletKitModalContent>
+      </WalletKitModal>
+    </WalletKitContext.Provider>
   );
 }
 
 function ConnectWalletButton() {
-  const simplekit = useSimpleKit();
+  const walletkit = useWalletKit();
   const { address } = useAccount();
   const { data: ensName } = useEnsName({ address });
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
 
   return (
-    <Button onClick={simplekit.toggleModal} className="">
-      {simplekit.isConnected ? (
+    <Button onClick={walletkit.toggleModal} className="">
+      {walletkit.isConnected ? (
         <>
           {ensAvatar && <img src={ensAvatar} alt="ENS Avatar" />}
-          {address && <span>{ensName ? `${ensName}` : simplekit.formattedAddress}</span>}
+          {address && <span>{ensName ? `${ensName}` : walletkit.formattedAddress}</span>}
         </>
       ) : (
         "Connect Wallet"
@@ -135,7 +135,7 @@ function Account() {
   const { disconnect } = useDisconnect();
   const { data: ensName } = useEnsName({ address });
   const { data: userBalance } = useBalance({ address });
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
 
   const formattedAddress = address?.slice(0, 6) + "•••" + address?.slice(-4);
   const formattedUserBalace = userBalance?.value
@@ -151,13 +151,13 @@ function Account() {
 
   return (
     <>
-      <SimpleKitModalHeader>
-        <SimpleKitModalTitle>Connected</SimpleKitModalTitle>
-        <SimpleKitModalDescription className="sr-only">
+      <WalletKitModalHeader>
+        <WalletKitModalTitle>Connected</WalletKitModalTitle>
+        <WalletKitModalDescription className="sr-only">
           Account modal for your connected Web3 wallet.
-        </SimpleKitModalDescription>
-      </SimpleKitModalHeader>
-      <SimpleKitModalBody className="py-6">
+        </WalletKitModalDescription>
+      </WalletKitModalHeader>
+      <WalletKitModalBody className="py-6">
         <div className="flex w-full flex-col items-center justify-center gap-8">
           <div className="size-24 flex items-center justify-center">
             <img src={`https://avatar.vercel.sh/${address}?size=150`} alt="User gradient avatar" />
@@ -179,34 +179,39 @@ function Account() {
             Disconnect
           </Button>
         </div>
-      </SimpleKitModalBody>
+      </WalletKitModalBody>
     </>
   );
 }
 
 function Connectors() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
 
   return (
     <div className="flex flex-col h-full min-w-0">
+      {/* Border between drag handle and content (mobile only) */}
+      <div className="h-px bg-border shrink-0 md:hidden" />
+
       {/* Top border row */}
       <div className="flex h-16 shrink-0 border-b relative">
-        <div className="w-16 border-r relative" />
+        <div className="w-16 border-r relative">
+          <BackChevron />
+        </div>
         <div className="flex-1 flex items-center justify-center">
-          <SimpleKitModalTitle>
+          <WalletKitModalTitle>
             {context.pendingConnector?.name ?? "Connect Wallet"}
-          </SimpleKitModalTitle>
-          <SimpleKitModalDescription className="sr-only">
+          </WalletKitModalTitle>
+          <WalletKitModalDescription className="sr-only">
             Connect your Web3 wallet or create a new one.
-          </SimpleKitModalDescription>
+          </WalletKitModalDescription>
         </div>
         <div className="w-16 border-l relative">
-          <SimpleKitModalClose asChild>
+          <WalletKitModalClose asChild>
             <button className="absolute inset-0 flex items-center justify-center hover:bg-accent transition-colors">
               <XIcon className="size-4" />
               <span className="sr-only">Close</span>
             </button>
-          </SimpleKitModalClose>
+          </WalletKitModalClose>
         </div>
       </div>
 
@@ -222,7 +227,6 @@ function Connectors() {
 
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <BackChevron />
           {context.pendingConnector ? <WalletConnecting /> : <WalletOptions />}
         </div>
 
@@ -254,12 +258,12 @@ function Connectors() {
 }
 
 function WalletConnecting() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
 
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-9 md:pt-5">
+    <div className="flex w-full flex-col items-center justify-center gap-3 py-6">
       {context.pendingConnector?.icon && (
-        <div className="size-[116px] relative flex items-center justify-center border p-3">
+        <div className="size-20 md:size-[116px] relative flex items-center justify-center border p-3">
           <img
             src={context.pendingConnector?.icon}
             alt={context.pendingConnector?.name}
@@ -270,7 +274,7 @@ function WalletConnecting() {
       )}
 
       <div className="space-y-3.5 px-3.5 text-center sm:px-0">
-        <h1 className="text-xl font-semibold">
+        <h1 className="text-lg font-semibold">
           {context.isConnectorError ? "Request Error" : "Requesting Connection"}
         </h1>
         <p className="text-balance text-sm text-muted-foreground">
@@ -284,7 +288,7 @@ function WalletConnecting() {
 }
 
 function WalletOptions() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
   const { connectors, connect } = useConnectors();
 
   const totalRows = Math.ceil(connectors.length / 4);
@@ -400,7 +404,7 @@ function CopyAddressButton() {
 }
 
 function BackChevron() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
 
   if (!context.pendingConnector) {
     return null;
@@ -413,7 +417,7 @@ function BackChevron() {
 
   return (
     <button
-      className="absolute left-0 top-0 z-50 w-16 h-16 flex items-center justify-center hover:bg-accent transition-colors"
+      className="absolute inset-0 flex items-center justify-center hover:bg-accent transition-colors"
       onClick={handleClick}
     >
       <ChevronLeft className="h-4 w-4" />
@@ -423,7 +427,7 @@ function BackChevron() {
 }
 
 function RetryConnectorButton() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
   const { connect } = useConnect({
     mutation: {
       onError: () => context.setIsConnectorError(true),
@@ -450,7 +454,7 @@ function RetryConnectorButton() {
 }
 
 function useConnectors() {
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
   const { connect, connectors } = useConnect({
     mutation: {
       onError: () => context.setIsConnectorError(true),
@@ -564,11 +568,11 @@ function useConnectors() {
 
 /*
  * This hook can be moved to a separate file
- * if desired (src/hooks/use-simple-kit.tsx).
+ * if desired (src/hooks/use-wallet-kit.tsx).
  */
-function useSimpleKit() {
+function useWalletKit() {
   const { address } = useAccount();
-  const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(WalletKitContext);
 
   const isModalOpen = context.open;
   const isConnected = address && !context.pendingConnector;
@@ -596,4 +600,4 @@ function useSimpleKit() {
   };
 }
 
-export { SimpleKitProvider, ConnectWalletButton, useSimpleKit, SimpleKitContext };
+export { WalletKitProvider, ConnectWalletButton, useWalletKit, WalletKitContext };
