@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Badge } from "./badge"
-import { Check } from "lucide-react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Badge } from "./badge";
+import { Check } from "lucide-react";
 
 const meta: Meta<typeof Badge> = {
   title: "UI/Badge",
@@ -18,38 +18,38 @@ const meta: Meta<typeof Badge> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Badge>
+export default meta;
+type Story = StoryObj<typeof Badge>;
 
 export const Default: Story = {
   args: {
     children: "Badge",
     variant: "default",
   },
-}
+};
 
 export const Secondary: Story = {
   args: {
     children: "Secondary",
     variant: "secondary",
   },
-}
+};
 
 export const Destructive: Story = {
   args: {
     children: "Destructive",
     variant: "destructive",
   },
-}
+};
 
 export const Outline: Story = {
   args: {
     children: "Outline",
     variant: "outline",
   },
-}
+};
 
 export const WithIcon: Story = {
   args: {
@@ -60,7 +60,7 @@ export const WithIcon: Story = {
       </>
     ),
   },
-}
+};
 
 export const AllVariants: Story = {
   render: () => (
@@ -75,4 +75,4 @@ export const AllVariants: Story = {
       </Badge>
     </div>
   ),
-}
+};

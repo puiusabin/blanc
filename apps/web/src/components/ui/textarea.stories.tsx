@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Textarea } from "./textarea"
-import { Label } from "./label"
-import { useState } from "react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Textarea } from "./textarea";
+import { Label } from "./label";
+import { useState } from "react";
 
 const meta: Meta<typeof Textarea> = {
   title: "UI/Textarea",
@@ -18,20 +18,20 @@ const meta: Meta<typeof Textarea> = {
       control: "text",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Textarea>
+export default meta;
+type Story = StoryObj<typeof Textarea>;
 
 export const Default: Story = {
   args: {},
-}
+};
 
 export const WithPlaceholder: Story = {
   args: {
     placeholder: "Type your message here...",
   },
-}
+};
 
 export const WithLabel: Story = {
   render: () => (
@@ -40,7 +40,7 @@ export const WithLabel: Story = {
       <Textarea id="message" placeholder="Type your message..." />
     </div>
   ),
-}
+};
 
 export const Disabled: Story = {
   args: {
@@ -48,7 +48,7 @@ export const Disabled: Story = {
     placeholder: "This field is disabled",
     defaultValue: "You cannot edit this text",
   },
-}
+};
 
 export const WithError: Story = {
   render: () => (
@@ -57,35 +57,26 @@ export const WithError: Story = {
         Bio
         <span className="text-destructive ml-1">*</span>
       </Label>
-      <Textarea
-        id="bio"
-        placeholder="Tell us about yourself"
-        aria-invalid="true"
-      />
+      <Textarea id="bio" placeholder="Tell us about yourself" aria-invalid="true" />
       <p className="text-sm text-destructive">Bio is required</p>
     </div>
   ),
-}
+};
 
 export const WithHelperText: Story = {
   render: () => (
     <div className="space-y-2">
       <Label htmlFor="description">Description</Label>
-      <Textarea
-        id="description"
-        placeholder="Enter a detailed description"
-      />
-      <p className="text-sm text-muted-foreground">
-        Provide as much detail as possible
-      </p>
+      <Textarea id="description" placeholder="Enter a detailed description" />
+      <p className="text-sm text-muted-foreground">Provide as much detail as possible</p>
     </div>
   ),
-}
+};
 
 export const WithCharacterCount: Story = {
   render: () => {
-    const maxLength = 200
-    const [value, setValue] = useState("")
+    const maxLength = 200;
+    const [value, setValue] = useState("");
 
     return (
       <div className="space-y-2">
@@ -101,9 +92,9 @@ export const WithCharacterCount: Story = {
           {value.length} / {maxLength} characters
         </p>
       </div>
-    )
+    );
   },
-}
+};
 
 export const AutoResize: Story = {
   render: () => (
@@ -119,12 +110,12 @@ export const AutoResize: Story = {
       </p>
     </div>
   ),
-}
+};
 
 export const FormExample: Story = {
   render: () => {
-    const [feedback, setFeedback] = useState("")
-    const maxLength = 500
+    const [feedback, setFeedback] = useState("");
+    const maxLength = 500;
 
     return (
       <form className="w-96 space-y-4">
@@ -163,9 +154,9 @@ export const FormExample: Story = {
           </div>
         </div>
       </form>
-    )
+    );
   },
-}
+};
 
 export const LongContent: Story = {
   args: {
@@ -175,4 +166,4 @@ You can include multiple paragraphs, and the textarea will automatically adjust 
 
 This makes for a better user experience as users can see all of their content without having to scroll within the textarea itself.`,
   },
-}
+};

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Button } from "./button"
-import { Mail, ChevronRight } from "lucide-react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Button } from "./button";
+import { Mail, ChevronRight } from "lucide-react";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
@@ -25,66 +25,66 @@ const meta: Meta<typeof Button> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Button>
+export default meta;
+type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {
   args: {
     children: "Button",
     variant: "default",
   },
-}
+};
 
 export const Destructive: Story = {
   args: {
     children: "Delete",
     variant: "destructive",
   },
-}
+};
 
 export const Outline: Story = {
   args: {
     children: "Outline",
     variant: "outline",
   },
-}
+};
 
 export const Secondary: Story = {
   args: {
     children: "Secondary",
     variant: "secondary",
   },
-}
+};
 
 export const Ghost: Story = {
   args: {
     children: "Ghost",
     variant: "ghost",
   },
-}
+};
 
 export const Link: Story = {
   args: {
     children: "Link",
     variant: "link",
   },
-}
+};
 
 export const Small: Story = {
   args: {
     children: "Small",
     size: "sm",
   },
-}
+};
 
 export const Large: Story = {
   args: {
     children: "Large",
     size: "lg",
   },
-}
+};
 
 export const WithIcon: Story = {
   args: {
@@ -95,21 +95,21 @@ export const WithIcon: Story = {
       </>
     ),
   },
-}
+};
 
 export const IconButton: Story = {
   args: {
     size: "icon",
     children: <ChevronRight />,
   },
-}
+};
 
 export const Disabled: Story = {
   args: {
     children: "Disabled",
     disabled: true,
   },
-}
+};
 
 export const AllVariants: Story = {
   render: () => (
@@ -140,4 +140,4 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
-}
+};

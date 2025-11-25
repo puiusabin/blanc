@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { EmailDetail } from "./email-detail"
-import { generateMockEmail } from "@/lib/mock-emails"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { EmailDetail } from "./email-detail";
+import { generateMockEmail } from "@/lib/mock-emails";
 
 const meta: Meta<typeof EmailDetail> = {
   title: "Mail/EmailDetail",
@@ -14,20 +14,20 @@ const meta: Meta<typeof EmailDetail> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof EmailDetail>
+export default meta;
+type Story = StoryObj<typeof EmailDetail>;
 
-const mockEmail = generateMockEmail(0, "inbox")
+const mockEmail = generateMockEmail(0, "inbox");
 const emailWithAttachment = {
   ...generateMockEmail(1, "inbox"),
   hasAttachments: true,
-}
+};
 const starredEmail = {
   ...generateMockEmail(2, "inbox"),
   isStarred: true,
-}
+};
 
 export const Default: Story = {
   args: {
@@ -44,7 +44,7 @@ export const Default: Story = {
       <EmailDetail {...args} />
     </div>
   ),
-}
+};
 
 export const WithAttachments: Story = {
   args: {
@@ -57,7 +57,7 @@ export const WithAttachments: Story = {
       <EmailDetail {...args} />
     </div>
   ),
-}
+};
 
 export const Starred: Story = {
   args: {
@@ -70,7 +70,7 @@ export const Starred: Story = {
       <EmailDetail {...args} />
     </div>
   ),
-}
+};
 
 export const NoActions: Story = {
   args: {
@@ -82,7 +82,7 @@ export const NoActions: Story = {
       <EmailDetail {...args} />
     </div>
   ),
-}
+};
 
 export const LongContent: Story = {
   args: {
@@ -108,4 +108,4 @@ The Team`,
       <EmailDetail {...args} />
     </div>
   ),
-}
+};

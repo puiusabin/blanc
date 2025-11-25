@@ -37,14 +37,13 @@ export function EmailListItem({
         minute: "2-digit",
         hour12: true,
       });
-    } else if (days === 1) {
-      return "Yesterday";
-    } else if (days < 7) {
-      return `${days} days ago`;
-    } else if (days < 14) {
-      return "Last week";
     } else {
-      return `${Math.floor(days / 7)} weeks ago`;
+      return date
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
+        .toLowerCase();
     }
   };
 

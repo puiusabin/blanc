@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { BrandHeader } from "./brand-header"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { BrandHeader } from "./brand-header";
 
 const meta: Meta<typeof BrandHeader> = {
   title: "App/BrandHeader",
@@ -19,65 +19,63 @@ const meta: Meta<typeof BrandHeader> = {
       description: "Size variant",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof BrandHeader>
+export default meta;
+type Story = StoryObj<typeof BrandHeader>;
 
 export const Default: Story = {
   args: {},
-}
+};
 
 export const Small: Story = {
   args: {
     size: "sm",
   },
-}
+};
 
 export const Medium: Story = {
   args: {
     size: "md",
   },
-}
+};
 
 export const Large: Story = {
   args: {
     size: "lg",
   },
-}
+};
 
 export const LogoOnly: Story = {
   args: {
     showName: false,
   },
-}
+};
 
 export const LogoOnlySmall: Story = {
   args: {
     showName: false,
     size: "sm",
   },
-}
+};
 
 export const LogoOnlyLarge: Story = {
   args: {
     showName: false,
     size: "lg",
   },
-}
+};
 
 export const InHeader: Story = {
   render: () => (
     <header className="flex h-14 w-96 items-center gap-2 border-b px-4">
       <BrandHeader />
       <div className="ml-auto">
-        <button className="px-3 py-1.5 text-sm rounded-md border hover:bg-accent">
-          Sign In
-        </button>
+        <button className="px-3 py-1.5 text-sm rounded-md border hover:bg-accent">Sign In</button>
       </div>
     </header>
   ),
-}
+};
 
 export const InSidebarHeader: Story = {
   render: () => (
@@ -85,7 +83,7 @@ export const InSidebarHeader: Story = {
       <BrandHeader />
     </div>
   ),
-}
+};
 
 export const WithCustomSpacing: Story = {
   render: () => (
@@ -95,4 +93,4 @@ export const WithCustomSpacing: Story = {
       <BrandHeader className="gap-4" size="lg" />
     </div>
   ),
-}
+};

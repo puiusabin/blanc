@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Label } from "./label"
-import { Input } from "./input"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Label } from "./label";
+import { Input } from "./input";
 
 const meta: Meta<typeof Label> = {
   title: "UI/Label",
@@ -15,16 +15,16 @@ const meta: Meta<typeof Label> = {
       description: "ID of the form element this label is for",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Label>
+export default meta;
+type Story = StoryObj<typeof Label>;
 
 export const Default: Story = {
   args: {
     children: "Label text",
   },
-}
+};
 
 export const WithInput: Story = {
   render: () => (
@@ -33,7 +33,7 @@ export const WithInput: Story = {
       <Input id="email" type="email" placeholder="you@example.com" />
     </div>
   ),
-}
+};
 
 export const Required: Story = {
   render: () => (
@@ -45,7 +45,7 @@ export const Required: Story = {
       <Input id="username" placeholder="Enter username" />
     </div>
   ),
-}
+};
 
 export const Disabled: Story = {
   render: () => (
@@ -54,19 +54,17 @@ export const Disabled: Story = {
       <Input id="disabled-input" disabled placeholder="Cannot edit this" />
     </div>
   ),
-}
+};
 
 export const WithHelperText: Story = {
   render: () => (
     <div className="space-y-2">
       <Label htmlFor="password">Password</Label>
       <Input id="password" type="password" placeholder="Enter password" />
-      <p className="text-sm text-muted-foreground">
-        Must be at least 8 characters long
-      </p>
+      <p className="text-sm text-muted-foreground">Must be at least 8 characters long</p>
     </div>
   ),
-}
+};
 
 export const WithError: Story = {
   render: () => (
@@ -75,16 +73,11 @@ export const WithError: Story = {
         Email address
         <span className="text-destructive ml-1">*</span>
       </Label>
-      <Input
-        id="error-input"
-        type="email"
-        placeholder="you@example.com"
-        aria-invalid="true"
-      />
+      <Input id="error-input" type="email" placeholder="you@example.com" aria-invalid="true" />
       <p className="text-sm text-destructive">Please enter a valid email</p>
     </div>
   ),
-}
+};
 
 export const MultipleFields: Story = {
   render: () => (
@@ -112,16 +105,16 @@ export const MultipleFields: Story = {
       </div>
     </form>
   ),
-}
+};
 
 export const LongText: Story = {
   render: () => (
     <div className="max-w-md space-y-2">
       <Label htmlFor="terms">
-        I agree to the terms and conditions, privacy policy, and data
-        processing agreement as outlined in the documentation
+        I agree to the terms and conditions, privacy policy, and data processing agreement as
+        outlined in the documentation
       </Label>
       <Input id="terms" type="checkbox" className="size-4" />
     </div>
   ),
-}
+};

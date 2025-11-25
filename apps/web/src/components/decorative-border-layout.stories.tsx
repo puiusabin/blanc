@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { DecorativeBorderLayout } from "./decorative-border-layout"
-import { useState } from "react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { DecorativeBorderLayout } from "./decorative-border-layout";
+import { useState } from "react";
 
 const meta: Meta<typeof DecorativeBorderLayout> = {
   title: "App/DecorativeBorderLayout",
@@ -9,10 +9,10 @@ const meta: Meta<typeof DecorativeBorderLayout> = {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof DecorativeBorderLayout>
+export default meta;
+type Story = StoryObj<typeof DecorativeBorderLayout>;
 
 export const Default: Story = {
   render: () => (
@@ -24,11 +24,11 @@ export const Default: Story = {
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};
 
 export const WithCloseButton: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(true)
+    const [isOpen, setIsOpen] = useState(true);
 
     if (!isOpen) {
       return (
@@ -40,22 +40,20 @@ export const WithCloseButton: Story = {
             Open Layout
           </button>
         </div>
-      )
+      );
     }
 
     return (
       <div className="h-screen">
         <DecorativeBorderLayout onClose={() => setIsOpen(false)}>
           <div className="flex items-center justify-center flex-1">
-            <p className="text-muted-foreground">
-              Click the X button in the top-right to close
-            </p>
+            <p className="text-muted-foreground">Click the X button in the top-right to close</p>
           </div>
         </DecorativeBorderLayout>
       </div>
-    )
+    );
   },
-}
+};
 
 export const WithContent: Story = {
   render: () => (
@@ -68,8 +66,8 @@ export const WithContent: Story = {
               <div key={i} className="p-4 border rounded-lg">
                 <h3 className="font-medium mb-2">Section {i + 1}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua.
                 </p>
               </div>
             ))}
@@ -78,7 +76,7 @@ export const WithContent: Story = {
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};
 
 export const WithSidebar: Story = {
   render: () => (
@@ -111,8 +109,8 @@ export const WithSidebar: Story = {
             <div className="flex-1 overflow-auto p-6">
               <h1 className="text-2xl font-semibold mb-4">Content Area</h1>
               <p className="text-muted-foreground">
-                This demonstrates the decorative border layout with a sidebar
-                and content area, similar to the settings dialog.
+                This demonstrates the decorative border layout with a sidebar and content area,
+                similar to the settings dialog.
               </p>
             </div>
           </div>
@@ -120,7 +118,7 @@ export const WithSidebar: Story = {
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};
 
 export const SettingsExample: Story = {
   render: () => (
@@ -151,16 +149,14 @@ export const SettingsExample: Story = {
                   Application
                 </div>
                 <div className="space-y-0.5">
-                  {["Custom domains", "Import", "Notifications", "Signature"].map(
-                    (item) => (
-                      <button
-                        key={item}
-                        className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                      >
-                        {item}
-                      </button>
-                    )
-                  )}
+                  {["Custom domains", "Import", "Notifications", "Signature"].map((item) => (
+                    <button
+                      key={item}
+                      className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    >
+                      {item}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -196,9 +192,7 @@ export const SettingsExample: Story = {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Email notifications</p>
-                    <p className="text-sm text-muted-foreground">
-                      Receive notifications via email
-                    </p>
+                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
                   </div>
                   <input type="checkbox" defaultChecked />
                 </div>
@@ -216,7 +210,7 @@ export const SettingsExample: Story = {
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};
 
 export const MinimalContent: Story = {
   render: () => (
@@ -225,15 +219,13 @@ export const MinimalContent: Story = {
         <div className="flex items-center justify-center flex-1 p-6">
           <div className="text-center space-y-2">
             <h2 className="text-xl font-semibold">Empty State</h2>
-            <p className="text-sm text-muted-foreground">
-              No content to display
-            </p>
+            <p className="text-sm text-muted-foreground">No content to display</p>
           </div>
         </div>
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};
 
 export const WithScrollableContent: Story = {
   render: () => (
@@ -246,8 +238,7 @@ export const WithScrollableContent: Story = {
               <div key={i} className="p-4 border rounded-lg">
                 <h3 className="font-medium mb-1">Item {i + 1}</h3>
                 <p className="text-sm text-muted-foreground">
-                  This content demonstrates scrolling within the decorative
-                  border layout.
+                  This content demonstrates scrolling within the decorative border layout.
                 </p>
               </div>
             ))}
@@ -256,4 +247,4 @@ export const WithScrollableContent: Story = {
       </DecorativeBorderLayout>
     </div>
   ),
-}
+};

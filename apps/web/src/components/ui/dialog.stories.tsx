@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./dialog"
-import { Button } from "./button"
-import { Input } from "./input"
-import { Label } from "./label"
+} from "./dialog";
+import { Button } from "./button";
+import { Input } from "./input";
+import { Label } from "./label";
 
 const meta: Meta<typeof Dialog> = {
   title: "UI/Dialog",
@@ -19,10 +19,10 @@ const meta: Meta<typeof Dialog> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Dialog>
+export default meta;
+type Story = StoryObj<typeof Dialog>;
 
 export const Default: Story = {
   render: () => (
@@ -34,14 +34,14 @@ export const Default: Story = {
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your account
-            and remove your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers.
           </DialogDescription>
         </DialogHeader>
       </DialogContent>
     </Dialog>
   ),
-}
+};
 
 export const WithFooter: Story = {
   render: () => (
@@ -53,7 +53,7 @@ export const WithFooter: Story = {
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            Make changes to your profile here. Click save when you are done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -76,7 +76,7 @@ export const WithFooter: Story = {
       </DialogContent>
     </Dialog>
   ),
-}
+};
 
 export const CustomCloseAction: Story = {
   render: () => (
@@ -98,7 +98,7 @@ export const CustomCloseAction: Story = {
       </DialogContent>
     </Dialog>
   ),
-}
+};
 
 export const LongContent: Story = {
   render: () => (
@@ -109,26 +109,23 @@ export const LongContent: Story = {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Terms of Service</DialogTitle>
-          <DialogDescription>
-            Please read and accept our terms of service
-          </DialogDescription>
+          <DialogDescription>Please read and accept our terms of service</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 text-sm">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-            veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-            commodo consequat.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
           </p>
           <p>
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-            dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+            nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+            officia deserunt mollit anim id est laborum.
           </p>
           <p>
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-            doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-            veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
+            laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi
+            architecto beatae vitae dicta sunt explicabo.
           </p>
         </div>
         <DialogFooter>
@@ -137,4 +134,4 @@ export const LongContent: Story = {
       </DialogContent>
     </Dialog>
   ),
-}
+};

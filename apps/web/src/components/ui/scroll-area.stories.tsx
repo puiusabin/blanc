@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { ScrollArea, ScrollBar } from "./scroll-area"
-import { Separator } from "./separator"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ScrollArea, ScrollBar } from "./scroll-area";
+import { Separator } from "./separator";
 
 const meta: Meta<typeof ScrollArea> = {
   title: "UI/ScrollArea",
@@ -9,10 +9,10 @@ const meta: Meta<typeof ScrollArea> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof ScrollArea>
+export default meta;
+type Story = StoryObj<typeof ScrollArea>;
 
 export const VerticalScroll: Story = {
   render: () => (
@@ -27,7 +27,7 @@ export const VerticalScroll: Story = {
       </div>
     </ScrollArea>
   ),
-}
+};
 
 export const HorizontalScroll: Story = {
   render: () => (
@@ -45,7 +45,7 @@ export const HorizontalScroll: Story = {
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
   ),
-}
+};
 
 export const BothScrollbars: Story = {
   render: () => (
@@ -77,7 +77,7 @@ export const BothScrollbars: Story = {
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
   ),
-}
+};
 
 export const TagsList: Story = {
   render: () => {
@@ -102,7 +102,7 @@ export const TagsList: Story = {
       "Git",
       "GitHub",
       "Node.js",
-    ]
+    ];
 
     return (
       <ScrollArea className="h-48 w-96 rounded-md border p-4">
@@ -110,19 +110,16 @@ export const TagsList: Story = {
           <h4 className="text-sm font-medium">Tags</h4>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <div
-                key={tag}
-                className="px-2 py-1 text-xs rounded-md bg-secondary"
-              >
+              <div key={tag} className="px-2 py-1 text-xs rounded-md bg-secondary">
                 {tag}
               </div>
             ))}
           </div>
         </div>
       </ScrollArea>
-    )
+    );
   },
-}
+};
 
 export const CodeBlock: Story = {
   render: () => (
@@ -158,7 +155,7 @@ for (let i = 0; i < 20; i++) {
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
   ),
-}
+};
 
 export const ChatMessages: Story = {
   render: () => {
@@ -179,7 +176,7 @@ export const ChatMessages: Story = {
         text: "Totally agree. The components are so customizable.",
       },
       { sender: "Bob", text: "Let me know if you need any help!" },
-    ]
+    ];
 
     return (
       <ScrollArea className="h-72 w-96 rounded-md border">
@@ -191,9 +188,7 @@ export const ChatMessages: Story = {
             >
               <div
                 className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${
-                  message.sender === "Alice"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                  message.sender === "Alice" ? "bg-primary text-primary-foreground" : "bg-muted"
                 }`}
               >
                 <p className="font-medium text-xs mb-1">{message.sender}</p>
@@ -203,9 +198,9 @@ export const ChatMessages: Story = {
           ))}
         </div>
       </ScrollArea>
-    )
+    );
   },
-}
+};
 
 export const MenuList: Story = {
   render: () => {
@@ -220,7 +215,7 @@ export const MenuList: Story = {
       { title: "Settings", description: "Manage preferences" },
       { title: "Profile", description: "Edit your profile" },
       { title: "Help", description: "Get support" },
-    ]
+    ];
 
     return (
       <ScrollArea className="h-72 w-96 rounded-md border">
@@ -229,18 +224,16 @@ export const MenuList: Story = {
             <div key={i}>
               <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">
                 <p className="text-sm font-medium">{item.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {item.description}
-                </p>
+                <p className="text-xs text-muted-foreground">{item.description}</p>
               </button>
               {i < items.length - 1 && <Separator className="my-1" />}
             </div>
           ))}
         </div>
       </ScrollArea>
-    )
+    );
   },
-}
+};
 
 export const CustomHeight: Story = {
   render: () => (
@@ -264,7 +257,7 @@ export const CustomHeight: Story = {
       </ScrollArea>
     </div>
   ),
-}
+};
 
 export const ImageGallery: Story = {
   render: () => (
@@ -281,4 +274,4 @@ export const ImageGallery: Story = {
       </div>
     </ScrollArea>
   ),
-}
+};

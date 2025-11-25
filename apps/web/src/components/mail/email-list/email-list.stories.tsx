@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { EmailList } from "./email-list"
-import { generateMockEmails } from "@/lib/mock-emails"
-import { useState } from "react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { EmailList } from "./email-list";
+import { generateMockEmails } from "@/lib/mock-emails";
+import { useState } from "react";
 
 const meta: Meta<typeof EmailList> = {
   title: "Mail/EmailList",
@@ -10,16 +10,16 @@ const meta: Meta<typeof EmailList> = {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof EmailList>
+export default meta;
+type Story = StoryObj<typeof EmailList>;
 
-const mockEmails = generateMockEmails(10, "inbox")
+const mockEmails = generateMockEmails(10, "inbox");
 
 export const Default: Story = {
   render: () => {
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     return (
       <div className="h-screen">
@@ -27,26 +27,24 @@ export const Default: Story = {
           emails={mockEmails}
           selectedIds={selectedIds}
           onSelect={(id, selected) => {
-            const newSet = new Set(selectedIds)
+            const newSet = new Set(selectedIds);
             if (selected) {
-              newSet.add(id)
+              newSet.add(id);
             } else {
-              newSet.delete(id)
+              newSet.delete(id);
             }
-            setSelectedIds(newSet)
+            setSelectedIds(newSet);
           }}
           onEmailClick={(email) => console.log("Clicked:", email.subject)}
         />
       </div>
-    )
+    );
   },
-}
+};
 
 export const WithSelection: Story = {
   render: () => {
-    const [selectedIds] = useState<Set<string>>(
-      new Set([mockEmails[0].id, mockEmails[2].id])
-    )
+    const [selectedIds] = useState<Set<string>>(new Set([mockEmails[0].id, mockEmails[2].id]));
 
     return (
       <div className="h-screen">
@@ -57,27 +55,22 @@ export const WithSelection: Story = {
           onEmailClick={() => {}}
         />
       </div>
-    )
+    );
   },
-}
+};
 
 export const Empty: Story = {
   render: () => (
     <div className="h-screen">
-      <EmailList
-        emails={[]}
-        selectedIds={new Set()}
-        onSelect={() => {}}
-        onEmailClick={() => {}}
-      />
+      <EmailList emails={[]} selectedIds={new Set()} onSelect={() => {}} onEmailClick={() => {}} />
     </div>
   ),
-}
+};
 
 export const LongList: Story = {
   render: () => {
-    const longList = generateMockEmails(50, "inbox")
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+    const longList = generateMockEmails(50, "inbox");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     return (
       <div className="h-screen">
@@ -85,17 +78,17 @@ export const LongList: Story = {
           emails={longList}
           selectedIds={selectedIds}
           onSelect={(id, selected) => {
-            const newSet = new Set(selectedIds)
+            const newSet = new Set(selectedIds);
             if (selected) {
-              newSet.add(id)
+              newSet.add(id);
             } else {
-              newSet.delete(id)
+              newSet.delete(id);
             }
-            setSelectedIds(newSet)
+            setSelectedIds(newSet);
           }}
           onEmailClick={(email) => console.log("Clicked:", email.subject)}
         />
       </div>
-    )
+    );
   },
-}
+};

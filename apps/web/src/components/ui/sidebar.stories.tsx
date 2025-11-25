@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +21,7 @@ import {
   SidebarMenuSubButton,
   SidebarSeparator,
   SidebarGroupAction,
-} from "./sidebar"
+} from "./sidebar";
 import {
   Home,
   Inbox,
@@ -31,7 +31,7 @@ import {
   Plus,
   MoreHorizontal,
   ChevronRight,
-} from "lucide-react"
+} from "lucide-react";
 
 const meta: Meta<typeof Sidebar> = {
   title: "UI/Sidebar",
@@ -40,10 +40,10 @@ const meta: Meta<typeof Sidebar> = {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Sidebar>
+export default meta;
+type Story = StoryObj<typeof Sidebar>;
 
 export const Default: Story = {
   render: () => (
@@ -100,7 +100,7 @@ export const Default: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const WithBadges: Story = {
   render: () => (
@@ -144,7 +144,7 @@ export const WithBadges: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const WithActions: Story = {
   render: () => (
@@ -189,7 +189,7 @@ export const WithActions: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const WithSubmenu: Story = {
   render: () => (
@@ -249,7 +249,7 @@ export const WithSubmenu: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const WithGroups: Story = {
   render: () => (
@@ -319,7 +319,7 @@ export const WithGroups: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const LoadingState: Story = {
   render: () => (
@@ -347,7 +347,7 @@ export const LoadingState: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const FloatingVariant: Story = {
   render: () => (
@@ -394,7 +394,7 @@ export const FloatingVariant: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const InsetVariant: Story = {
   render: () => (
@@ -441,7 +441,7 @@ export const InsetVariant: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const IconCollapsible: Story = {
   render: () => (
@@ -488,14 +488,14 @@ export const IconCollapsible: Story = {
         </header>
         <div className="flex-1 p-4">
           <p className="text-muted-foreground">
-            Click the trigger to toggle between icon-only and full sidebar. Hover
-            over icons to see tooltips.
+            Click the trigger to toggle between icon-only and full sidebar. Hover over icons to see
+            tooltips.
           </p>
         </div>
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};
 
 export const WithHeaderAndFooter: Story = {
   render: () => (
@@ -549,4 +549,4 @@ export const WithHeaderAndFooter: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
-}
+};

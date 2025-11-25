@@ -29,6 +29,7 @@ export function EmailListHeader({
   };
 
   const isIndeterminate = selectedCount > 0 && selectedCount < totalCount;
+  const checkboxState = isIndeterminate ? "indeterminate" : allSelected;
 
   return (
     <header
@@ -39,12 +40,7 @@ export function EmailListHeader({
       {onSelectAll && (
         <div className="flex items-center">
           <Checkbox
-            checked={allSelected}
-            ref={(el) => {
-              if (el) {
-                el.indeterminate = isIndeterminate;
-              }
-            }}
+            checked={checkboxState}
             onCheckedChange={handleCheckboxChange}
             className={cn(
               "data-[state=checked]:!bg-blue-500 data-[state=checked]:!border-blue-500",

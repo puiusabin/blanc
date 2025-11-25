@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ResizableEmailPanel } from "./resizable-email-panel";
 import { EmailDetail } from "../email-detail/email-detail";
 import { generateMockEmail } from "@/lib/mock-emails";
@@ -118,7 +118,7 @@ export const PersistentPanel: Story = {
             Click emails to view. Panel stays open and content updates. Press Escape to close.
           </p>
           <div className="space-y-2">
-            {mockEmails.map((email, index) => (
+            {mockEmails.map((email) => (
               <div
                 key={email.id}
                 className="p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"

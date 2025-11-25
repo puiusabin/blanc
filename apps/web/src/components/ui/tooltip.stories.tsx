@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
-import { Button } from "./button"
-import { Plus } from "lucide-react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
+import { Button } from "./button";
+import { Plus } from "lucide-react";
 
 const meta: Meta<typeof Tooltip> = {
   title: "UI/Tooltip",
@@ -10,10 +10,10 @@ const meta: Meta<typeof Tooltip> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Tooltip>
+export default meta;
+type Story = StoryObj<typeof Tooltip>;
 
 export const Default: Story = {
   render: () => (
@@ -26,7 +26,7 @@ export const Default: Story = {
       </TooltipContent>
     </Tooltip>
   ),
-}
+};
 
 export const OnIconButton: Story = {
   render: () => (
@@ -41,7 +41,7 @@ export const OnIconButton: Story = {
       </TooltipContent>
     </Tooltip>
   ),
-}
+};
 
 export const Positions: Story = {
   render: () => (
@@ -91,7 +91,7 @@ export const Positions: Story = {
       </Tooltip>
     </div>
   ),
-}
+};
 
 export const WithDelay: Story = {
   render: () => (
@@ -104,7 +104,7 @@ export const WithDelay: Story = {
       </TooltipContent>
     </Tooltip>
   ),
-}
+};
 
 export const LongText: Story = {
   render: () => (
@@ -114,10 +114,10 @@ export const LongText: Story = {
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">
         <p>
-          This is a longer tooltip that demonstrates how the component handles
-          multiple lines of text. The text will wrap automatically.
+          This is a longer tooltip that demonstrates how the component handles multiple lines of
+          text. The text will wrap automatically.
         </p>
       </TooltipContent>
     </Tooltip>
   ),
-}
+};

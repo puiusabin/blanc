@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { EmailListHeader } from "./email-list-header"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { EmailListHeader } from "./email-list-header";
 
 const meta: Meta<typeof EmailListHeader> = {
   title: "Mail/EmailListHeader",
@@ -16,10 +16,10 @@ const meta: Meta<typeof EmailListHeader> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof EmailListHeader>
+export default meta;
+type Story = StoryObj<typeof EmailListHeader>;
 
 export const Default: Story = {
   args: {
@@ -30,7 +30,7 @@ export const Default: Story = {
     onSelectAll: () => {},
     onRefresh: () => {},
   },
-}
+};
 
 export const WithSelection: Story = {
   args: {
@@ -41,7 +41,7 @@ export const WithSelection: Story = {
     onSelectAll: () => {},
     onRefresh: () => {},
   },
-}
+};
 
 export const AllSelected: Story = {
   args: {
@@ -52,7 +52,7 @@ export const AllSelected: Story = {
     onSelectAll: () => {},
     onRefresh: () => {},
   },
-}
+};
 
 export const Sent: Story = {
   args: {
@@ -63,7 +63,7 @@ export const Sent: Story = {
     onSelectAll: () => {},
     onRefresh: () => {},
   },
-}
+};
 
 export const Drafts: Story = {
   args: {
@@ -74,7 +74,7 @@ export const Drafts: Story = {
     onSelectAll: () => {},
     onRefresh: () => {},
   },
-}
+};
 
 export const NoRefresh: Story = {
   args: {
@@ -85,4 +85,4 @@ export const NoRefresh: Story = {
     showRefresh: false,
     onSelectAll: () => {},
   },
-}
+};

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Checkbox } from "./checkbox"
-import { Label } from "./label"
-import { useState } from "react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Checkbox } from "./checkbox";
+import { Label } from "./label";
+import { useState } from "react";
 
 const meta: Meta<typeof Checkbox> = {
   title: "UI/Checkbox",
@@ -18,33 +18,33 @@ const meta: Meta<typeof Checkbox> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Checkbox>
+export default meta;
+type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
   args: {},
-}
+};
 
 export const Checked: Story = {
   args: {
     defaultChecked: true,
   },
-}
+};
 
 export const Disabled: Story = {
   args: {
     disabled: true,
   },
-}
+};
 
 export const DisabledChecked: Story = {
   args: {
     disabled: true,
     defaultChecked: true,
   },
-}
+};
 
 export const WithLabel: Story = {
   render: () => (
@@ -53,7 +53,7 @@ export const WithLabel: Story = {
       <Label htmlFor="terms">Accept terms and conditions</Label>
     </div>
   ),
-}
+};
 
 export const WithError: Story = {
   render: () => (
@@ -65,23 +65,17 @@ export const WithError: Story = {
       <p className="text-sm text-destructive">You must accept to continue</p>
     </div>
   ),
-}
+};
 
 export const Indeterminate: Story = {
   render: () => {
-    const [checked, setChecked] = useState<boolean | "indeterminate">("indeterminate")
+    const [checked, setChecked] = useState<boolean | "indeterminate">("indeterminate");
 
     return (
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
-          <Checkbox
-            id="parent"
-            checked={checked}
-            onCheckedChange={setChecked}
-          />
-          <Label htmlFor="parent">
-            Parent checkbox (indeterminate)
-          </Label>
+          <Checkbox id="parent" checked={checked} onCheckedChange={setChecked} />
+          <Label htmlFor="parent">Parent checkbox (indeterminate)</Label>
         </div>
         <div className="ml-6 space-y-2">
           <div className="flex items-center space-x-2">
@@ -94,13 +88,13 @@ export const Indeterminate: Story = {
           </div>
         </div>
       </div>
-    )
+    );
   },
-}
+};
 
 export const Interactive: Story = {
   render: () => {
-    const [checked, setChecked] = useState(false)
+    const [checked, setChecked] = useState(false);
 
     return (
       <div className="space-y-4">
@@ -110,17 +104,15 @@ export const Interactive: Story = {
             checked={checked}
             onCheckedChange={(value) => setChecked(value === true)}
           />
-          <Label htmlFor="interactive">
-            {checked ? "Checked" : "Unchecked"}
-          </Label>
+          <Label htmlFor="interactive">{checked ? "Checked" : "Unchecked"}</Label>
         </div>
         <p className="text-sm text-muted-foreground">
           State: {checked ? "✓ Checked" : "○ Unchecked"}
         </p>
       </div>
-    )
+    );
   },
-}
+};
 
 export const FormExample: Story = {
   render: () => (
@@ -144,4 +136,4 @@ export const FormExample: Story = {
       </div>
     </form>
   ),
-}
+};

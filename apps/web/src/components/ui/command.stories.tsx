@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Command,
   CommandEmpty,
@@ -7,8 +7,8 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "./command"
-import { Calendar, User, Settings, CreditCard, Smile } from "lucide-react"
+} from "./command";
+import { Calendar, User, Settings, CreditCard, Smile } from "lucide-react";
 
 const meta: Meta<typeof Command> = {
   title: "UI/Command",
@@ -17,10 +17,10 @@ const meta: Meta<typeof Command> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Command>
+export default meta;
+type Story = StoryObj<typeof Command>;
 
 export const Default: Story = {
   render: () => (
@@ -60,7 +60,7 @@ export const Default: Story = {
       </CommandList>
     </Command>
   ),
-}
+};
 
 export const Simple: Story = {
   render: () => (
@@ -78,7 +78,7 @@ export const Simple: Story = {
       </CommandList>
     </Command>
   ),
-}
+};
 
 export const WithIcons: Story = {
   render: () => (
@@ -103,4 +103,4 @@ export const WithIcons: Story = {
       </CommandList>
     </Command>
   ),
-}
+};

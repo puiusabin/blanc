@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Popover, PopoverTrigger, PopoverContent } from "./popover"
-import { Button } from "./button"
-import { Label } from "./label"
-import { Input } from "./input"
-import { Settings, User, Calendar } from "lucide-react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Popover, PopoverTrigger, PopoverContent } from "./popover";
+import { Button } from "./button";
+import { Label } from "./label";
+import { Input } from "./input";
+import { Settings, User, Calendar } from "lucide-react";
 
 const meta: Meta<typeof Popover> = {
   title: "UI/Popover",
@@ -12,10 +12,10 @@ const meta: Meta<typeof Popover> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Popover>
+export default meta;
+type Story = StoryObj<typeof Popover>;
 
 export const Default: Story = {
   render: () => (
@@ -26,14 +26,12 @@ export const Default: Story = {
       <PopoverContent>
         <div className="space-y-2">
           <h4 className="font-medium leading-none">Popover</h4>
-          <p className="text-sm text-muted-foreground">
-            This is a popover with some content.
-          </p>
+          <p className="text-sm text-muted-foreground">This is a popover with some content.</p>
         </div>
       </PopoverContent>
     </Popover>
   ),
-}
+};
 
 export const WithForm: Story = {
   render: () => (
@@ -45,9 +43,7 @@ export const WithForm: Story = {
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Dimensions</h4>
-            <p className="text-sm text-muted-foreground">
-              Set the dimensions for the layer.
-            </p>
+            <p className="text-sm text-muted-foreground">Set the dimensions for the layer.</p>
           </div>
           <div className="space-y-2">
             <div className="space-y-1">
@@ -63,7 +59,7 @@ export const WithForm: Story = {
       </PopoverContent>
     </Popover>
   ),
-}
+};
 
 export const UserProfile: Story = {
   render: () => (
@@ -99,7 +95,7 @@ export const UserProfile: Story = {
       </PopoverContent>
     </Popover>
   ),
-}
+};
 
 export const SettingsMenu: Story = {
   render: () => (
@@ -130,7 +126,7 @@ export const SettingsMenu: Story = {
       </PopoverContent>
     </Popover>
   ),
-}
+};
 
 export const DatePicker: Story = {
   render: () => (
@@ -160,7 +156,7 @@ export const DatePicker: Story = {
       </PopoverContent>
     </Popover>
   ),
-}
+};
 
 export const Alignments: Story = {
   render: () => (
@@ -193,7 +189,7 @@ export const Alignments: Story = {
       </Popover>
     </div>
   ),
-}
+};
 
 export const Sides: Story = {
   render: () => (
@@ -237,7 +233,7 @@ export const Sides: Story = {
       </Popover>
     </div>
   ),
-}
+};
 
 export const CustomWidth: Story = {
   render: () => (
@@ -270,7 +266,7 @@ export const CustomWidth: Story = {
       </Popover>
     </div>
   ),
-}
+};
 
 export const WithScrollableContent: Story = {
   render: () => (
@@ -295,4 +291,4 @@ export const WithScrollableContent: Story = {
       </PopoverContent>
     </Popover>
   ),
-}
+};

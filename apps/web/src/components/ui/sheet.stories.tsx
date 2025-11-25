@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Sheet,
   SheetClose,
@@ -8,11 +8,11 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./sheet"
-import { Button } from "./button"
-import { Label } from "./label"
-import { Input } from "./input"
-import { Textarea } from "./textarea"
+} from "./sheet";
+import { Button } from "./button";
+import { Label } from "./label";
+import { Input } from "./input";
+import { Textarea } from "./textarea";
 
 const meta: Meta<typeof Sheet> = {
   title: "UI/Sheet",
@@ -21,10 +21,10 @@ const meta: Meta<typeof Sheet> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Sheet>
+export default meta;
+type Story = StoryObj<typeof Sheet>;
 
 export const Right: Story = {
   render: () => (
@@ -36,7 +36,7 @@ export const Right: Story = {
         <SheetHeader>
           <SheetTitle>Edit Profile</SheetTitle>
           <SheetDescription>
-            Make changes to your profile here. Click save when you're done.
+            Make changes to your profile here. Click save when you are done.
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-4">
@@ -57,7 +57,7 @@ export const Right: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const Left: Story = {
   render: () => (
@@ -68,9 +68,7 @@ export const Left: Story = {
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Navigation</SheetTitle>
-          <SheetDescription>
-            Browse different sections
-          </SheetDescription>
+          <SheetDescription>Browse different sections</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-4">
           <nav className="space-y-2">
@@ -91,7 +89,7 @@ export const Left: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const Top: Story = {
   render: () => (
@@ -102,20 +100,18 @@ export const Top: Story = {
       <SheetContent side="top">
         <SheetHeader>
           <SheetTitle>Announcement</SheetTitle>
-          <SheetDescription>
-            Important updates and news
-          </SheetDescription>
+          <SheetDescription>Important updates and news</SheetDescription>
         </SheetHeader>
         <div className="py-4">
           <p className="text-sm">
-            We've just released a new version with exciting features! Check out
-            the changelog to see what's new.
+            We have just released a new version with exciting features! Check out the changelog to
+            see what is new.
           </p>
         </div>
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const Bottom: Story = {
   render: () => (
@@ -126,9 +122,7 @@ export const Bottom: Story = {
       <SheetContent side="bottom">
         <SheetHeader>
           <SheetTitle>Quick Actions</SheetTitle>
-          <SheetDescription>
-            Choose an action to perform
-          </SheetDescription>
+          <SheetDescription>Choose an action to perform</SheetDescription>
         </SheetHeader>
         <div className="grid grid-cols-3 gap-4 py-4">
           <button className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-accent">
@@ -147,7 +141,7 @@ export const Bottom: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const WithForm: Story = {
   render: () => (
@@ -158,9 +152,7 @@ export const WithForm: Story = {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Create Project</SheetTitle>
-          <SheetDescription>
-            Add a new project to your workspace
-          </SheetDescription>
+          <SheetDescription>Add a new project to your workspace</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
@@ -172,18 +164,11 @@ export const WithForm: Story = {
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-description">Description</Label>
-            <Textarea
-              id="project-description"
-              placeholder="Brief description of your project"
-            />
+            <Textarea id="project-description" placeholder="Brief description of your project" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-url">Repository URL</Label>
-            <Input
-              id="project-url"
-              type="url"
-              placeholder="https://github.com/..."
-            />
+            <Input id="project-url" type="url" placeholder="https://github.com/..." />
           </div>
         </div>
         <SheetFooter>
@@ -195,7 +180,7 @@ export const WithForm: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const NonModal: Story = {
   render: () => (
@@ -212,14 +197,14 @@ export const NonModal: Story = {
         </SheetHeader>
         <div className="py-4">
           <p className="text-sm text-muted-foreground">
-            This sheet does not block interaction with the rest of the page. Try
-            clicking outside to see it stay open.
+            This sheet does not block interaction with the rest of the page. Try clicking outside to
+            see it stay open.
           </p>
         </div>
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const WithoutOverlay: Story = {
   render: () => (
@@ -230,19 +215,17 @@ export const WithoutOverlay: Story = {
       <SheetContent showOverlay={false}>
         <SheetHeader>
           <SheetTitle>No Backdrop</SheetTitle>
-          <SheetDescription>
-            This sheet has no overlay backdrop
-          </SheetDescription>
+          <SheetDescription>This sheet has no overlay backdrop</SheetDescription>
         </SheetHeader>
         <div className="py-4">
           <p className="text-sm text-muted-foreground">
-            Notice there's no dark overlay behind this sheet.
+            Notice there is no dark overlay behind this sheet.
           </p>
         </div>
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const WithScrollableContent: Story = {
   render: () => (
@@ -253,26 +236,23 @@ export const WithScrollableContent: Story = {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Product Details</SheetTitle>
-          <SheetDescription>
-            Complete information about this product
-          </SheetDescription>
+          <SheetDescription>Complete information about this product</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 py-4 overflow-y-auto flex-1">
           <div>
             <h4 className="font-medium mb-2">Overview</h4>
             <p className="text-sm text-muted-foreground">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+              incididunt ut labore et dolore magna aliqua.
             </p>
           </div>
           {Array.from({ length: 5 }, (_, i) => (
             <div key={i}>
               <h4 className="font-medium mb-2">Section {i + 1}</h4>
               <p className="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
             </div>
           ))}
@@ -286,7 +266,7 @@ export const WithScrollableContent: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const SettingsPanel: Story = {
   render: () => (
@@ -297,9 +277,7 @@ export const SettingsPanel: Story = {
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
-          <SheetDescription>
-            Manage your account settings and preferences
-          </SheetDescription>
+          <SheetDescription>Manage your account settings and preferences</SheetDescription>
         </SheetHeader>
         <div className="space-y-6 py-4">
           <div className="space-y-4">
@@ -310,11 +288,7 @@ export const SettingsPanel: Story = {
             </div>
             <div className="space-y-2">
               <Label htmlFor="settings-email">Email</Label>
-              <Input
-                id="settings-email"
-                type="email"
-                defaultValue="john@example.com"
-              />
+              <Input id="settings-email" type="email" defaultValue="john@example.com" />
             </div>
           </div>
 
@@ -322,11 +296,7 @@ export const SettingsPanel: Story = {
             <h4 className="font-medium">Preferences</h4>
             <div className="flex items-center justify-between">
               <Label htmlFor="settings-notifications">Email notifications</Label>
-              <input
-                id="settings-notifications"
-                type="checkbox"
-                defaultChecked
-              />
+              <input id="settings-notifications" type="checkbox" defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="settings-marketing">Marketing emails</Label>
@@ -347,7 +317,7 @@ export const SettingsPanel: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};
 
 export const ContactForm: Story = {
   render: () => (
@@ -358,9 +328,7 @@ export const ContactForm: Story = {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Get in Touch</SheetTitle>
-          <SheetDescription>
-            We'd love to hear from you. Send us a message!
-          </SheetDescription>
+          <SheetDescription>We would love to hear from you. Send us a message!</SheetDescription>
         </SheetHeader>
         <form className="space-y-4 py-4">
           <div className="space-y-2">
@@ -375,11 +343,7 @@ export const ContactForm: Story = {
               Email
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <Input
-              id="contact-email"
-              type="email"
-              placeholder="you@example.com"
-            />
+            <Input id="contact-email" type="email" placeholder="you@example.com" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="contact-message">
@@ -402,4 +366,4 @@ export const ContactForm: Story = {
       </SheetContent>
     </Sheet>
   ),
-}
+};

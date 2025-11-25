@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   InputGroup,
   InputGroupAddon,
@@ -6,20 +6,10 @@ import {
   InputGroupText,
   InputGroupInput,
   InputGroupTextarea,
-} from "./input-group"
-import { Kbd } from "./kbd"
-import {
-  Search,
-  Mail,
-  Send,
-  DollarSign,
-  Lock,
-  Eye,
-  EyeOff,
-  Calendar,
-  X,
-} from "lucide-react"
-import { useState } from "react"
+} from "./input-group";
+import { Kbd } from "./kbd";
+import { Search, Mail, Send, DollarSign, Lock, Eye, EyeOff, Calendar, X } from "lucide-react";
+import { useState } from "react";
 
 const meta: Meta<typeof InputGroup> = {
   title: "UI/InputGroup",
@@ -28,10 +18,10 @@ const meta: Meta<typeof InputGroup> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof InputGroup>
+export default meta;
+type Story = StoryObj<typeof InputGroup>;
 
 export const WithIcon: Story = {
   render: () => (
@@ -58,7 +48,7 @@ export const WithIcon: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const WithButton: Story = {
   render: () => (
@@ -92,7 +82,7 @@ export const WithButton: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const WithText: Story = {
   render: () => (
@@ -122,7 +112,7 @@ export const WithText: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const WithKbd: Story = {
   render: () => (
@@ -145,7 +135,7 @@ export const WithKbd: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const BlockAlignment: Story = {
   render: () => (
@@ -160,9 +150,7 @@ export const BlockAlignment: Story = {
       <InputGroup>
         <InputGroupInput placeholder="Add a comment" />
         <InputGroupAddon align="block-end">
-          <InputGroupText className="text-xs">
-            You can use Markdown
-          </InputGroupText>
+          <InputGroupText className="text-xs">You can use Markdown</InputGroupText>
         </InputGroupAddon>
       </InputGroup>
 
@@ -179,7 +167,7 @@ export const BlockAlignment: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const MultipleAddons: Story = {
   render: () => (
@@ -209,7 +197,7 @@ export const MultipleAddons: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const WithError: Story = {
   render: () => (
@@ -228,11 +216,11 @@ export const WithError: Story = {
       <p className="text-sm text-destructive">Please enter a valid email</p>
     </div>
   ),
-}
+};
 
 export const SearchInput: Story = {
   render: () => {
-    const [value, setValue] = useState("")
+    const [value, setValue] = useState("");
 
     return (
       <div className="w-96">
@@ -247,10 +235,7 @@ export const SearchInput: Story = {
           />
           {value && (
             <InputGroupAddon align="inline-end">
-              <InputGroupButton
-                size="icon-xs"
-                onClick={() => setValue("")}
-              >
+              <InputGroupButton size="icon-xs" onClick={() => setValue("")}>
                 <X />
               </InputGroupButton>
               <Kbd>Esc</Kbd>
@@ -258,9 +243,9 @@ export const SearchInput: Story = {
           )}
         </InputGroup>
       </div>
-    )
+    );
   },
-}
+};
 
 export const EmailComposer: Story = {
   render: () => (
@@ -293,11 +278,11 @@ export const EmailComposer: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const PasswordInput: Story = {
   render: () => {
-    const [showPassword, setShowPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
 
     return (
       <div className="w-96">
@@ -305,23 +290,17 @@ export const PasswordInput: Story = {
           <InputGroupAddon>
             <Lock />
           </InputGroupAddon>
-          <InputGroupInput
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter password"
-          />
+          <InputGroupInput type={showPassword ? "text" : "password"} placeholder="Enter password" />
           <InputGroupAddon align="inline-end">
-            <InputGroupButton
-              size="icon-xs"
-              onClick={() => setShowPassword(!showPassword)}
-            >
+            <InputGroupButton size="icon-xs" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <EyeOff /> : <Eye />}
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
       </div>
-    )
+    );
   },
-}
+};
 
 export const DateInput: Story = {
   render: () => (
@@ -337,7 +316,7 @@ export const DateInput: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const UrlInput: Story = {
   render: () => (
@@ -363,12 +342,12 @@ export const UrlInput: Story = {
       </InputGroup>
     </div>
   ),
-}
+};
 
 export const CharacterCount: Story = {
   render: () => {
-    const maxLength = 280
-    const [value, setValue] = useState("")
+    const maxLength = 280;
+    const [value, setValue] = useState("");
 
     return (
       <div className="w-96">
@@ -391,6 +370,6 @@ export const CharacterCount: Story = {
           </InputGroupAddon>
         </InputGroup>
       </div>
-    )
+    );
   },
-}
+};

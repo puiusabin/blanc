@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -7,21 +7,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
-} from "./breadcrumb"
-import {
-  Home,
-  Folder,
-  File,
-  ChevronRight,
-  Slash,
-  Minus,
-} from "lucide-react"
+} from "./breadcrumb";
+import { Home, Folder, File, ChevronRight, Slash, Minus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "./dropdown-menu"
+} from "./dropdown-menu";
 
 const meta: Meta<typeof Breadcrumb> = {
   title: "UI/Breadcrumb",
@@ -30,10 +23,10 @@ const meta: Meta<typeof Breadcrumb> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Breadcrumb>
+export default meta;
+type Story = StoryObj<typeof Breadcrumb>;
 
 export const Default: Story = {
   render: () => (
@@ -53,7 +46,7 @@ export const Default: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};
 
 export const WithIcons: Story = {
   render: () => (
@@ -82,7 +75,7 @@ export const WithIcons: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};
 
 export const WithEllipsis: Story = {
   render: () => (
@@ -117,7 +110,7 @@ export const WithEllipsis: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};
 
 export const CustomSeparator: Story = {
   render: () => (
@@ -179,7 +172,7 @@ export const CustomSeparator: Story = {
       </Breadcrumb>
     </div>
   ),
-}
+};
 
 export const LongPath: Story = {
   render: () => (
@@ -202,15 +195,11 @@ export const LongPath: Story = {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="/projects/web-app/src/components">
-            components
-          </BreadcrumbLink>
+          <BreadcrumbLink href="/projects/web-app/src/components">components</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="/projects/web-app/src/components/ui">
-            ui
-          </BreadcrumbLink>
+          <BreadcrumbLink href="/projects/web-app/src/components/ui">ui</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
@@ -219,7 +208,7 @@ export const LongPath: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};
 
 export const InPageHeader: Story = {
   render: () => (
@@ -243,13 +232,11 @@ export const InPageHeader: Story = {
       </Breadcrumb>
       <div className="mt-4">
         <h1 className="text-2xl font-semibold">Inbox</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          You have 24 unread messages
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">You have 24 unread messages</p>
       </div>
     </div>
   ),
-}
+};
 
 export const FilePath: Story = {
   render: () => (
@@ -285,7 +272,7 @@ export const FilePath: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};
 
 export const Compact: Story = {
   render: () => (
@@ -313,4 +300,4 @@ export const Compact: Story = {
       </BreadcrumbList>
     </Breadcrumb>
   ),
-}
+};

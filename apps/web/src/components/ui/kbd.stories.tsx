@@ -1,12 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Kbd, KbdGroup } from "./kbd"
-import {
-  Command,
-  ArrowUp,
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-} from "lucide-react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Kbd, KbdGroup } from "./kbd";
+import { Command, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 
 const meta: Meta<typeof Kbd> = {
   title: "UI/Kbd",
@@ -15,16 +9,16 @@ const meta: Meta<typeof Kbd> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Kbd>
+export default meta;
+type Story = StoryObj<typeof Kbd>;
 
 export const SingleKey: Story = {
   args: {
     children: "K",
   },
-}
+};
 
 export const ModifierKeys: Story = {
   render: () => (
@@ -35,7 +29,7 @@ export const ModifierKeys: Story = {
       <Kbd>⌃</Kbd>
     </div>
   ),
-}
+};
 
 export const KeyCombination: Story = {
   render: () => (
@@ -44,7 +38,7 @@ export const KeyCombination: Story = {
       <Kbd>K</Kbd>
     </KbdGroup>
   ),
-}
+};
 
 export const ComplexCombination: Story = {
   render: () => (
@@ -61,7 +55,7 @@ export const ComplexCombination: Story = {
       </KbdGroup>
     </div>
   ),
-}
+};
 
 export const WithIcons: Story = {
   render: () => (
@@ -90,7 +84,7 @@ export const WithIcons: Story = {
       </KbdGroup>
     </div>
   ),
-}
+};
 
 export const InText: Story = {
   render: () => (
@@ -103,7 +97,7 @@ export const InText: Story = {
       to open the command palette
     </p>
   ),
-}
+};
 
 export const ShortcutList: Story = {
   render: () => (
@@ -149,7 +143,7 @@ export const ShortcutList: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const FunctionKeys: Story = {
   render: () => (
@@ -168,7 +162,7 @@ export const FunctionKeys: Story = {
       <Kbd>F12</Kbd>
     </div>
   ),
-}
+};
 
 export const SpecialKeys: Story = {
   render: () => (
@@ -181,7 +175,7 @@ export const SpecialKeys: Story = {
       <Kbd>Backspace</Kbd>
     </div>
   ),
-}
+};
 
 export const NavigationKeys: Story = {
   render: () => (
@@ -210,7 +204,7 @@ export const NavigationKeys: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const CrossPlatform: Story = {
   render: () => (
@@ -237,4 +231,4 @@ export const CrossPlatform: Story = {
       </div>
     </div>
   ),
-}
+};

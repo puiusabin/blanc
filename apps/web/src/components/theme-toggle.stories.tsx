@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { ThemeToggle } from "./theme-toggle"
-import { useTheme } from "next-themes"
-import { useEffect } from "react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ThemeToggle } from "./theme-toggle";
+import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 const meta: Meta<typeof ThemeToggle> = {
   title: "Components/ThemeToggle",
@@ -10,18 +10,18 @@ const meta: Meta<typeof ThemeToggle> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof ThemeToggle>
+export default meta;
+type Story = StoryObj<typeof ThemeToggle>;
 
 export const Default: Story = {
   render: () => <ThemeToggle />,
-}
+};
 
 export const WithCurrentTheme: Story = {
   render: () => {
-    const { theme } = useTheme()
+    const { theme } = useTheme();
     return (
       <div className="space-y-4">
         <ThemeToggle />
@@ -29,40 +29,40 @@ export const WithCurrentTheme: Story = {
           Current theme: <span className="font-medium">{theme}</span>
         </p>
       </div>
-    )
+    );
   },
-}
+};
 
 export const DarkMode: Story = {
   render: () => {
-    const { setTheme } = useTheme()
+    const { setTheme } = useTheme();
 
     useEffect(() => {
-      setTheme("dark")
-    }, [setTheme])
+      setTheme("dark");
+    }, [setTheme]);
 
     return (
       <div className="space-y-4">
         <ThemeToggle />
         <p className="text-sm text-muted-foreground">Theme set to dark</p>
       </div>
-    )
+    );
   },
-}
+};
 
 export const LightMode: Story = {
   render: () => {
-    const { setTheme } = useTheme()
+    const { setTheme } = useTheme();
 
     useEffect(() => {
-      setTheme("light")
-    }, [setTheme])
+      setTheme("light");
+    }, [setTheme]);
 
     return (
       <div className="space-y-4">
         <ThemeToggle />
         <p className="text-sm text-muted-foreground">Theme set to light</p>
       </div>
-    )
+    );
   },
-}
+};

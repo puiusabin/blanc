@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { AppSidebar } from "./app-sidebar"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { AppSidebar } from "./app-sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 const meta: Meta<typeof AppSidebar> = {
   title: "App/AppSidebar",
@@ -16,10 +16,10 @@ const meta: Meta<typeof AppSidebar> = {
       </SidebarProvider>
     ),
   ],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof AppSidebar>
+export default meta;
+type Story = StoryObj<typeof AppSidebar>;
 
 export const Default: Story = {
   render: () => (
@@ -37,7 +37,7 @@ export const Default: Story = {
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const WithInbox: Story = {
   render: () => (
@@ -53,15 +53,12 @@ export const WithInbox: Story = {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="font-medium">Welcome to Blanc Mail</p>
-                  <p className="text-sm text-muted-foreground">
-                    hello@blanc.is
-                  </p>
+                  <p className="text-sm text-muted-foreground">hello@blanc.is</p>
                 </div>
                 <span className="text-xs text-muted-foreground">2m ago</span>
               </div>
               <p className="text-sm">
-                Thank you for signing up! Get started by composing your first
-                email.
+                Thank you for signing up! Get started by composing your first email.
               </p>
             </div>
           </div>
@@ -69,7 +66,7 @@ export const WithInbox: Story = {
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const CollapsibleNone: Story = {
   render: () => (
@@ -81,13 +78,13 @@ export const CollapsibleNone: Story = {
         </header>
         <div className="flex-1 p-4">
           <p className="text-muted-foreground">
-            This sidebar cannot be collapsed (collapsible="none")
+            This sidebar cannot be collapsed (collapsible=&quot;none&quot;)
           </p>
         </div>
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const FloatingVariant: Story = {
   render: () => (
@@ -105,7 +102,7 @@ export const FloatingVariant: Story = {
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const InsetVariant: Story = {
   render: () => (
@@ -123,7 +120,7 @@ export const InsetVariant: Story = {
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const FocusOnSearch: Story = {
   render: () => (
@@ -136,25 +133,19 @@ export const FocusOnSearch: Story = {
         <div className="flex-1 p-4">
           <div className="max-w-md space-y-4">
             <p className="text-muted-foreground">
-              Click the "Search" button in the sidebar or press{" "}
-              <kbd className="px-2 py-1 text-xs rounded border bg-muted">
-                ⌘K
-              </kbd>{" "}
-              to open the search dialog.
+              Click the Search button in the sidebar or press{" "}
+              <kbd className="px-2 py-1 text-xs rounded border bg-muted">⌘K</kbd> to open the search
+              dialog.
             </p>
             <div className="p-4 border rounded-lg bg-muted/50">
               <h3 className="font-medium mb-2">Keyboard Shortcuts</h3>
               <ul className="text-sm space-y-1">
                 <li>
-                  <kbd className="px-2 py-1 text-xs rounded border bg-background mr-2">
-                    ⌘K
-                  </kbd>
+                  <kbd className="px-2 py-1 text-xs rounded border bg-background mr-2">⌘K</kbd>
                   Open search
                 </li>
                 <li>
-                  <kbd className="px-2 py-1 text-xs rounded border bg-background mr-2">
-                    ⌘B
-                  </kbd>
+                  <kbd className="px-2 py-1 text-xs rounded border bg-background mr-2">⌘B</kbd>
                   Toggle sidebar
                 </li>
               </ul>
@@ -164,7 +155,7 @@ export const FocusOnSearch: Story = {
       </SidebarInset>
     </>
   ),
-}
+};
 
 export const FocusOnSettings: Story = {
   render: () => (
@@ -176,11 +167,11 @@ export const FocusOnSettings: Story = {
         </header>
         <div className="flex-1 p-4">
           <p className="text-muted-foreground">
-            Click the "Settings" button in the sidebar to open the settings
-            dialog with the decorative border layout.
+            Click the Settings button in the sidebar to open the settings dialog with the decorative
+            border layout.
           </p>
         </div>
       </SidebarInset>
     </>
   ),
-}
+};

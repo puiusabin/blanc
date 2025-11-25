@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { Separator } from "./separator"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Separator } from "./separator";
 
 const meta: Meta<typeof Separator> = {
   title: "UI/Separator",
@@ -17,10 +17,10 @@ const meta: Meta<typeof Separator> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Separator>
+export default meta;
+type Story = StoryObj<typeof Separator>;
 
 export const Horizontal: Story = {
   render: () => (
@@ -28,7 +28,7 @@ export const Horizontal: Story = {
       <Separator />
     </div>
   ),
-}
+};
 
 export const Vertical: Story = {
   render: () => (
@@ -36,27 +36,23 @@ export const Vertical: Story = {
       <Separator orientation="vertical" />
     </div>
   ),
-}
+};
 
 export const InContent: Story = {
   render: () => (
     <div className="w-96 space-y-4">
       <div>
         <h3 className="text-lg font-semibold">Introduction</h3>
-        <p className="text-sm text-muted-foreground">
-          This is the first section of content.
-        </p>
+        <p className="text-sm text-muted-foreground">This is the first section of content.</p>
       </div>
       <Separator />
       <div>
         <h3 className="text-lg font-semibold">Details</h3>
-        <p className="text-sm text-muted-foreground">
-          This is the second section of content.
-        </p>
+        <p className="text-sm text-muted-foreground">This is the second section of content.</p>
       </div>
     </div>
   ),
-}
+};
 
 export const InList: Story = {
   render: () => (
@@ -77,7 +73,7 @@ export const InList: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const WithText: Story = {
   render: () => (
@@ -85,31 +81,25 @@ export const WithText: Story = {
       <div className="relative">
         <Separator />
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-background px-2 text-xs text-muted-foreground">
-            OR
-          </span>
+          <span className="bg-background px-2 text-xs text-muted-foreground">OR</span>
         </div>
       </div>
     </div>
   ),
-}
+};
 
 export const InCard: Story = {
   render: () => (
     <div className="w-96 rounded-lg border bg-card text-card-foreground shadow-sm">
       <div className="p-6">
-        <h3 className="text-2xl font-semibold leading-none tracking-tight">
-          Card Title
-        </h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          Card description goes here
-        </p>
+        <h3 className="text-2xl font-semibold leading-none tracking-tight">Card Title</h3>
+        <p className="text-sm text-muted-foreground mt-2">Card description goes here</p>
       </div>
       <Separator />
       <div className="p-6">
         <p className="text-sm">
-          This is the main content area of the card. The separator divides the
-          header from the body content.
+          This is the main content area of the card. The separator divides the header from the body
+          content.
         </p>
       </div>
       <Separator />
@@ -121,7 +111,7 @@ export const InCard: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const InSidebar: Story = {
   render: () => (
@@ -138,13 +128,11 @@ export const InSidebar: Story = {
       </div>
       <Separator orientation="vertical" />
       <div className="flex-1 p-4">
-        <p className="text-sm text-muted-foreground">
-          Main content area goes here
-        </p>
+        <p className="text-sm text-muted-foreground">Main content area goes here</p>
       </div>
     </div>
   ),
-}
+};
 
 export const CustomColor: Story = {
   render: () => (
@@ -163,7 +151,7 @@ export const CustomColor: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const ThickSeparator: Story = {
   render: () => (
@@ -173,4 +161,4 @@ export const ThickSeparator: Story = {
       <Separator className="h-2" />
     </div>
   ),
-}
+};

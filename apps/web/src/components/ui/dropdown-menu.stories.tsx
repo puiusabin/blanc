@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +12,9 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from "./dropdown-menu"
-import { Button } from "./button"
-import { User, Settings, LogOut, Mail, MessageSquare, Cloud } from "lucide-react"
+} from "./dropdown-menu";
+import { Button } from "./button";
+import { User, Settings, LogOut, Mail, MessageSquare, Cloud } from "lucide-react";
 
 const meta: Meta<typeof DropdownMenu> = {
   title: "UI/DropdownMenu",
@@ -23,10 +23,10 @@ const meta: Meta<typeof DropdownMenu> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof DropdownMenu>
+export default meta;
+type Story = StoryObj<typeof DropdownMenu>;
 
 export const Default: Story = {
   render: () => (
@@ -57,7 +57,7 @@ export const Default: Story = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-}
+};
 
 export const WithCheckboxes: Story = {
   render: () => (
@@ -68,15 +68,13 @@ export const WithCheckboxes: Story = {
       <DropdownMenuContent>
         <DropdownMenuLabel>Panel Settings</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem checked>
-          Show Status Bar
-        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem checked>Show Status Bar</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>Show Activity Bar</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked>Show Panel</DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-}
+};
 
 export const WithRadioGroup: Story = {
   render: () => (
@@ -95,7 +93,7 @@ export const WithRadioGroup: Story = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-}
+};
 
 export const WithSubmenu: Story = {
   render: () => (
@@ -128,4 +126,4 @@ export const WithSubmenu: Story = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-}
+};

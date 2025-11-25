@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { EmailListItem } from "./email-list-item"
-import { generateMockEmail } from "@/lib/mock-emails"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { EmailListItem } from "./email-list-item";
+import { generateMockEmail } from "@/lib/mock-emails";
 
 const meta: Meta<typeof EmailListItem> = {
   title: "Mail/EmailListItem",
@@ -17,17 +17,17 @@ const meta: Meta<typeof EmailListItem> = {
       control: "boolean",
     },
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof EmailListItem>
+export default meta;
+type Story = StoryObj<typeof EmailListItem>;
 
-const mockEmail = generateMockEmail(0, "inbox")
-const readEmail = { ...generateMockEmail(1, "inbox"), isRead: true }
+const mockEmail = generateMockEmail(0, "inbox");
+const readEmail = { ...generateMockEmail(1, "inbox"), isRead: true };
 const emailWithAttachment = {
   ...generateMockEmail(2, "inbox"),
   hasAttachments: true,
-}
+};
 
 export const Unread: Story = {
   args: {
@@ -36,7 +36,7 @@ export const Unread: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const Read: Story = {
   args: {
@@ -45,7 +45,7 @@ export const Read: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const Selected: Story = {
   args: {
@@ -54,7 +54,7 @@ export const Selected: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const Hovered: Story = {
   args: {
@@ -64,7 +64,7 @@ export const Hovered: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const WithAttachment: Story = {
   args: {
@@ -73,7 +73,7 @@ export const WithAttachment: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const SelectedAndRead: Story = {
   args: {
@@ -82,29 +82,14 @@ export const SelectedAndRead: Story = {
     onSelect: () => {},
     onClick: () => {},
   },
-}
+};
 
 export const AllVariants: Story = {
   render: () => (
     <div className="max-w-4xl">
-      <EmailListItem
-        email={mockEmail}
-        isSelected={false}
-        onSelect={() => {}}
-        onClick={() => {}}
-      />
-      <EmailListItem
-        email={readEmail}
-        isSelected={false}
-        onSelect={() => {}}
-        onClick={() => {}}
-      />
-      <EmailListItem
-        email={mockEmail}
-        isSelected={true}
-        onSelect={() => {}}
-        onClick={() => {}}
-      />
+      <EmailListItem email={mockEmail} isSelected={false} onSelect={() => {}} onClick={() => {}} />
+      <EmailListItem email={readEmail} isSelected={false} onSelect={() => {}} onClick={() => {}} />
+      <EmailListItem email={mockEmail} isSelected={true} onSelect={() => {}} onClick={() => {}} />
       <EmailListItem
         email={emailWithAttachment}
         isSelected={false}
@@ -113,4 +98,4 @@ export const AllVariants: Story = {
       />
     </div>
   ),
-}
+};

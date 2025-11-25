@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   Drawer,
   DrawerClose,
@@ -8,11 +8,11 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "./drawer"
-import { Button } from "./button"
-import { Label } from "./label"
-import { Input } from "./input"
-import { Textarea } from "./textarea"
+} from "./drawer";
+import { Button } from "./button";
+import { Label } from "./label";
+import { Input } from "./input";
+import { Textarea } from "./textarea";
 
 const meta: Meta<typeof Drawer> = {
   title: "UI/Drawer",
@@ -21,10 +21,10 @@ const meta: Meta<typeof Drawer> = {
     layout: "centered",
   },
   tags: ["autodocs"],
-}
+};
 
-export default meta
-type Story = StoryObj<typeof Drawer>
+export default meta;
+type Story = StoryObj<typeof Drawer>;
 
 export const Bottom: Story = {
   render: () => (
@@ -35,9 +35,7 @@ export const Bottom: Story = {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Drawer Title</DrawerTitle>
-          <DrawerDescription>
-            This is a drawer that slides up from the bottom.
-          </DrawerDescription>
+          <DrawerDescription>This is a drawer that slides up from the bottom.</DrawerDescription>
         </DrawerHeader>
         <div className="p-4">
           <p className="text-sm text-muted-foreground">
@@ -52,7 +50,7 @@ export const Bottom: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const Top: Story = {
   render: () => (
@@ -63,9 +61,7 @@ export const Top: Story = {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Notifications</DrawerTitle>
-          <DrawerDescription>
-            You have 3 unread notifications
-          </DrawerDescription>
+          <DrawerDescription>You have 3 unread notifications</DrawerDescription>
         </DrawerHeader>
         <div className="p-4 space-y-3">
           <div className="rounded-lg border p-3">
@@ -84,7 +80,7 @@ export const Top: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const Left: Story = {
   render: () => (
@@ -95,28 +91,22 @@ export const Left: Story = {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Navigation</DrawerTitle>
-          <DrawerDescription>
-            Navigate to different sections
-          </DrawerDescription>
+          <DrawerDescription>Navigate to different sections</DrawerDescription>
         </DrawerHeader>
         <div className="p-4 space-y-2">
           <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">
             Dashboard
           </button>
-          <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">
-            Inbox
-          </button>
+          <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">Inbox</button>
           <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">
             Settings
           </button>
-          <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">
-            Profile
-          </button>
+          <button className="w-full text-left px-3 py-2 rounded-md hover:bg-accent">Profile</button>
         </div>
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const Right: Story = {
   render: () => (
@@ -127,9 +117,7 @@ export const Right: Story = {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Settings</DrawerTitle>
-          <DrawerDescription>
-            Configure your preferences
-          </DrawerDescription>
+          <DrawerDescription>Configure your preferences</DrawerDescription>
         </DrawerHeader>
         <div className="p-4 space-y-4">
           <div className="space-y-2">
@@ -154,7 +142,7 @@ export const Right: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const WithForm: Story = {
   render: () => (
@@ -190,9 +178,7 @@ export const WithForm: Story = {
               <span className="text-destructive ml-1">*</span>
             </Label>
             <Input id="form-password" type="password" />
-            <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters
-            </p>
+            <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="form-bio">Bio</Label>
@@ -208,7 +194,7 @@ export const WithForm: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const WithScrollableContent: Story = {
   render: () => (
@@ -219,18 +205,16 @@ export const WithScrollableContent: Story = {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Terms and Conditions</DrawerTitle>
-          <DrawerDescription>
-            Please read our terms carefully
-          </DrawerDescription>
+          <DrawerDescription>Please read our terms carefully</DrawerDescription>
         </DrawerHeader>
         <div className="p-4 space-y-4 overflow-y-auto">
           {Array.from({ length: 10 }, (_, i) => (
             <div key={i}>
               <h4 className="font-medium mb-2">{i + 1}. Section Title</h4>
               <p className="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris.
               </p>
             </div>
           ))}
@@ -244,7 +228,7 @@ export const WithScrollableContent: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const ConfirmDialog: Story = {
   render: () => (
@@ -256,8 +240,8 @@ export const ConfirmDialog: Story = {
         <DrawerHeader>
           <DrawerTitle>Are you sure?</DrawerTitle>
           <DrawerDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers.
           </DrawerDescription>
         </DrawerHeader>
         <DrawerFooter>
@@ -269,7 +253,7 @@ export const ConfirmDialog: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
 
 export const ProductDetails: Story = {
   render: () => (
@@ -289,8 +273,8 @@ export const ProductDetails: Story = {
           <div className="space-y-2">
             <h4 className="font-medium">Description</h4>
             <p className="text-sm text-muted-foreground">
-              Premium wireless headphones with active noise cancellation,
-              40-hour battery life, and premium sound quality.
+              Premium wireless headphones with active noise cancellation, 40-hour battery life, and
+              premium sound quality.
             </p>
           </div>
           <div className="space-y-2">
@@ -312,4 +296,4 @@ export const ProductDetails: Story = {
       </DrawerContent>
     </Drawer>
   ),
-}
+};
