@@ -3,215 +3,161 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BaseProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 interface RootSimpleKitModalProps extends BaseProps {
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface SimpleKitModalProps extends BaseProps {
-    className?: string;
-    asChild?: true;
+  className?: string;
+  asChild?: true;
 }
 
 const desktop = "(min-width: 768px)";
 
 const SimpleKitModal = ({ children, ...props }: RootSimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModal = isDesktop ? Dialog : Drawer;
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModal = isDesktop ? Dialog : Drawer;
 
-    return <SimpleKitModal {...props}>{children}</SimpleKitModal>;
+  return <SimpleKitModal {...props}>{children}</SimpleKitModal>;
 };
 
-const SimpleKitModalTrigger = ({
-                                   className,
-                                   children,
-                                   ...props
-                               }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalTrigger = isDesktop ? DialogTrigger : DrawerTrigger;
+const SimpleKitModalTrigger = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalTrigger = isDesktop ? DialogTrigger : DrawerTrigger;
 
-    return (
-        <SimpleKitModalTrigger className={className} {...props}>
-            {children}
-        </SimpleKitModalTrigger>
-    );
+  return (
+    <SimpleKitModalTrigger className={className} {...props}>
+      {children}
+    </SimpleKitModalTrigger>
+  );
 };
 
-const SimpleKitModalClose = ({
-                                 className,
-                                 children,
-                                 ...props
-                             }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalClose = isDesktop ? DialogClose : DrawerClose;
+const SimpleKitModalClose = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalClose = isDesktop ? DialogClose : DrawerClose;
 
-    return (
-        <SimpleKitModalClose className={className} {...props}>
-            {children}
-        </SimpleKitModalClose>
-    );
+  return (
+    <SimpleKitModalClose className={className} {...props}>
+      {children}
+    </SimpleKitModalClose>
+  );
 };
 
-const SimpleKitModalContent = ({
-                                   className,
-                                   children,
-                                   ...props
-                               }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalContent = isDesktop ? DialogContent : DrawerContent;
+const SimpleKitModalContent = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalContent = isDesktop ? DialogContent : DrawerContent;
 
-    if (isDesktop) {
-        return (
-            <SimpleKitModalContent
-                className={cn(
-                    "md:max-w-[500px] p-0 gap-0 [&>button]:hidden",
-                    className,
-                )}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                {...props}
-            >
-                {children}
-            </SimpleKitModalContent>
-        );
-    }
-
+  if (isDesktop) {
     return (
-        <SimpleKitModalContent
-            className={cn(
-                "[&>button]:right-[26px] [&>button]:top-[26px]",
-                className,
-            )}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            {...props}
-        >
-            {children}
-        </SimpleKitModalContent>
+      <SimpleKitModalContent
+        className={cn("md:max-w-[500px] p-0 gap-0 [&>button]:hidden", className)}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        {...props}
+      >
+        {children}
+      </SimpleKitModalContent>
     );
+  }
+
+  return (
+    <SimpleKitModalContent
+      className={cn("[&>button]:right-[26px] [&>button]:top-[26px]", className)}
+      onOpenAutoFocus={(e) => e.preventDefault()}
+      {...props}
+    >
+      {children}
+    </SimpleKitModalContent>
+  );
 };
 
-const SimpleKitModalDescription = ({
-                                       className,
-                                       children,
-                                       ...props
-                                   }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalDescription = isDesktop
-        ? DialogDescription
-        : DrawerDescription;
+const SimpleKitModalDescription = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalDescription = isDesktop ? DialogDescription : DrawerDescription;
 
-    return (
-        <SimpleKitModalDescription className={className} {...props}>
-            {children}
-        </SimpleKitModalDescription>
-    );
+  return (
+    <SimpleKitModalDescription className={className} {...props}>
+      {children}
+    </SimpleKitModalDescription>
+  );
 };
 
-const SimpleKitModalHeader = ({
-                                  className,
-                                  children,
-                                  ...props
-                              }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalHeader = isDesktop ? DialogHeader : DrawerHeader;
+const SimpleKitModalHeader = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalHeader = isDesktop ? DialogHeader : DrawerHeader;
 
-    return (
-        <SimpleKitModalHeader
-            className={cn("space-y-0 pb-6 md:pb-4 md:px-6", className)}
-            {...props}
-        >
-            {children}
-        </SimpleKitModalHeader>
-    );
+  return (
+    <SimpleKitModalHeader className={cn("space-y-0 pb-6 md:pb-4 md:px-6", className)} {...props}>
+      {children}
+    </SimpleKitModalHeader>
+  );
 };
 
-const SimpleKitModalTitle = ({
-                                 className,
-                                 children,
-                                 ...props
-                             }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalTitle = isDesktop ? DialogTitle : DrawerTitle;
+const SimpleKitModalTitle = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalTitle = isDesktop ? DialogTitle : DrawerTitle;
 
-    return (
-        <SimpleKitModalTitle className={cn("text-center", className)} {...props}>
-            {children}
-        </SimpleKitModalTitle>
-    );
+  return (
+    <SimpleKitModalTitle className={cn("text-center", className)} {...props}>
+      {children}
+    </SimpleKitModalTitle>
+  );
 };
 
-const SimpleKitModalBody = ({
-                                className,
-                                children,
-                                ...props
-                            }: SimpleKitModalProps) => {
-    return (
-        <div
-            className={cn(
-                "px-6 md:px-6",
-                className,
-            )}
-            {...props}
-        >
-            {children}
-        </div>
-    );
+const SimpleKitModalBody = ({ className, children, ...props }: SimpleKitModalProps) => {
+  return (
+    <div className={cn("px-6 md:px-6", className)} {...props}>
+      {children}
+    </div>
+  );
 };
 
-const SimpleKitModalFooter = ({
-                                  className,
-                                  children,
-                                  ...props
-                              }: SimpleKitModalProps) => {
-    const isDesktop = useMediaQuery(desktop);
-    const SimpleKitModalFooter = isDesktop ? DialogFooter : DrawerFooter;
+const SimpleKitModalFooter = ({ className, children, ...props }: SimpleKitModalProps) => {
+  const isDesktop = useMediaQuery(desktop);
+  const SimpleKitModalFooter = isDesktop ? DialogFooter : DrawerFooter;
 
-    return (
-        <SimpleKitModalFooter
-            className={cn("py-3.5 md:py-0", className)}
-            {...props}
-        >
-            {children}
-        </SimpleKitModalFooter>
-    );
+  return (
+    <SimpleKitModalFooter className={cn("py-3.5 md:py-0", className)} {...props}>
+      {children}
+    </SimpleKitModalFooter>
+  );
 };
 
 export {
-    SimpleKitModal,
-    SimpleKitModalTrigger,
-    SimpleKitModalClose,
-    SimpleKitModalContent,
-    SimpleKitModalDescription,
-    SimpleKitModalHeader,
-    SimpleKitModalTitle,
-    SimpleKitModalBody,
-    SimpleKitModalFooter,
+  SimpleKitModal,
+  SimpleKitModalTrigger,
+  SimpleKitModalClose,
+  SimpleKitModalContent,
+  SimpleKitModalDescription,
+  SimpleKitModalHeader,
+  SimpleKitModalTitle,
+  SimpleKitModalBody,
+  SimpleKitModalFooter,
 };
 
 /*
@@ -220,19 +166,19 @@ export {
  * if desired (src/hooks/use-media-query.tsx).
  */
 export function useMediaQuery(query: string) {
-    const [value, setValue] = React.useState(false);
+  const [value, setValue] = React.useState(false);
 
-    React.useEffect(() => {
-        function onChange(event: MediaQueryListEvent) {
-            setValue(event.matches);
-        }
+  React.useEffect(() => {
+    function onChange(event: MediaQueryListEvent) {
+      setValue(event.matches);
+    }
 
-        const result = matchMedia(query);
-        result.addEventListener("change", onChange);
-        setValue(result.matches);
+    const result = matchMedia(query);
+    result.addEventListener("change", onChange);
+    setValue(result.matches);
 
-        return () => result.removeEventListener("change", onChange);
-    }, [query]);
+    return () => result.removeEventListener("change", onChange);
+  }, [query]);
 
-    return value;
+  return value;
 }

@@ -3,24 +3,22 @@
 import * as React from "react";
 
 import {
-    SimpleKitModal,
-    SimpleKitModalBody,
-    SimpleKitModalContent,
-    SimpleKitModalDescription,
-    SimpleKitModalFooter,
-    SimpleKitModalHeader,
-    SimpleKitModalTitle,
+  SimpleKitModal,
+  SimpleKitModalBody,
+  SimpleKitModalContent,
+  SimpleKitModalDescription,
+  SimpleKitModalHeader,
+  SimpleKitModalTitle,
 } from "@/components/simplekit-modal";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-    type Connector,
-    useAccount,
-    useConnect,
-    useDisconnect,
-    useEnsAvatar,
-    useEnsName,
-    useBalance,
+  type Connector,
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName,
+  useBalance,
 } from "wagmi";
 import { formatEther } from "viem";
 import { Check, ChevronLeft, Copy, RotateCcw, Plus, XIcon } from "lucide-react";
@@ -32,550 +30,536 @@ const MODAL_CLOSE_DURATION = 320;
 const RECENT_CONNECTOR_KEY = "simplekit-recent-connector";
 
 const SimpleKitContext = React.createContext<{
-    pendingConnector: Connector | null;
-    setPendingConnector: React.Dispatch<React.SetStateAction<Connector | null>>;
-    isConnectorError: boolean;
-    setIsConnectorError: React.Dispatch<React.SetStateAction<boolean>>;
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    recentConnectorId: string | null;
-    setRecentConnectorId: React.Dispatch<React.SetStateAction<string | null>>;
+  pendingConnector: Connector | null;
+  setPendingConnector: React.Dispatch<React.SetStateAction<Connector | null>>;
+  isConnectorError: boolean;
+  setIsConnectorError: React.Dispatch<React.SetStateAction<boolean>>;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  recentConnectorId: string | null;
+  setRecentConnectorId: React.Dispatch<React.SetStateAction<string | null>>;
 }>({
-    pendingConnector: null,
-    setPendingConnector: () => null,
-    isConnectorError: false,
-    setIsConnectorError: () => false,
-    open: false,
-    setOpen: () => false,
-    recentConnectorId: null,
-    setRecentConnectorId: () => null,
+  pendingConnector: null,
+  setPendingConnector: () => null,
+  isConnectorError: false,
+  setIsConnectorError: () => false,
+  open: false,
+  setOpen: () => false,
+  recentConnectorId: null,
+  setRecentConnectorId: () => null,
 });
 
 function SimpleKitProvider(props: { children: React.ReactNode }) {
-    const { status, address, connector } = useAccount();
-    const [pendingConnector, setPendingConnector] =
-        React.useState<Connector | null>(null);
-    const [isConnectorError, setIsConnectorError] = React.useState(false);
-    const [open, setOpen] = React.useState(false);
-    const [recentConnectorId, setRecentConnectorId] = React.useState<string | null>(
-        () => {
-            if (typeof window !== "undefined") {
-                return localStorage.getItem(RECENT_CONNECTOR_KEY);
-            }
-            return null;
-        }
-    );
-    const isConnected = address && !pendingConnector;
+  const { status, address, connector } = useAccount();
+  const [pendingConnector, setPendingConnector] = React.useState<Connector | null>(null);
+  const [isConnectorError, setIsConnectorError] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [recentConnectorId, setRecentConnectorId] = React.useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(RECENT_CONNECTOR_KEY);
+    }
+    return null;
+  });
+  const isConnected = address && !pendingConnector;
 
-    React.useEffect(() => {
-        if (status === "connected" && pendingConnector) {
-            setOpen(false);
+  React.useEffect(() => {
+    if (status === "connected" && pendingConnector) {
+      setOpen(false);
 
-            // Save the recent connector to localStorage
-            if (pendingConnector.id) {
-                localStorage.setItem(RECENT_CONNECTOR_KEY, pendingConnector.id);
-                setRecentConnectorId(pendingConnector.id);
-            }
+      // Save the recent connector to localStorage
+      if (pendingConnector.id) {
+        localStorage.setItem(RECENT_CONNECTOR_KEY, pendingConnector.id);
+        setRecentConnectorId(pendingConnector.id);
+      }
 
-            const timeout = setTimeout(() => {
-                setPendingConnector(null);
-                setIsConnectorError(false);
-            }, MODAL_CLOSE_DURATION);
+      const timeout = setTimeout(() => {
+        setPendingConnector(null);
+        setIsConnectorError(false);
+      }, MODAL_CLOSE_DURATION);
 
-            return () => clearTimeout(timeout);
-        }
-    }, [status, setOpen, pendingConnector, setPendingConnector]);
+      return () => clearTimeout(timeout);
+    }
+  }, [status, setOpen, pendingConnector, setPendingConnector]);
 
-    // Update recent connector when already connected (on page load)
-    React.useEffect(() => {
-        if (status === "connected" && connector?.id && !pendingConnector) {
-            localStorage.setItem(RECENT_CONNECTOR_KEY, connector.id);
-            setRecentConnectorId(connector.id);
-        }
-    }, [status, connector, pendingConnector]);
+  // Update recent connector when already connected (on page load)
+  React.useEffect(() => {
+    if (status === "connected" && connector?.id && !pendingConnector) {
+      localStorage.setItem(RECENT_CONNECTOR_KEY, connector.id);
+      setRecentConnectorId(connector.id);
+    }
+  }, [status, connector, pendingConnector]);
 
-    return (
-        <SimpleKitContext.Provider
-            value={{
-                pendingConnector,
-                setPendingConnector,
-                isConnectorError,
-                setIsConnectorError,
-                open,
-                setOpen,
-                recentConnectorId,
-                setRecentConnectorId,
-            }}
-        >
-            {props.children}
-            <SimpleKitModal open={open} onOpenChange={setOpen}>
-                <SimpleKitModalContent>
-                    {isConnected ? <Account /> : <Connectors />}
-                </SimpleKitModalContent>
-            </SimpleKitModal>
-        </SimpleKitContext.Provider>
-    );
+  return (
+    <SimpleKitContext.Provider
+      value={{
+        pendingConnector,
+        setPendingConnector,
+        isConnectorError,
+        setIsConnectorError,
+        open,
+        setOpen,
+        recentConnectorId,
+        setRecentConnectorId,
+      }}
+    >
+      {props.children}
+      <SimpleKitModal open={open} onOpenChange={setOpen}>
+        <SimpleKitModalContent>{isConnected ? <Account /> : <Connectors />}</SimpleKitModalContent>
+      </SimpleKitModal>
+    </SimpleKitContext.Provider>
+  );
 }
 
 function ConnectWalletButton() {
-    const simplekit = useSimpleKit();
-    const { address } = useAccount();
-    const { data: ensName } = useEnsName({ address });
-    const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
+  const simplekit = useSimpleKit();
+  const { address } = useAccount();
+  const { data: ensName } = useEnsName({ address });
+  const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
 
-    return (
-        <Button onClick={simplekit.toggleModal} className="">
-            {simplekit.isConnected ? (
-                <>
-                    {ensAvatar && <img src={ensAvatar} alt="ENS Avatar" />}
-                    {address && (
-                        <span>{ensName ? `${ensName}` : simplekit.formattedAddress}</span>
-                    )}
-                </>
-            ) : (
-                "Connect Wallet"
-            )}
-        </Button>
-    );
+  return (
+    <Button onClick={simplekit.toggleModal} className="">
+      {simplekit.isConnected ? (
+        <>
+          {ensAvatar && <img src={ensAvatar} alt="ENS Avatar" />}
+          {address && <span>{ensName ? `${ensName}` : simplekit.formattedAddress}</span>}
+        </>
+      ) : (
+        "Connect Wallet"
+      )}
+    </Button>
+  );
 }
 
 function Account() {
-    const { address } = useAccount();
-    const { disconnect } = useDisconnect();
-    const { data: ensName } = useEnsName({ address });
-    const { data: userBalance } = useBalance({ address });
-    const context = React.useContext(SimpleKitContext);
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { data: ensName } = useEnsName({ address });
+  const { data: userBalance } = useBalance({ address });
+  const context = React.useContext(SimpleKitContext);
 
-    const formattedAddress = address?.slice(0, 6) + "•••" + address?.slice(-4);
-    const formattedUserBalace = userBalance?.value
-        ? parseFloat(formatEther(userBalance.value)).toFixed(4)
-        : undefined;
+  const formattedAddress = address?.slice(0, 6) + "•••" + address?.slice(-4);
+  const formattedUserBalace = userBalance?.value
+    ? parseFloat(formatEther(userBalance.value)).toFixed(4)
+    : undefined;
 
-    function handleDisconnect() {
-        context.setOpen(false);
-        setTimeout(() => {
-            disconnect();
-        }, MODAL_CLOSE_DURATION);
-    }
+  function handleDisconnect() {
+    context.setOpen(false);
+    setTimeout(() => {
+      disconnect();
+    }, MODAL_CLOSE_DURATION);
+  }
 
-    return (
-        <>
-            <SimpleKitModalHeader>
-                <SimpleKitModalTitle>Connected</SimpleKitModalTitle>
-                <SimpleKitModalDescription className="sr-only">
-                    Account modal for your connected Web3 wallet.
-                </SimpleKitModalDescription>
-            </SimpleKitModalHeader>
-            <SimpleKitModalBody className="py-6">
-                <div className="flex w-full flex-col items-center justify-center gap-8">
-                    <div className="size-24 flex items-center justify-center">
-                        <img
-                            src={`https://avatar.vercel.sh/${address}?size=150`}
-                            alt="User gradient avatar"
-                        />
-                    </div>
+  return (
+    <>
+      <SimpleKitModalHeader>
+        <SimpleKitModalTitle>Connected</SimpleKitModalTitle>
+        <SimpleKitModalDescription className="sr-only">
+          Account modal for your connected Web3 wallet.
+        </SimpleKitModalDescription>
+      </SimpleKitModalHeader>
+      <SimpleKitModalBody className="py-6">
+        <div className="flex w-full flex-col items-center justify-center gap-8">
+          <div className="size-24 flex items-center justify-center">
+            <img src={`https://avatar.vercel.sh/${address}?size=150`} alt="User gradient avatar" />
+          </div>
 
-                    <div className="space-y-1 px-3.5 text-center sm:px-0">
-                        <div className="flex items-center gap-1.5">
-                            <h1 className="text-xl font-semibold">
-                                <div>{ensName ? `${ensName}` : formattedAddress}</div>
-                            </h1>
-                            <CopyAddressButton />
-                        </div>
-                        <p className="text-balance text-sm text-muted-foreground">
-                            {`${formattedUserBalace ?? "0.00"} ETH`}
-                        </p>
-                    </div>
+          <div className="space-y-1 px-3.5 text-center sm:px-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xl font-semibold">
+                <div>{ensName ? `${ensName}` : formattedAddress}</div>
+              </h1>
+              <CopyAddressButton />
+            </div>
+            <p className="text-balance text-sm text-muted-foreground">
+              {`${formattedUserBalace ?? "0.00"} ETH`}
+            </p>
+          </div>
 
-                    <Button className="w-full" onClick={handleDisconnect}>
-                        Disconnect
-                    </Button>
-                </div>
-            </SimpleKitModalBody>
-        </>
-    );
+          <Button className="w-full" onClick={handleDisconnect}>
+            Disconnect
+          </Button>
+        </div>
+      </SimpleKitModalBody>
+    </>
+  );
 }
 
 function Connectors() {
-    const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(SimpleKitContext);
 
-    return (
-        <div className="flex flex-col h-full min-w-0">
-            {/* Top border row */}
-            <div className="flex h-16 shrink-0 border-b relative">
-                <div className="w-16 border-r relative" />
-                <div className="flex-1 flex items-center justify-center">
-                    <SimpleKitModalTitle>
-                        {context.pendingConnector?.name ?? "Connect Wallet"}
-                    </SimpleKitModalTitle>
-                    <SimpleKitModalDescription className="sr-only">
-                        Connect your Web3 wallet or create a new one.
-                    </SimpleKitModalDescription>
-                </div>
-                <div className="w-16 border-l relative">
-                    <SimpleKitModalClose asChild>
-                        <button className="absolute inset-0 flex items-center justify-center hover:bg-accent transition-colors">
-                            <XIcon className="size-4" />
-                            <span className="sr-only">Close</span>
-                        </button>
-                    </SimpleKitModalClose>
-                </div>
-            </div>
-
-            {/* Main content row */}
-            <div className="flex flex-row flex-1 min-h-0">
-                {/* Left border column */}
-                <div className="w-16 shrink-0 border-r relative">
-                    <Plus className="size-7 text-muted-foreground absolute right-0" style={{ bottom: '20%', transform: 'translate(50%, 50%)' }} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <BackChevron />
-                    {context.pendingConnector ? <WalletConnecting /> : <WalletOptions />}
-                </div>
-
-                {/* Right border column */}
-                <div className="w-16 shrink-0 border-l relative">
-                    <Plus className="size-7 text-muted-foreground absolute left-0" style={{ top: '20%', transform: 'translate(-50%, -50%)' }} />
-                </div>
-            </div>
-
-            {/* Bottom border row */}
-            <div className="flex h-16 shrink-0 border-t relative">
-                <div className="w-16 border-r relative" />
-                <div className="flex-1 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <Link href="/terms" className="hover:underline">
-                        Terms
-                    </Link>
-                    <span>&</span>
-                    <Link href="/privacy" className="hover:underline">
-                        Privacy
-                    </Link>
-                </div>
-                <div className="w-16 border-l relative" />
-            </div>
+  return (
+    <div className="flex flex-col h-full min-w-0">
+      {/* Top border row */}
+      <div className="flex h-16 shrink-0 border-b relative">
+        <div className="w-16 border-r relative" />
+        <div className="flex-1 flex items-center justify-center">
+          <SimpleKitModalTitle>
+            {context.pendingConnector?.name ?? "Connect Wallet"}
+          </SimpleKitModalTitle>
+          <SimpleKitModalDescription className="sr-only">
+            Connect your Web3 wallet or create a new one.
+          </SimpleKitModalDescription>
         </div>
-    );
+        <div className="w-16 border-l relative">
+          <SimpleKitModalClose asChild>
+            <button className="absolute inset-0 flex items-center justify-center hover:bg-accent transition-colors">
+              <XIcon className="size-4" />
+              <span className="sr-only">Close</span>
+            </button>
+          </SimpleKitModalClose>
+        </div>
+      </div>
+
+      {/* Main content row */}
+      <div className="flex flex-row flex-1 min-h-0">
+        {/* Left border column */}
+        <div className="w-16 shrink-0 border-r relative">
+          <Plus
+            className="size-7 text-muted-foreground absolute right-0"
+            style={{ bottom: "20%", transform: "translate(50%, 50%)" }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <BackChevron />
+          {context.pendingConnector ? <WalletConnecting /> : <WalletOptions />}
+        </div>
+
+        {/* Right border column */}
+        <div className="w-16 shrink-0 border-l relative">
+          <Plus
+            className="size-7 text-muted-foreground absolute left-0"
+            style={{ top: "20%", transform: "translate(-50%, -50%)" }}
+          />
+        </div>
+      </div>
+
+      {/* Bottom border row */}
+      <div className="flex h-16 shrink-0 border-t relative">
+        <div className="w-16 border-r relative" />
+        <div className="flex-1 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Link href="/terms" className="hover:underline">
+            Terms
+          </Link>
+          <span>&</span>
+          <Link href="/privacy" className="hover:underline">
+            Privacy
+          </Link>
+        </div>
+        <div className="w-16 border-l relative" />
+      </div>
+    </div>
+  );
 }
 
 function WalletConnecting() {
-    const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(SimpleKitContext);
 
-    return (
-        <div className="flex w-full flex-col items-center justify-center gap-9 md:pt-5">
-            {context.pendingConnector?.icon && (
-                <div className="size-[116px] relative flex items-center justify-center border p-3">
-                    <img
-                        src={context.pendingConnector?.icon}
-                        alt={context.pendingConnector?.name}
-                        className="size-full overflow-hidden"
-                    />
-                    {context.isConnectorError ? <RetryConnectorButton /> : null}
-                </div>
-            )}
-
-            <div className="space-y-3.5 px-3.5 text-center sm:px-0">
-                <h1 className="text-xl font-semibold">
-                    {context.isConnectorError ? "Request Error" : "Requesting Connection"}
-                </h1>
-                <p className="text-balance text-sm text-muted-foreground">
-                    {context.isConnectorError
-                        ? "There was an error with the request. Click above to try again."
-                        : `Open the ${context.pendingConnector?.name} browser extension to connect your wallet.`}
-                </p>
-            </div>
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-9 md:pt-5">
+      {context.pendingConnector?.icon && (
+        <div className="size-[116px] relative flex items-center justify-center border p-3">
+          <img
+            src={context.pendingConnector?.icon}
+            alt={context.pendingConnector?.name}
+            className="size-full overflow-hidden"
+          />
+          {context.isConnectorError ? <RetryConnectorButton /> : null}
         </div>
-    );
+      )}
+
+      <div className="space-y-3.5 px-3.5 text-center sm:px-0">
+        <h1 className="text-xl font-semibold">
+          {context.isConnectorError ? "Request Error" : "Requesting Connection"}
+        </h1>
+        <p className="text-balance text-sm text-muted-foreground">
+          {context.isConnectorError
+            ? "There was an error with the request. Click above to try again."
+            : `Open the ${context.pendingConnector?.name} browser extension to connect your wallet.`}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function WalletOptions() {
-    const context = React.useContext(SimpleKitContext);
-    const { connectors, connect } = useConnectors();
+  const context = React.useContext(SimpleKitContext);
+  const { connectors, connect } = useConnectors();
 
-    const totalRows = Math.ceil(connectors.length / 4);
+  const totalRows = Math.ceil(connectors.length / 4);
 
-    return (
-        <div className="grid grid-cols-4">
-            {connectors.map((connector, index) => {
-                const isLastColumn = (index % 4) === 3;
-                const currentRow = Math.floor(index / 4);
-                const isLastRow = currentRow === totalRows - 1;
+  return (
+    <div className="grid grid-cols-4">
+      {connectors.map((connector, index) => {
+        const isLastColumn = index % 4 === 3;
+        const currentRow = Math.floor(index / 4);
+        const isLastRow = currentRow === totalRows - 1;
 
-                return (
-                    <div
-                        key={connector.uid}
-                        className={`
-                            ${!isLastColumn ? 'border-r' : ''}
-                            ${!isLastRow ? 'border-b' : ''}
+        return (
+          <div
+            key={connector.uid}
+            className={`
+                            ${!isLastColumn ? "border-r" : ""}
+                            ${!isLastRow ? "border-b" : ""}
                         `}
-                    >
-                        <WalletOption
-                            connector={connector}
-                            onClick={() => {
-                                context.setIsConnectorError(false);
-                                context.setPendingConnector(connector);
-                                connect({ connector });
-                            }}
-                        />
-                    </div>
-                );
-            })}
-        </div>
-    );
+          >
+            <WalletOption
+              connector={connector}
+              onClick={() => {
+                context.setIsConnectorError(false);
+                context.setPendingConnector(connector);
+                connect({ connector });
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function WalletOption(props: { connector: Connector; onClick: () => void }) {
-    const [ready, setReady] = React.useState(false);
-    const [isDetected, setIsDetected] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
+  const [isDetected, setIsDetected] = React.useState(false);
 
-    React.useEffect(() => {
-        async function checkReady() {
-            const provider = await props.connector.getProvider();
-            setReady(!!provider);
+  React.useEffect(() => {
+    async function checkReady() {
+      const provider = await props.connector.getProvider();
+      setReady(!!provider);
 
-            // Only show badge for injected wallets (MetaMask, browser extensions)
-            // Don't show for WalletConnect, Coinbase SDK, etc.
-            const isInjectedWallet =
-                props.connector.id === "metaMask" ||
-                props.connector.id === "metaMaskSDK" ||
-                props.connector.id === "injected" ||
-                props.connector.id.startsWith("io.metamask") ||
-                props.connector.type === "injected";
+      // Only show badge for injected wallets (MetaMask, browser extensions)
+      // Don't show for WalletConnect, Coinbase SDK, etc.
+      const isInjectedWallet =
+        props.connector.id === "metaMask" ||
+        props.connector.id === "metaMaskSDK" ||
+        props.connector.id === "injected" ||
+        props.connector.id.startsWith("io.metamask") ||
+        props.connector.type === "injected";
 
-            setIsDetected(!!provider && isInjectedWallet);
-        }
-        checkReady()
-            .then(() => null)
-            .catch(() => null);
-    }, [props.connector]);
+      setIsDetected(!!provider && isInjectedWallet);
+    }
+    checkReady()
+      .then(() => null)
+      .catch(() => null);
+  }, [props.connector]);
 
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    disabled={!ready}
-                    onClick={props.onClick}
-                    variant="ghost"
-                    className="relative aspect-square h-full w-full rounded-none p-4 flex flex-col items-center justify-center gap-2 hover:bg-accent"
-                >
-                    {props.connector.icon && (
-                        <div className="relative w-full aspect-square max-w-[40px]">
-                            <img
-                                src={props.connector.icon}
-                                alt={props.connector.name}
-                                className="size-full overflow-hidden rounded-md"
-                            />
-                            {isDetected && (
-                                <span className="absolute -top-1 -right-1 size-3 bg-green-500 rounded-full border-2 border-background" />
-                            )}
-                        </div>
-                    )}
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-                {props.connector.name}
-            </TooltipContent>
-        </Tooltip>
-    );
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          disabled={!ready}
+          onClick={props.onClick}
+          variant="ghost"
+          className="relative aspect-square h-full w-full rounded-none p-4 flex flex-col items-center justify-center gap-2 hover:bg-accent"
+        >
+          {props.connector.icon && (
+            <div className="relative w-full aspect-square max-w-[40px]">
+              <img
+                src={props.connector.icon}
+                alt={props.connector.name}
+                className="size-full overflow-hidden rounded-md"
+              />
+              {isDetected && (
+                <span className="absolute -top-1 -right-1 size-3 bg-green-500 rounded-full border-2 border-background" />
+              )}
+            </div>
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{props.connector.name}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 function CopyAddressButton() {
-    const { address } = useAccount();
-    const [copied, setCopied] = React.useState(false);
+  const { address } = useAccount();
+  const [copied, setCopied] = React.useState(false);
 
-    React.useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (copied) setCopied(false);
-        }, 1000);
-        return () => clearTimeout(timeout);
-    }, [copied, setCopied]);
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (copied) setCopied(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [copied, setCopied]);
 
-    async function handleCopy() {
-        setCopied(true);
-        await navigator.clipboard.writeText(address!);
-    }
+  async function handleCopy() {
+    setCopied(true);
+    await navigator.clipboard.writeText(address!);
+  }
 
-    return (
-        <button className="text-muted-foreground" onClick={handleCopy}>
-            {copied ? (
-                <Check className="size-4" strokeWidth={4} />
-            ) : (
-                <Copy className="size-4" strokeWidth={4} />
-            )}
-        </button>
-    );
+  return (
+    <button className="text-muted-foreground" onClick={handleCopy}>
+      {copied ? (
+        <Check className="size-4" strokeWidth={4} />
+      ) : (
+        <Copy className="size-4" strokeWidth={4} />
+      )}
+    </button>
+  );
 }
 
 function BackChevron() {
-    const context = React.useContext(SimpleKitContext);
+  const context = React.useContext(SimpleKitContext);
 
-    if (!context.pendingConnector) {
-        return null;
-    }
+  if (!context.pendingConnector) {
+    return null;
+  }
 
-    function handleClick() {
-        context.setIsConnectorError(false);
-        context.setPendingConnector(null);
-    }
+  function handleClick() {
+    context.setIsConnectorError(false);
+    context.setPendingConnector(null);
+  }
 
-    return (
-        <button
-            className="absolute left-[26px] top-[42px] z-50 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground md:top-[26px]"
-            onClick={handleClick}
-        >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Cancel connection</span>
-        </button>
-    );
+  return (
+    <button
+      className="absolute left-0 top-0 z-50 w-16 h-16 flex items-center justify-center hover:bg-accent transition-colors"
+      onClick={handleClick}
+    >
+      <ChevronLeft className="h-4 w-4" />
+      <span className="sr-only">Cancel connection</span>
+    </button>
+  );
 }
 
 function RetryConnectorButton() {
-    const context = React.useContext(SimpleKitContext);
-    const { connect } = useConnect({
-        mutation: {
-            onError: () => context.setIsConnectorError(true),
-        },
-    });
+  const context = React.useContext(SimpleKitContext);
+  const { connect } = useConnect({
+    mutation: {
+      onError: () => context.setIsConnectorError(true),
+    },
+  });
 
-    function handleClick() {
-        if (context.pendingConnector) {
-            context.setIsConnectorError(false);
-            connect({ connector: context.pendingConnector });
-        }
+  function handleClick() {
+    if (context.pendingConnector) {
+      context.setIsConnectorError(false);
+      connect({ connector: context.pendingConnector });
     }
+  }
 
-    return (
-        <Button
-            size="icon"
-            variant="secondary"
-            className="group absolute -bottom-2 -right-2 p-1.5 shadow"
-            onClick={handleClick}
-        >
-            <RotateCcw className="size-4 transition-transform group-hover:-rotate-45" />
-        </Button>
-    );
+  return (
+    <Button
+      size="icon"
+      variant="secondary"
+      className="group absolute -bottom-2 -right-2 p-1.5 shadow"
+      onClick={handleClick}
+    >
+      <RotateCcw className="size-4 transition-transform group-hover:-rotate-45" />
+    </Button>
+  );
 }
 
 function useConnectors() {
-    const context = React.useContext(SimpleKitContext);
-    const { connect, connectors } = useConnect({
-        mutation: {
-            onError: () => context.setIsConnectorError(true),
-        },
-    });
+  const context = React.useContext(SimpleKitContext);
+  const { connect, connectors } = useConnect({
+    mutation: {
+      onError: () => context.setIsConnectorError(true),
+    },
+  });
 
-    const sortedConnectors = React.useMemo(() => {
-        let metaMaskConnector: Connector | undefined;
-        let injectedConnector: Connector | undefined;
-        let baseAccountConnector: Connector | undefined;
-        let walletConnectConnector: Connector | undefined;
+  const sortedConnectors = React.useMemo(() => {
+    let metaMaskConnector: Connector | undefined;
+    let injectedConnector: Connector | undefined;
+    let baseAccountConnector: Connector | undefined;
+    let walletConnectConnector: Connector | undefined;
 
-        const formattedConnectors = connectors.reduce(
-            (acc: Array<Connector>, curr) => {
-                console.log(curr.id);
-                switch (curr.id) {
-                    case "metaMaskSDK":
-                        metaMaskConnector = {
-                            ...curr,
-                            icon: "https://utfs.io/f/be0bd88f-ce87-4cbc-b2e5-c578fa866173-sq4a0b.png",
-                        };
-                        return acc;
-                    case "metaMask":
-                        injectedConnector = {
-                            ...curr,
-                            icon: "https://utfs.io/f/be0bd88f-ce87-4cbc-b2e5-c578fa866173-sq4a0b.png",
-                        };
-                        return acc;
-                    case "coinbaseWalletSDK":
-                        acc.push({
-                            ...curr,
-                            icon: "https://utfs.io/f/53e47f86-5f12-404f-a98b-19dc7b760333-chngxw.png",
-                        });
-                        return acc;
-                    case "injected":
-                        // Skip generic injected connector
-                        return acc;
-                    case "baseAccount":
-                        // Keep Base Account separate to add it second to last
-                        baseAccountConnector = {
-                            ...curr,
-                            icon: "https://avatars.githubusercontent.com/u/108554348?s=280&v=4",
-                        };
-                        return acc;
-                    case "safe":
-                        acc.push({
-                            ...curr,
-                            icon: "https://utfs.io/f/164ea200-3e15-4a9b-9ce5-a397894c442a-awpd29.png",
-                        });
-                        return acc;
-                    case "walletConnect":
-                        // Keep WalletConnect separate to add it last
-                        walletConnectConnector = {
-                            ...curr,
-                            icon: "https://utfs.io/f/5bfaa4d1-b872-48a7-9d37-c2517d4fc07a-utlf4g.png",
-                        };
-                        return acc;
-                    case "com.coinbase.wallet":
-                        acc.push({
-                            ...curr,
-                            icon: "https://utfs.io/f/53e47f86-5f12-404f-a98b-19dc7b760333-chngxw.png",
-                        });
-                        return acc;
-                    default:
-                        acc.unshift(curr);
-                        return acc;
-                }
-            },
-            [],
-        );
+    const formattedConnectors = connectors.reduce((acc: Array<Connector>, curr) => {
+      console.log(curr.id);
+      switch (curr.id) {
+        case "metaMaskSDK":
+          metaMaskConnector = {
+            ...curr,
+            icon: "https://utfs.io/f/be0bd88f-ce87-4cbc-b2e5-c578fa866173-sq4a0b.png",
+          };
+          return acc;
+        case "metaMask":
+          injectedConnector = {
+            ...curr,
+            icon: "https://utfs.io/f/be0bd88f-ce87-4cbc-b2e5-c578fa866173-sq4a0b.png",
+          };
+          return acc;
+        case "coinbaseWalletSDK":
+          acc.push({
+            ...curr,
+            icon: "https://utfs.io/f/53e47f86-5f12-404f-a98b-19dc7b760333-chngxw.png",
+          });
+          return acc;
+        case "injected":
+          // Skip generic injected connector
+          return acc;
+        case "baseAccount":
+          // Keep Base Account separate to add it second to last
+          baseAccountConnector = {
+            ...curr,
+            icon: "https://avatars.githubusercontent.com/u/108554348?s=280&v=4",
+          };
+          return acc;
+        case "safe":
+          acc.push({
+            ...curr,
+            icon: "https://utfs.io/f/164ea200-3e15-4a9b-9ce5-a397894c442a-awpd29.png",
+          });
+          return acc;
+        case "walletConnect":
+          // Keep WalletConnect separate to add it last
+          walletConnectConnector = {
+            ...curr,
+            icon: "https://utfs.io/f/5bfaa4d1-b872-48a7-9d37-c2517d4fc07a-utlf4g.png",
+          };
+          return acc;
+        case "com.coinbase.wallet":
+          acc.push({
+            ...curr,
+            icon: "https://utfs.io/f/53e47f86-5f12-404f-a98b-19dc7b760333-chngxw.png",
+          });
+          return acc;
+        default:
+          acc.unshift(curr);
+          return acc;
+      }
+    }, []);
 
-        let finalConnectors: Connector[] = [];
+    let finalConnectors: Connector[] = [];
 
-        if (
-            metaMaskConnector &&
-            !formattedConnectors.find(
-                ({ id }) =>
-                    id === "io.metamask" ||
-                    id === "io.metamask.mobile" ||
-                    id === "injected",
-            )
-        ) {
-            finalConnectors = [metaMaskConnector, ...formattedConnectors];
-        } else if (injectedConnector) {
-            const nonMetaMaskConnectors = formattedConnectors.filter(
-                ({ id }) => id !== "io.metamask" && id !== "io.metamask.mobile",
-            );
-            finalConnectors = [injectedConnector, ...nonMetaMaskConnectors];
-        } else {
-            finalConnectors = formattedConnectors;
-        }
+    if (
+      metaMaskConnector &&
+      !formattedConnectors.find(
+        ({ id }) => id === "io.metamask" || id === "io.metamask.mobile" || id === "injected"
+      )
+    ) {
+      finalConnectors = [metaMaskConnector, ...formattedConnectors];
+    } else if (injectedConnector) {
+      const nonMetaMaskConnectors = formattedConnectors.filter(
+        ({ id }) => id !== "io.metamask" && id !== "io.metamask.mobile"
+      );
+      finalConnectors = [injectedConnector, ...nonMetaMaskConnectors];
+    } else {
+      finalConnectors = formattedConnectors;
+    }
 
-        // Add Base Account second to last
-        if (baseAccountConnector) {
-            finalConnectors.push(baseAccountConnector);
-        }
+    // Add Base Account second to last
+    if (baseAccountConnector) {
+      finalConnectors.push(baseAccountConnector);
+    }
 
-        // Always add WalletConnect last
-        if (walletConnectConnector) {
-            finalConnectors.push(walletConnectConnector);
-        }
+    // Always add WalletConnect last
+    if (walletConnectConnector) {
+      finalConnectors.push(walletConnectConnector);
+    }
 
-        // Move recent connector to first position
-        if (context.recentConnectorId) {
-            const recentIndex = finalConnectors.findIndex(
-                (c) => c.id === context.recentConnectorId
-            );
-            if (recentIndex > 0) {
-                const [recentConnector] = finalConnectors.splice(recentIndex, 1);
-                finalConnectors.unshift(recentConnector);
-            }
-        }
+    // Move recent connector to first position
+    if (context.recentConnectorId) {
+      const recentIndex = finalConnectors.findIndex((c) => c.id === context.recentConnectorId);
+      if (recentIndex > 0) {
+        const [recentConnector] = finalConnectors.splice(recentIndex, 1);
+        finalConnectors.unshift(recentConnector);
+      }
+    }
 
-        return finalConnectors;
-    }, [connectors, context.recentConnectorId]);
+    return finalConnectors;
+  }, [connectors, context.recentConnectorId]);
 
-    return { connectors: sortedConnectors, connect };
+  return { connectors: sortedConnectors, connect };
 }
 
 /*
@@ -583,38 +567,33 @@ function useConnectors() {
  * if desired (src/hooks/use-simple-kit.tsx).
  */
 function useSimpleKit() {
-    const { address } = useAccount();
-    const context = React.useContext(SimpleKitContext);
+  const { address } = useAccount();
+  const context = React.useContext(SimpleKitContext);
 
-    const isModalOpen = context.open;
-    const isConnected = address && !context.pendingConnector;
-    const formattedAddress = address?.slice(0, 6) + "•••" + address?.slice(-4);
+  const isModalOpen = context.open;
+  const isConnected = address && !context.pendingConnector;
+  const formattedAddress = address?.slice(0, 6) + "•••" + address?.slice(-4);
 
-    function open() {
-        context.setOpen(true);
-    }
+  function open() {
+    context.setOpen(true);
+  }
 
-    function close() {
-        context.setOpen(false);
-    }
+  function close() {
+    context.setOpen(false);
+  }
 
-    function toggleModal() {
-        context.setOpen((prevState) => !prevState);
-    }
+  function toggleModal() {
+    context.setOpen((prevState) => !prevState);
+  }
 
-    return {
-        isModalOpen,
-        isConnected,
-        formattedAddress,
-        open,
-        close,
-        toggleModal,
-    };
+  return {
+    isModalOpen,
+    isConnected,
+    formattedAddress,
+    open,
+    close,
+    toggleModal,
+  };
 }
 
-export {
-    SimpleKitProvider,
-    ConnectWalletButton,
-    useSimpleKit,
-    SimpleKitContext,
-};
+export { SimpleKitProvider, ConnectWalletButton, useSimpleKit, SimpleKitContext };
