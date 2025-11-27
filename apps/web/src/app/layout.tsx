@@ -11,8 +11,8 @@ import { Web3Provider } from "@/components/web3-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "Blanc: Private Mailbox",
-  description: "Own your mailbox",
+  title: "Blanc: Protect Your Inbox",
+  description: "Protect Your Inbox",
 };
 
 export default async function RootLayout(props: { children: ReactNode }) {

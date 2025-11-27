@@ -44,8 +44,8 @@ blanc/
 │       │   │   │   ├── email-list/   # Email list with items
 │       │   │   │   └── email-panel/  # Resizable email panel
 │       │   │   ├── ui/               # shadcn/ui components (~21)
-│       │   │   ├── simplekit.tsx     # Web3 wallet connection (363 lines)
-│       │   │   ├── simplekit-modal.tsx  # Responsive modal (desktop/mobile)
+│       │   │   ├── walletkit.tsx     # Web3 wallet connection (363 lines)
+│       │   │   ├── walletkit-modal.tsx  # Responsive modal (desktop/mobile)
 │       │   │   └── app-sidebar.tsx   # Main application sidebar
 │       │   ├── hooks/
 │       │   │   ├── use-emails.ts     # Email data hook (mock → API ready)
@@ -135,7 +135,7 @@ blanc/
   - Connectors: injected, baseAccount, walletConnect
   - Cookie storage for SSR compatibility (critical)
 - **viem 2.37.12** - TypeScript Ethereum library
-- **Custom SimpleKit** - 363-line wallet connection UI
+- **Custom WalletKit** - 363-line wallet connection UI
 
 ### UI & Styling
 
@@ -215,7 +215,7 @@ Root Layout
     → Web3Provider (web3-provider.tsx)
       → WagmiProvider (cookie-based SSR state)
         → QueryClientProvider (TanStack Query)
-          → SimpleKitProvider (wallet modal management)
+          → WalletKitProvider (wallet modal management)
             → App Content
 ```
 
@@ -248,9 +248,9 @@ export function getConfig() {
 
 **Critical**: Cookie storage enables SSR state hydration. Using `localStorage` would break server-side rendering.
 
-### SimpleKit Wallet Connection
+### WalletKit Wallet Connection
 
-**File**: `apps/web/src/components/simplekit.tsx` (363 lines)
+**File**: `apps/web/src/components/walletkit.tsx` (363 lines)
 
 **Key Features**:
 
@@ -278,17 +278,17 @@ const isInjectedWallet =
 **Usage**:
 
 ```typescript
-import { ConnectWalletButton, useSimpleKit } from '@/components/simplekit'
+import { ConnectWalletButton, useWalletKit } from '@/components/walletkit'
 
 function MyComponent() {
-  const { open, close } = useSimpleKit()
+  const { open, close } = useWalletKit()
   return <ConnectWalletButton />
 }
 ```
 
 ### Responsive Modal System
 
-**File**: `apps/web/src/components/simplekit-modal.tsx`
+**File**: `apps/web/src/components/walletkit-modal.tsx`
 
 - **Desktop** (≥768px): Dialog component (centered overlay)
 - **Mobile** (<768px): Drawer component (bottom sheet)
@@ -301,12 +301,12 @@ function MyComponent() {
 
 ```typescript
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { useSimpleKit } from "@/components/simplekit";
+import { useWalletKit } from "@/components/walletkit";
 
 const { address, isConnected } = useAccount();
 const { connect, connectors } = useConnect();
 const { disconnect } = useDisconnect();
-const { open, close } = useSimpleKit(); // Modal control
+const { open, close } = useWalletKit(); // Modal control
 ```
 
 ## Email Service Architecture (Haraka)
@@ -1282,13 +1282,13 @@ ssr: true;
 
 **Why**: Next.js Server Components require state to be available on server-side. Cookies are sent with requests; localStorage is client-only.
 
-#### SimpleKit Connector Sorting
+#### WalletKit Connector Sorting
 
-**File**: `apps/web/src/components/simplekit.tsx:468-576`
+**File**: `apps/web/src/components/walletkit.tsx:468-576`
 
 **Complex Logic**:
 
-1. Recent connector saved to `localStorage:simplekit-recent-connector`
+1. Recent connector saved to `localStorage:walletkit-recent-connector`
 2. Recent connector promoted to first position
 3. MetaMask detection handles 2 connector IDs: `metaMaskSDK`, `metaMask`
 4. Duplicate injected connectors filtered (e.g., `io.metamask`, `io.metamask.mobile`)
@@ -1300,7 +1300,7 @@ ssr: true;
 
 #### Modal Timing
 
-**File**: `apps/web/src/components/simplekit.tsx:31`
+**File**: `apps/web/src/components/walletkit.tsx:31`
 
 ```typescript
 const MODAL_CLOSE_DURATION = 320; // Coordinated with animation timing
@@ -1526,7 +1526,7 @@ const emails = getMockEmailsByFolder(folder);
 
 - 27,303 lines changed in single commit
 - Fresh start with Next.js 15 + Turbopack
-- Custom SimpleKit replacing previous Web3 approaches
+- Custom WalletKit replacing previous Web3 approaches
 - shadcn/ui component library adoption
 
 **Simplification Campaign** (October 2025):

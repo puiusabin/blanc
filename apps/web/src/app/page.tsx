@@ -20,7 +20,7 @@ export default function Home() {
         <main className="flex flex-col items-center gap-y-9">
           <div className="flex items-center gap-3.5">
             <ConnectWalletButton />
-            <Link href="https://github.com/vaunblu/SimpleKit" target="_blank">
+            <Link href="https://github.com/puiusabin/blanc" target="_blank">
               <Button variant="ghost" className="rounded-xl">
                 GitHub &rarr;
               </Button>
