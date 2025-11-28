@@ -50,7 +50,7 @@ export function EmailListItem({
   return (
     <div
       className={cn(
-        "flex items-center border-b px-4 py-3 cursor-pointer relative transition-colors",
+        "flex items-center border-b px-4 py-3 cursor-pointer relative transition-colors overflow-hidden max-w-full",
         isHovered && "bg-muted/50",
         isSelected && "bg-blue-500/10"
       )}
@@ -96,20 +96,25 @@ export function EmailListItem({
       </div>
 
       {/* Subject and Preview */}
-      <div className="flex-1 min-w-0 text-sm truncate ml-4">
-        <span
-          className={cn(!email.isRead && "font-semibold", email.isRead && "text-muted-foreground")}
-        >
-          {email.subject}
-        </span>
-        <span
-          className={cn(
-            !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
-          )}
-        >
-          {" "}
-          — {email.preview}
-        </span>
+      <div className="flex-1 min-w-0 ml-4">
+        <div className="text-sm line-clamp-1">
+          <span
+            className={cn(
+              !email.isRead && "font-semibold",
+              email.isRead && "text-muted-foreground"
+            )}
+          >
+            {email.subject}
+          </span>
+          <span
+            className={cn(
+              !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
+            )}
+          >
+            {" "}
+            — {email.preview}
+          </span>
+        </div>
       </div>
 
       {/* Timestamp */}

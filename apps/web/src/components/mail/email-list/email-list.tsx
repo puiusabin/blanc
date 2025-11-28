@@ -30,7 +30,7 @@ export function EmailList({
   }
 
   return (
-    <div className={`flex flex-col relative ${className || ""}`}>
+    <div className={`w-full flex flex-col relative ${className || ""}`}>
       {emails.map((email) => (
         <EmailListItem
           key={email.id}

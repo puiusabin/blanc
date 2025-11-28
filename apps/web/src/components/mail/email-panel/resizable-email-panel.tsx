@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ export interface ResizableEmailPanelProps {
   minWidth?: number;
   maxWidthPercent?: number;
   className?: string;
+  contentKey?: string;
 }
 
 export function ResizableEmailPanel({
@@ -20,11 +21,14 @@ export function ResizableEmailPanel({
   children,
   defaultWidth = 600,
   minWidth = 400,
-  maxWidthPercent = 90,
+  maxWidthPercent = 65,
   className,
+  contentKey,
 }: ResizableEmailPanelProps) {
   const [width, setWidth] = useState(defaultWidth);
   const [isResizing, setIsResizing] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prevKeyRef = useRef<string | undefined>(contentKey);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,6 +78,16 @@ export function ResizableEmailPanel({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Reset scroll position when content changes
+  useEffect(() => {
+    if (contentKey && contentKey !== prevKeyRef.current) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+      prevKeyRef.current = contentKey;
+    }
+  }, [contentKey]);
+
   return (
     <>
       {/* Panel */}
@@ -83,7 +97,7 @@ export function ResizableEmailPanel({
           isOpen ? "translate-x-0" : "translate-x-full",
           className
         )}
-        style={{ width: `${width}px`, maxWidth: "90vw" }}
+        style={{ width: `${width}px`, maxWidth: "65vw" }}
       >
         {/* Header section */}
         <div className="h-14 border-b flex items-center justify-end px-6">
@@ -111,7 +125,9 @@ export function ResizableEmailPanel({
         />
 
         {/* Content */}
-        <div className="flex flex-col flex-1 pl-2">{children}</div>
+        <div ref={scrollRef} className="flex flex-col flex-1 min-h-0 pl-2 overflow-y-auto">
+          {children}
+        </div>
       </div>
     </>
   );

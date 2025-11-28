@@ -1,61 +1,100 @@
-import { useMemo } from "react"
-import type { Email, EmailFolder } from "@/types/email"
-import { getMockEmailsByFolder } from "@/lib/mock-emails"
+import { useState, useEffect, useMemo } from "react";
+import type { Email, EmailFolder } from "@/types/email";
+import { getMockEmailsByFolder } from "@/lib/mock-emails";
 
 export interface UseEmailsOptions {
-  folder: EmailFolder
-  search?: string
-  isRead?: boolean
+  folder: EmailFolder;
+  search?: string;
+  isRead?: boolean;
 }
 
 export interface UseEmailsResult {
-  emails: Email[]
-  isLoading: boolean
-  error: Error | null
-  refetch: () => void
+  emails: Email[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
 }
 
 /**
  * Hook to fetch and manage emails
- * Currently uses mock data, but structured for easy TanStack Query migration
+ * In development, loads from .eml files via /api/mock-emails
+ * In production, uses hardcoded mock data (or real API when available)
  *
  * @example
  * const { emails, isLoading } = useEmails({ folder: 'inbox' })
  */
 export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmailsResult {
-  // TODO: Replace with TanStack Query when API is ready
-  // return useQuery({
-  //   queryKey: ['emails', folder, search, isRead],
-  //   queryFn: () => fetchEmails({ folder, search, isRead }),
-  // })
+  const [emails, setEmails] = useState<Email[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
-  const emails = useMemo(() => {
-    let filtered = getMockEmailsByFolder(folder)
+  useEffect(() => {
+    const loadEmails = async () => {
+      setIsLoading(true);
+      setError(null);
 
+      try {
+        if (process.env.NODE_ENV === "development") {
+          // Development: Load from .eml files
+          const response = await fetch("/api/mock-emails");
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch emails: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          setEmails(data);
+        } else {
+          // Production: Use hardcoded mock data (replace with real API later)
+          setEmails(getMockEmailsByFolder(folder));
+        }
+      } catch (err) {
+        console.error("Failed to load emails:", err);
+        setError(err instanceof Error ? err : new Error("Failed to load emails"));
+        setEmails([]); // Show empty inbox on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEmails();
+  }, [folder, refetchTrigger]);
+
+  // Filter emails based on search and isRead
+  const filteredEmails = useMemo(() => {
+    let filtered = emails;
+
+    // Filter by folder
+    filtered = filtered.filter((email) => email.folder === folder);
+
+    // Filter by search
     if (search) {
-      const searchLower = search.toLowerCase()
+      const searchLower = search.toLowerCase();
       filtered = filtered.filter(
         (email) =>
           email.subject.toLowerCase().includes(searchLower) ||
           email.from.name.toLowerCase().includes(searchLower) ||
           email.bodyText.toLowerCase().includes(searchLower)
-      )
+      );
     }
 
+    // Filter by isRead
     if (isRead !== undefined) {
-      filtered = filtered.filter((email) => email.isRead === isRead)
+      filtered = filtered.filter((email) => email.isRead === isRead);
     }
 
-    return filtered
-  }, [folder, search, isRead])
+    return filtered;
+  }, [emails, folder, search, isRead]);
+
+  const refetch = () => {
+    setRefetchTrigger((prev) => prev + 1);
+  };
 
   return {
-    emails,
-    isLoading: false,
-    error: null,
-    refetch: () => {
-      // TODO: Implement refetch when using TanStack Query
-      console.log("Refetch emails")
-    },
-  }
+    emails: filteredEmails,
+    isLoading,
+    error,
+    refetch,
+  };
 }
