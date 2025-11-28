@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { proxyImageUrls } from "@/lib/email/proxy-images";
 import { cn } from "@/lib/utils";
 
 export interface SafeEmailRendererProps {
@@ -20,34 +19,45 @@ export function SafeEmailRenderer({
   contentKey,
 }: SafeEmailRendererProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [height, setHeight] = useState(150);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Get the proxy base URL
-  const proxyBaseUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/api/image-proxy`
-      : "/api/image-proxy";
-
   // Process the email HTML
   const processedHtml = useCallback(() => {
-    // 1. Proxy all image URLs
-    const proxiedHtml = proxyImageUrls(html, proxyBaseUrl);
+    // Transform image URLs to use Cloudflare Image Resizing
+    const transformedHtml = html.replace(
+      /<img\s+([^>]*?)src="([^"]+)"([^>]*?)>/gi,
+      (match, before, src, after) => {
+        if (src.startsWith("data:")) return match;
+        if (src.startsWith("/cdn-cgi/image/")) return match;
 
-    // 2. Wrap with security headers and base styles
+        if (src.startsWith("http://") || src.startsWith("https://")) {
+          if (process.env.NODE_ENV === "development") return match;
+          const cloudflareUrl = `/cdn-cgi/image/width=800,quality=85/${encodeURIComponent(src)}`;
+          return `<img ${before}src="${cloudflareUrl}"${after}>`;
+        }
+        return match;
+      }
+    );
+
     return `
 <!DOCTYPE html>
 <html>
   <head>
     <base target="_blank">
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src blob: data: ${proxyBaseUrl}; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src blob: data: /cdn-cgi/image/ https: http:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <style>
-      /* Base reset */
-      body {
+      html, body {
+        overflow: hidden;
         margin: 0;
+        padding: 0;
+      }
+
+      body {
         padding: 16px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         font-size: 14px;
@@ -58,29 +68,24 @@ export function SafeEmailRenderer({
         -webkit-font-smoothing: antialiased;
       }
 
-      /* Responsive images */
       img {
         max-width: 100%;
         height: auto;
       }
 
-      /* Responsive tables */
       table {
         max-width: 100%;
       }
 
-      /* Link styles */
       a {
         color: #0066cc;
       }
 
-      /* Prevent horizontal scroll */
       * {
         max-width: 100%;
         box-sizing: border-box;
       }
 
-      /* Blockquote styles (for replies/forwards) */
       blockquote {
         margin: 0;
         padding-left: 12px;
@@ -88,7 +93,6 @@ export function SafeEmailRenderer({
         color: #666;
       }
 
-      /* Preformatted text */
       pre, code {
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -96,7 +100,6 @@ export function SafeEmailRenderer({
         font-size: 13px;
       }
 
-      /* Dark mode support */
       @media (prefers-color-scheme: dark) {
         body {
           background-color: #1a1a1a;
@@ -114,40 +117,59 @@ export function SafeEmailRenderer({
   </head>
   <body>
     <div id="email-content">
-      ${proxiedHtml}
+      ${transformedHtml}
     </div>
   </body>
 </html>`;
-  }, [html, proxyBaseUrl]);
+  }, [html]);
 
-  // Calculate iframe height based on content
-  const calculateHeight = useCallback(() => {
+  // Setup ResizeObserver (Notion Mail approach)
+  const setupResizeObserver = useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
     try {
-      const doc = iframe.contentDocument;
-      if (doc?.body) {
-        const newHeight = Math.max(
-          doc.body.scrollHeight,
-          doc.body.offsetHeight,
-          doc.documentElement?.scrollHeight || 0,
-          doc.documentElement?.offsetHeight || 0
-        );
-        setHeight(newHeight);
+      const iframeDoc = iframe.contentDocument;
+      if (!iframeDoc?.documentElement) return;
+
+      // Disconnect any existing observer
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+
+      // Create ResizeObserver in PARENT window context
+      resizeObserverRef.current = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          // Use borderBoxSize if available (more accurate)
+          let newHeight: number;
+
+          if (entry.borderBoxSize && entry.borderBoxSize[0]) {
+            newHeight = entry.borderBoxSize[0].blockSize;
+          } else {
+            // Fallback to scrollHeight
+            newHeight = iframeDoc.documentElement.scrollHeight;
+          }
+
+          setHeight(Math.max(newHeight, 100));
+        }
+      });
+
+      // Observe iframe's documentElement for most accurate sizing
+      resizeObserverRef.current.observe(iframeDoc.documentElement);
+
+      // Also observe body as fallback
+      if (iframeDoc.body) {
+        resizeObserverRef.current.observe(iframeDoc.body);
       }
     } catch (error) {
-      // Cross-origin error - should not happen with srcdoc
-      console.warn("Could not calculate iframe height:", error);
+      console.warn("Could not set up ResizeObserver:", error);
+      // Fallback
+      const iframeDoc = iframe.contentDocument;
+      if (iframeDoc) {
+        setHeight(iframeDoc.documentElement.scrollHeight || 500);
+      }
     }
   }, []);
-
-  // Reset height when content changes
-  useEffect(() => {
-    if (contentKey) {
-      setHeight(150);
-    }
-  }, [contentKey]);
 
   // Handle iframe load
   useEffect(() => {
@@ -156,7 +178,7 @@ export function SafeEmailRenderer({
 
     const handleLoad = () => {
       setIsLoaded(true);
-      calculateHeight();
+      setupResizeObserver();
 
       // Set up link click handling
       if (onLinkClick) {
@@ -180,35 +202,22 @@ export function SafeEmailRenderer({
 
     iframe.addEventListener("load", handleLoad);
 
-    // Recalculate height on window resize
-    const handleResize = () => calculateHeight();
-    window.addEventListener("resize", handleResize);
-
-    // Watch for images loading (they can change height)
-    const observer = new MutationObserver(calculateHeight);
-    if (iframe.contentDocument) {
-      observer.observe(iframe.contentDocument.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-      });
-    }
-
     return () => {
       iframe.removeEventListener("load", handleLoad);
-      window.removeEventListener("resize", handleResize);
-      observer.disconnect();
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
     };
-  }, [calculateHeight, onLinkClick]);
+  }, [setupResizeObserver, onLinkClick]);
 
-  // Recalculate height when HTML changes
+  // Re-setup observer when HTML changes
   useEffect(() => {
     if (isLoaded) {
-      // Small delay to let content render
-      const timer = setTimeout(calculateHeight, 100);
+      const timer = setTimeout(setupResizeObserver, 50);
       return () => clearTimeout(timer);
     }
-  }, [html, isLoaded, calculateHeight]);
+  }, [html, isLoaded, setupResizeObserver]);
 
   return (
     <div className={className} style={{ position: "relative" }}>
@@ -222,6 +231,7 @@ export function SafeEmailRenderer({
             justifyContent: "center",
             backgroundColor: "#f5f5f5",
             borderRadius: "8px",
+            minHeight: "150px",
           }}
         >
           <span className="text-sm text-muted-foreground">Loading email...</span>
