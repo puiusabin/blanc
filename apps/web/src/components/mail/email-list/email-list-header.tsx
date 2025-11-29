@@ -42,10 +42,7 @@ export function EmailListHeader({
           <Checkbox
             checked={checkboxState}
             onCheckedChange={handleCheckboxChange}
-            className={cn(
-              "data-[state=checked]:!bg-blue-500 data-[state=checked]:!border-blue-500",
-              !isHovered && selectedCount === 0 && "invisible"
-            )}
+            className={cn(!isHovered && selectedCount === 0 && "invisible")}
             aria-label="Select all emails"
           />
         </div>

@@ -52,7 +52,7 @@ export function EmailListItem({
       className={cn(
         "flex items-center border-b px-4 py-3 cursor-pointer relative transition-colors overflow-hidden max-w-full",
         isHovered && "bg-muted/50",
-        isSelected && "bg-blue-500/10"
+        isSelected && "bg-accent/70"
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -70,16 +70,13 @@ export function EmailListItem({
           checked={isSelected}
           onCheckedChange={handleCheckboxChange}
           onClick={(e) => e.stopPropagation()}
-          className={cn(
-            "data-[state=checked]:!bg-blue-500 data-[state=checked]:!border-blue-500",
-            !isSelected && !isHovered && "invisible"
-          )}
+          className={cn(!isSelected && !isHovered && "invisible")}
         />
       </div>
 
       {/* Unread indicator */}
       <div className="w-6 shrink-0 flex items-center justify-center">
-        {!email.isRead && <div className="size-1.5 rounded-full bg-blue-500" />}
+        {!email.isRead && <div className="size-1.5 rounded-full bg-primary" />}
       </div>
 
       {/* Sender */}
