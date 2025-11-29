@@ -9,11 +9,6 @@ const meta: Meta<typeof EmailDetail> = {
     layout: "fullscreen",
   },
   tags: ["autodocs"],
-  argTypes: {
-    showActions: {
-      control: "boolean",
-    },
-  },
 };
 
 export default meta;
@@ -32,12 +27,6 @@ const starredEmail = {
 export const Default: Story = {
   args: {
     email: mockEmail,
-    onReply: () => console.log("Reply"),
-    onReplyAll: () => console.log("Reply All"),
-    onForward: () => console.log("Forward"),
-    onDelete: () => console.log("Delete"),
-    onArchive: () => console.log("Archive"),
-    onStar: () => console.log("Star"),
   },
   render: (args) => (
     <div className="h-screen">
@@ -49,8 +38,6 @@ export const Default: Story = {
 export const WithAttachments: Story = {
   args: {
     email: emailWithAttachment,
-    onReply: () => console.log("Reply"),
-    onForward: () => console.log("Forward"),
   },
   render: (args) => (
     <div className="h-screen">
@@ -62,20 +49,6 @@ export const WithAttachments: Story = {
 export const Starred: Story = {
   args: {
     email: starredEmail,
-    onReply: () => console.log("Reply"),
-    onStar: () => console.log("Unstar"),
-  },
-  render: (args) => (
-    <div className="h-screen">
-      <EmailDetail {...args} />
-    </div>
-  ),
-};
-
-export const NoActions: Story = {
-  args: {
-    email: mockEmail,
-    showActions: false,
   },
   render: (args) => (
     <div className="h-screen">
@@ -101,7 +74,6 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 Best regards,
 The Team`,
     },
-    onReply: () => console.log("Reply"),
   },
   render: (args) => (
     <div className="h-screen">

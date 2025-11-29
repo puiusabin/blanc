@@ -5,49 +5,27 @@ import { cn } from "@/lib/utils";
 
 export interface SafeEmailRendererProps {
   html: string;
-  plainText: string;
   className?: string;
   onLinkClick?: (url: string) => void;
-  contentKey?: string;
 }
 
-export function SafeEmailRenderer({
-  html,
-  plainText,
-  className,
-  onLinkClick,
-  contentKey,
-}: SafeEmailRendererProps) {
+export function SafeEmailRenderer({ html, className, onLinkClick }: SafeEmailRendererProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [height, setHeight] = useState(150);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Process the email HTML
+  // Generate iframe HTML with CSP and styles
   const processedHtml = useCallback(() => {
-    // Transform image URLs to use Cloudflare Image Resizing
-    const transformedHtml = html.replace(
-      /<img\s+([^>]*?)src="([^"]+)"([^>]*?)>/gi,
-      (match, before, src, after) => {
-        if (src.startsWith("data:")) return match;
-        if (src.startsWith("/cdn-cgi/image/")) return match;
-
-        if (src.startsWith("http://") || src.startsWith("https://")) {
-          if (process.env.NODE_ENV === "development") return match;
-          const cloudflareUrl = `/cdn-cgi/image/width=800,quality=85/${encodeURIComponent(src)}`;
-          return `<img ${before}src="${cloudflareUrl}"${after}>`;
-        }
-        return match;
-      }
-    );
-
+    // HTML is already transformed server-side with HMAC-signed image URLs
+    // Just wrap it in the iframe structure with CSP
     return `
 <!DOCTYPE html>
 <html>
   <head>
     <base target="_blank">
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src blob: data: /cdn-cgi/image/ https: http:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none';">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <style>
@@ -68,11 +46,6 @@ export function SafeEmailRenderer({
         -webkit-font-smoothing: antialiased;
       }
 
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-
       table {
         max-width: 100%;
       }
@@ -82,7 +55,6 @@ export function SafeEmailRenderer({
       }
 
       * {
-        max-width: 100%;
         box-sizing: border-box;
       }
 
@@ -117,7 +89,7 @@ export function SafeEmailRenderer({
   </head>
   <body>
     <div id="email-content">
-      ${transformedHtml}
+      ${html}
     </div>
   </body>
 </html>`;

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SafeEmailRenderer } from "./safe-email-renderer";
 
 const meta: Meta<typeof SafeEmailRenderer> = {
@@ -14,7 +14,6 @@ type Story = StoryObj<typeof SafeEmailRenderer>;
 export const SimpleHTML: Story = {
   args: {
     html: "<p>Hello <strong>World</strong>!</p>",
-    plainText: "Hello World!",
   },
 };
 
@@ -29,7 +28,6 @@ export const RichContent: Story = {
       </ul>
       <img src="https://via.placeholder.com/400x200/3b82f6/ffffff?text=Project+Status" alt="Chart" />
     `,
-    plainText: "Project Update\n\nPhase 1: Complete\nPhase 2: In Progress",
   },
 };
 
@@ -51,8 +49,6 @@ export const WithTable: Story = {
         </tbody>
       </table>
     `,
-    plainText:
-      "Weekly Schedule\n\nMonday: Orientation\nTuesday: Team Introductions\nWednesday: Project Overview",
   },
 };
 
@@ -66,7 +62,6 @@ export const XSSAttempt: Story = {
       <iframe src="https://evil.com"></iframe>
       <p>No alerts should appear!</p>
     `,
-    plainText: "Safe plain text",
   },
 };
 
@@ -77,8 +72,6 @@ export const WithExternalImages: Story = {
       <img src="https://picsum.photos/600/400" alt="Random" />
       <p>External image should load automatically</p>
     `,
-    plainText: "External image example",
-    allowExternalImages: true,
   },
 };
 
@@ -89,15 +82,12 @@ export const BlockedExternalImages: Story = {
       <img src="https://picsum.photos/600/400" alt="Random" />
       <p>External image should be blocked</p>
     `,
-    plainText: "Blocked image example",
-    allowExternalImages: false,
   },
 };
 
 export const ErrorFallback: Story = {
   args: {
     html: "",
-    plainText: "This is the plain text fallback when HTML fails to render.",
   },
 };
 
@@ -119,6 +109,5 @@ export const ComplexFormatting: Story = {
         <p>For more details, visit our <a href="https://blanc.is">website</a>.</p>
       </div>
     `,
-    plainText: "Welcome to Blanc! We're excited to have you on board.",
   },
 };

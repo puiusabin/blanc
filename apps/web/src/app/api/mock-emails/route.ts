@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { parseEml } from "@/lib/email/eml-parser";
+import { transformEmailHtml } from "@/lib/email/transform-email-html";
 import type { Email } from "@/types/email";
-
-// Disable in production
-if (process.env.NODE_ENV === "production") {
-  throw new Error("mock-emails API route should not be included in production builds");
-}
 
 const MOCK_EMAILS_DIR = path.join(process.cwd(), "mock-emails");
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -17,7 +13,15 @@ let emailsCache: Email[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_TTL = 5000; // 5 seconds
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
+  // This route is only for development - production should use real API
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Mock emails are only available in development" },
+      { status: 404 }
+    );
+  }
+
   try {
     // Return cached emails if still valid
     const now = Date.now();
@@ -67,6 +71,11 @@ export async function GET(request: NextRequest) {
 
         // Parse EML
         const email = await parseEml(content);
+
+        // Transform HTML to use proxied images with HMAC signatures
+        if (email.bodyHtml) {
+          email.bodyHtml = transformEmailHtml(email.bodyHtml);
+        }
 
         emails.push(email);
       } catch (error) {

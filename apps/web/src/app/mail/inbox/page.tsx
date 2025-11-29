@@ -58,18 +58,7 @@ export default function InboxPage() {
         onClose={handleClosePanel}
         contentKey={selectedEmail?.id}
       >
-        {selectedEmail && (
-          <EmailDetail
-            email={selectedEmail}
-            contentKey={selectedEmail.id}
-            onReply={() => console.log("Reply")}
-            onReplyAll={() => console.log("Reply all")}
-            onForward={() => console.log("Forward")}
-            onDelete={() => console.log("Delete")}
-            onArchive={() => console.log("Archive")}
-            onStar={() => console.log("Star")}
-          />
-        )}
+        {selectedEmail && <EmailDetail email={selectedEmail} />}
       </ResizableEmailPanel>
     </div>
   );

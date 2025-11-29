@@ -9,30 +9,30 @@ export async function parseEml(emlContent: string): Promise<Email> {
   // Extract From address
   const from: EmailAddress = parsed.from
     ? {
-        name: parsed.from.name || parsed.from.address,
-        email: parsed.from.address,
+        name: parsed.from.name || parsed.from.address || "Unknown",
+        email: parsed.from.address || "unknown@example.com",
       }
     : { name: "Unknown", email: "unknown@example.com" };
 
   // Extract To addresses
   const to: EmailAddress[] =
     parsed.to?.map((addr) => ({
-      name: addr.name || addr.address,
-      email: addr.address,
+      name: addr.name || addr.address || "Unknown",
+      email: addr.address || "unknown@example.com",
     })) || [];
 
   // Extract CC addresses
   const cc: EmailAddress[] | undefined =
     parsed.cc?.map((addr) => ({
-      name: addr.name || addr.address,
-      email: addr.address,
+      name: addr.name || addr.address || "Unknown",
+      email: addr.address || "unknown@example.com",
     })) || undefined;
 
   // Extract BCC addresses (usually not present in .eml files)
   const bcc: EmailAddress[] | undefined =
     parsed.bcc?.map((addr) => ({
-      name: addr.name || addr.address,
-      email: addr.address,
+      name: addr.name || addr.address || "Unknown",
+      email: addr.address || "unknown@example.com",
     })) || undefined;
 
   // Extract subject
@@ -50,16 +50,31 @@ export async function parseEml(emlContent: string): Promise<Email> {
 
   // Extract attachments
   const attachments: EmailAttachment[] = parsed.attachments
-    ? parsed.attachments.map((att) => ({
-        id: nanoid(),
-        filename: att.filename || "untitled",
-        mimeType: att.mimeType || "application/octet-stream",
-        size: att.content?.length || 0,
-        r2Key: `mock/${nanoid()}/${att.filename}`, // Mock R2 key
-        url: att.content
-          ? `data:${att.mimeType};base64,${Buffer.from(att.content).toString("base64")}`
-          : undefined,
-      }))
+    ? parsed.attachments.map((att) => {
+        const size = att.content
+          ? att.content instanceof ArrayBuffer
+            ? att.content.byteLength
+            : att.content.length
+          : 0;
+        let base64 = "";
+        if (att.content) {
+          if (att.content instanceof ArrayBuffer) {
+            base64 = Buffer.from(new Uint8Array(att.content)).toString("base64");
+          } else if (typeof att.content === "string") {
+            base64 = Buffer.from(att.content).toString("base64");
+          } else {
+            base64 = Buffer.from(att.content).toString("base64");
+          }
+        }
+        return {
+          id: nanoid(),
+          filename: att.filename || "untitled",
+          mimeType: att.mimeType || "application/octet-stream",
+          size,
+          r2Key: `mock/${nanoid()}/${att.filename}`, // Mock R2 key
+          url: att.content ? `data:${att.mimeType};base64,${base64}` : undefined,
+        };
+      })
     : [];
 
   // Create Email object

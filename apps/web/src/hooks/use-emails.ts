@@ -43,7 +43,7 @@ export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmai
             throw new Error(`Failed to fetch emails: ${response.statusText}`);
           }
 
-          const data = await response.json();
+          const data = (await response.json()) as Email[];
           setEmails(data);
         } else {
           // Production: Use hardcoded mock data (replace with real API later)

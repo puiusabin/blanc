@@ -1,33 +1,13 @@
 import type { Email } from "@/types/email";
-import { Button } from "@/components/ui/button";
-import { Reply, ReplyAll, Forward, Trash2, Archive, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { SafeEmailRenderer } from "@/components/mail/safe-email-renderer";
 
 export interface EmailDetailProps {
   email: Email;
-  contentKey?: string;
-  onReply?: () => void;
-  onReplyAll?: () => void;
-  onForward?: () => void;
-  onDelete?: () => void;
-  onArchive?: () => void;
-  onStar?: () => void;
-  showActions?: boolean;
 }
 
-export function EmailDetail({
-  email,
-  contentKey,
-  onReply,
-  onReplyAll,
-  onForward,
-  onDelete,
-  onArchive,
-  onStar,
-  showActions = true,
-}: EmailDetailProps) {
+export function EmailDetail({ email }: EmailDetailProps) {
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleString("en-US", {
@@ -75,8 +55,6 @@ export function EmailDetail({
           {email.bodyHtml ? (
             <SafeEmailRenderer
               html={email.bodyHtml}
-              plainText={email.bodyText}
-              contentKey={contentKey}
               onLinkClick={(url) => {
                 // Open links in new tab with security restrictions
                 window.open(url, "_blank", "noopener,noreferrer");
