@@ -15,6 +15,10 @@ export function SafeEmailRenderer({ html, className, onLinkClick }: SafeEmailRen
   const [height, setHeight] = useState(150);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Get parent origin for CSP (srcdoc iframes have null origin, need explicit parent origin)
+  const parentOrigin =
+    typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+
   // Generate iframe HTML with CSP and styles
   const processedHtml = useCallback(() => {
     // HTML is already transformed server-side with HMAC-signed image URLs
@@ -25,7 +29,7 @@ export function SafeEmailRenderer({ html, className, onLinkClick }: SafeEmailRen
   <head>
     <base target="_blank">
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' blob: data:; style-src 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${parentOrigin} blob: data:; style-src 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none';">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <style>
@@ -93,7 +97,7 @@ export function SafeEmailRenderer({ html, className, onLinkClick }: SafeEmailRen
     </div>
   </body>
 </html>`;
-  }, [html]);
+  }, [html, parentOrigin]);
 
   // Setup ResizeObserver (Notion Mail approach)
   const setupResizeObserver = useCallback(() => {

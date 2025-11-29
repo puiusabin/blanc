@@ -103,7 +103,6 @@ export async function GET(req: NextRequest) {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
         "X-Content-Type-Options": "nosniff",
-        "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'",
       },
     });
   } catch (error) {
