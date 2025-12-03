@@ -1,6 +1,35 @@
 import PostalMime from "postal-mime";
 import type { Email, EmailAddress, EmailAttachment } from "@/types/email";
 import { nanoid } from "nanoid";
+import { decodeHtmlEntities } from "./transform-email-html";
+
+/**
+ * Extracts readable text from HTML content for preview generation
+ * Removes scripts, styles, comments, and HTML tags
+ * @param html - Raw HTML string
+ * @returns First 150 characters of extracted text
+ */
+function extractTextFromHtml(html: string): string {
+  let text = html;
+
+  // Remove script tags and content
+  text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ");
+
+  // Remove style tags and content
+  text = text.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ");
+
+  // Remove HTML comments (including MSO conditionals)
+  text = text.replace(/<!--[\s\S]*?-->/g, " ");
+
+  // Remove all remaining HTML tags
+  text = text.replace(/<[^>]+>/g, " ");
+
+  // Decode HTML entities
+  text = decodeHtmlEntities(text);
+
+  // Normalize whitespace and limit to 150 characters
+  return text.replace(/\s+/g, " ").trim().substring(0, 150);
+}
 
 export async function parseEml(emlContent: string): Promise<Email> {
   const parser = new PostalMime();
@@ -42,8 +71,13 @@ export async function parseEml(emlContent: string): Promise<Email> {
   const bodyText = parsed.text || "";
   const bodyHtml = parsed.html || undefined;
 
-  // Create preview from text (first 150 chars)
-  const preview = bodyText.replace(/\s+/g, " ").trim().substring(0, 150);
+  // Create preview: prefer plain text, fallback to HTML extraction
+  let preview = "";
+  if (bodyText) {
+    preview = bodyText.replace(/\s+/g, " ").trim().substring(0, 150);
+  } else if (bodyHtml) {
+    preview = extractTextFromHtml(bodyHtml);
+  }
 
   // Extract timestamp
   const timestamp = parsed.date || new Date().toISOString();

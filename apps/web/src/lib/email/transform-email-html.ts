@@ -6,7 +6,7 @@ import { getProxiedImageUrl } from "@/lib/security/sign-image-url";
  * @param html - HTML string with potential entities
  * @returns Decoded HTML string
  */
-function decodeHtmlEntities(html: string): string {
+export function decodeHtmlEntities(html: string): string {
   // Decode hex numeric entities (&#x2F; → /)
   let decoded = html.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
     return String.fromCharCode(parseInt(hex, 16));
