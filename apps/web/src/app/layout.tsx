@@ -37,7 +37,7 @@ export default async function RootLayout(props: { children: ReactNode }) {
               </div>
 
               {/* Main content */}
-              <div className="flex-1 max-w-full overflow-hidden">{props.children}</div>
+              <div className="flex-1 min-w-0 overflow-hidden">{props.children}</div>
 
               {/* Right spacing column with border */}
               <div className="hidden lg:block w-16 border-l shrink-0 relative">
