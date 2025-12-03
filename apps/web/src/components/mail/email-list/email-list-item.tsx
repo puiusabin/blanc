@@ -50,7 +50,7 @@ export function EmailListItem({
   return (
     <div
       className={cn(
-        "flex items-center border-b px-4 py-3 cursor-pointer relative transition-colors overflow-hidden max-w-full",
+        "w-full min-w-0 flex items-center border-b px-4 py-3 cursor-pointer relative transition-colors overflow-hidden",
         isHovered && "bg-muted/50",
         isSelected && "bg-accent/70"
       )}
@@ -82,11 +82,7 @@ export function EmailListItem({
       {/* Sender */}
       <div className="w-40 shrink-0">
         <span
-          className={cn(
-            "text-sm",
-            !email.isRead && "font-semibold",
-            email.isRead && "text-muted-foreground"
-          )}
+          className={cn(email.isRead ? "text-sm text-muted-foreground" : "text-sm font-medium")}
         >
           {email.from.name}
         </span>
@@ -94,23 +90,24 @@ export function EmailListItem({
 
       {/* Subject and Preview */}
       <div className="flex-1 min-w-0 ml-4">
-        <div className="text-sm line-clamp-1">
-          <span
+        <div className="flex min-w-0 overflow-hidden gap-1.5">
+          <div
             className={cn(
-              !email.isRead && "font-semibold",
-              email.isRead && "text-muted-foreground"
+              "shrink-0 min-w-0 truncate text-sm max-w-[70%]",
+              email.isRead ? "text-muted-foreground" : "font-medium"
             )}
           >
             {email.subject}
-          </span>
-          <span
+          </div>
+          <div className="shrink-0 text-sm text-muted-foreground/60">|</div>
+          <div
             className={cn(
-              !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
+              "flex-1 min-w-0 truncate text-sm",
+              email.isRead ? "text-muted-foreground/80" : "text-muted-foreground"
             )}
           >
-            {" "}
-            — {email.preview}
-          </span>
+            {email.preview}
+          </div>
         </div>
       </div>
 
@@ -118,8 +115,7 @@ export function EmailListItem({
       <div className="w-24 shrink-0 text-right ml-4">
         <span
           className={cn(
-            "text-xs",
-            !email.isRead ? "text-muted-foreground" : "text-muted-foreground/70 font-light"
+            email.isRead ? "text-xs text-muted-foreground/70" : "text-xs text-muted-foreground"
           )}
         >
           {formatTimestamp(email.timestamp)}
