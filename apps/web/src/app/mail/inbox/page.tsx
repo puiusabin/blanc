@@ -37,6 +37,27 @@ export default function InboxPage() {
     setSelectedEmail(null);
   };
 
+  const handleNavigatePrevious = () => {
+    if (!selectedEmail) return;
+    const currentIndex = emails.findIndex((e) => e.id === selectedEmail.id);
+    if (currentIndex > 0) {
+      setSelectedEmail(emails[currentIndex - 1]);
+    }
+  };
+
+  const handleNavigateNext = () => {
+    if (!selectedEmail) return;
+    const currentIndex = emails.findIndex((e) => e.id === selectedEmail.id);
+    if (currentIndex < emails.length - 1) {
+      setSelectedEmail(emails[currentIndex + 1]);
+    }
+  };
+
+  const currentEmailIndex = selectedEmail ? emails.findIndex((e) => e.id === selectedEmail.id) : -1;
+
+  const hasPrevious = currentEmailIndex > 0;
+  const hasNext = currentEmailIndex >= 0 && currentEmailIndex < emails.length - 1;
+
   return (
     <div className="w-full flex flex-col h-svh">
       <EmailListHeader
@@ -61,6 +82,10 @@ export default function InboxPage() {
         isOpen={!!selectedEmail}
         onClose={handleClosePanel}
         contentKey={selectedEmail?.id}
+        onNavigatePrevious={handleNavigatePrevious}
+        onNavigateNext={handleNavigateNext}
+        hasPrevious={hasPrevious}
+        hasNext={hasNext}
       >
         {selectedEmail && <EmailDetail email={selectedEmail} />}
       </ResizableEmailPanel>

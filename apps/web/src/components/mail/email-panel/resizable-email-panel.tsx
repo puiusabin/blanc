@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { ChevronsRight, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Kbd } from "@/components/ui/kbd";
 
 export interface ResizableEmailPanelProps {
   isOpen: boolean;
@@ -13,6 +16,10 @@ export interface ResizableEmailPanelProps {
   maxWidthPercent?: number;
   className?: string;
   contentKey?: string;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
 }
 
 export function ResizableEmailPanel({
@@ -24,6 +31,10 @@ export function ResizableEmailPanel({
   maxWidthPercent = 65,
   className,
   contentKey,
+  onNavigatePrevious,
+  onNavigateNext,
+  hasPrevious = false,
+  hasNext = false,
 }: ResizableEmailPanelProps) {
   const [width, setWidth] = useState(defaultWidth);
   const [isResizing, setIsResizing] = useState(false);
@@ -66,17 +77,29 @@ export function ResizableEmailPanel({
     }
   }, [isResizing, minWidth, maxWidthPercent]);
 
-  // Close on Escape key
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (!isOpen) return;
+
+      if (e.key === "Escape") {
         onClose();
+      } else if (e.key === "k" || e.key === "K") {
+        e.preventDefault();
+        if (hasPrevious && onNavigatePrevious) {
+          onNavigatePrevious();
+        }
+      } else if (e.key === "j" || e.key === "J") {
+        e.preventDefault();
+        if (hasNext && onNavigateNext) {
+          onNavigateNext();
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext]);
 
   // Reset scroll position when content changes
   useEffect(() => {
@@ -100,14 +123,53 @@ export function ResizableEmailPanel({
         style={{ width: `${width}px`, maxWidth: "65vw" }}
       >
         {/* Header section */}
-        <div className="h-14 border-b flex items-center justify-end px-6">
-          <button
-            onClick={onClose}
-            className="rounded-sm opacity-70 hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none transition-opacity"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
+        <div className="h-14 border-b flex items-center justify-between px-6">
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
+                  <ChevronsRight className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <Kbd>Esc</Kbd>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={onNavigatePrevious}
+                  disabled={!hasPrevious}
+                  aria-label="Previous email"
+                >
+                  <ChevronUp className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <Kbd>K</Kbd>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={onNavigateNext}
+                  disabled={!hasNext}
+                  aria-label="Next email"
+                >
+                  <ChevronDown className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <Kbd>J</Kbd>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Resize handle */}
