@@ -2,10 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import type { Email, EmailFolder } from "@/types/email";
 import { getMockEmailsByFolder } from "@/lib/mock-emails";
 
+export type ReadStateMode = "alternating" | "all-read" | "all-unread" | "mixed";
+
 export interface UseEmailsOptions {
   folder: EmailFolder;
   search?: string;
   isRead?: boolean;
+  readStateMode?: ReadStateMode;
 }
 
 export interface UseEmailsResult {
@@ -23,7 +26,12 @@ export interface UseEmailsResult {
  * @example
  * const { emails, isLoading } = useEmails({ folder: 'inbox' })
  */
-export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmailsResult {
+export function useEmails({
+  folder,
+  search,
+  isRead,
+  readStateMode,
+}: UseEmailsOptions): UseEmailsResult {
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -68,6 +76,19 @@ export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmai
     // Filter by folder
     filtered = filtered.filter((email) => email.folder === folder);
 
+    // Apply read state mode if specified
+    if (readStateMode && readStateMode !== "mixed") {
+      filtered = filtered.map((email, index) => ({
+        ...email,
+        isRead:
+          readStateMode === "all-read"
+            ? true
+            : readStateMode === "all-unread"
+              ? false
+              : index % 2 === 0, // alternating
+      }));
+    }
+
     // Filter by search
     if (search) {
       const searchLower = search.toLowerCase();
@@ -85,7 +106,7 @@ export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmai
     }
 
     return filtered;
-  }, [emails, folder, search, isRead]);
+  }, [emails, folder, search, isRead, readStateMode]);
 
   const refetch = () => {
     setRefetchTrigger((prev) => prev + 1);

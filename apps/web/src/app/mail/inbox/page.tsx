@@ -2,16 +2,20 @@
 
 import { useState } from "react";
 import type { Email } from "@/types/email";
-import { useEmails } from "@/hooks/use-emails";
+import { useEmails, type ReadStateMode } from "@/hooks/use-emails";
 import { useEmailSelection } from "@/hooks/use-email-selection";
 import { EmailListHeader } from "@/components/mail/email-list/email-list-header";
 import { EmailList } from "@/components/mail/email-list/email-list";
 import { EmailDetail } from "@/components/mail/email-detail/email-detail";
 import { ResizableEmailPanel } from "@/components/mail/email-panel/resizable-email-panel";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function InboxPage() {
-  const { emails, refetch } = useEmails({ folder: "inbox" });
+  const [emailReadMode, setEmailReadMode] = useState<ReadStateMode>(() => {
+    if (typeof window === "undefined") return "alternating";
+    return (localStorage.getItem("dev-emails-read-state") as ReadStateMode) || "alternating";
+  });
+
+  const { emails, refetch } = useEmails({ folder: "inbox", readStateMode: emailReadMode });
   const selection = useEmailSelection();
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
@@ -34,7 +38,7 @@ export default function InboxPage() {
   };
 
   return (
-    <div className="flex flex-col h-svh">
+    <div className="w-full flex flex-col h-svh">
       <EmailListHeader
         title="Inbox"
         selectedCount={selection.selectedIds.size}
@@ -44,14 +48,14 @@ export default function InboxPage() {
         onRefresh={refetch}
       />
 
-      <ScrollArea className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <EmailList
           emails={emails}
           selectedIds={selection.selectedIds}
           onSelect={selection.selectOne}
           onEmailClick={handleEmailClick}
         />
-      </ScrollArea>
+      </div>
 
       <ResizableEmailPanel
         isOpen={!!selectedEmail}
