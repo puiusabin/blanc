@@ -2,7 +2,11 @@
 // Creates test users and aliases
 // Run from monorepo root: npm run seed --filter=@blanc/mail-server
 
-const { prisma } = require('@blanc/database');
+const { PrismaClient } = require('@blanc/database/generated/prisma');
+const { withAccelerate } = require('@prisma/extension-accelerate');
+
+// Initialize Prisma client with Accelerate extension
+const prisma = new PrismaClient().$extends(withAccelerate());
 
 async function main() {
     console.log('🌱 Starting seed for Blanc email service...');
