@@ -86,8 +86,33 @@ function createPassThroughStream() {
     });
 }
 
+/**
+ * Encrypt string data (for JSON datagrams, not streams)
+ * @param {string} data - Plain text data to encrypt
+ * @param {string} publicKeyArmored - Armored PGP public key
+ * @returns {Promise<string>} Armored encrypted message
+ */
+async function encryptData(data, publicKeyArmored) {
+    try {
+        const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
+        const message = await openpgp.createMessage({ text: data });
+
+        const encrypted = await openpgp.encrypt({
+            message: message,
+            encryptionKeys: publicKey,
+            format: 'armored'
+        });
+
+        return encrypted;
+    } catch (error) {
+        console.error('Error encrypting data:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     getUserPublicKey,
     createEncryptionStream,
-    createPassThroughStream
+    createPassThroughStream,
+    encryptData
 };

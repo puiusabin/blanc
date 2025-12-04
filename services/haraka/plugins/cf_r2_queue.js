@@ -5,10 +5,12 @@ var AWS = require("aws-sdk"),
     zlib = require("zlib"),
     util = require('util'),
     async = require("async"),
+    stream = require('stream'),
     Transform = require('stream').Transform,
     { v4: uuidv4 } = require('uuid'),
     { PrismaClient } = require("@blanc/database/generated/prisma"),
     { withAccelerate } = require("@prisma/extension-accelerate"),
+    { MailParser } = require('mailparser'),
     pgpHandler = require("./pgp_handler");
 
 // Initialize Prisma client with Accelerate extension
@@ -127,13 +129,13 @@ exports.hook_rcpt_ok = function (next, connection, rcpt) {
 /**
  * Hook: queue
  * Called after email DATA is received
- * Encrypts (if enabled), uploads to R2, stores metadata in database
+ * Parses email, uploads attachments and JSON datagram to R2, stores metadata in database
  */
 exports.hook_queue = function (next, connection) {
     var plugin = this;
     var transaction = connection.transaction;
 
-    plugin.logdebug("Processing email for queue");
+    plugin.logdebug("Processing email for queue with MailParser");
 
     // Get all validated recipients from rcpt_ok hook
     var recipients = transaction.notes.recipients || {};
@@ -144,17 +146,6 @@ exports.hook_queue = function (next, connection) {
         return next(DENYSOFT, "No valid recipients");
     }
 
-    // Create S3 client with R2 endpoint
-    var s3 = new AWS.S3({
-        endpoint: plugin.r2Endpoint,
-        s3ForcePathStyle: true,
-        signatureVersion: 'v4'
-    });
-
-    // Get email metadata
-    var fromAddress = transaction.mail_from ? transaction.mail_from.address() : 'unknown';
-    var subject = transaction.header.get('subject') || '(no subject)';
-    var messageId = transaction.header.get('message-id') || null;
     var emailSize = transaction.data_bytes || 0;
 
     // Process each recipient
@@ -168,103 +159,199 @@ exports.hook_queue = function (next, connection) {
                 var userId = recipientInfo.userId;
                 var userEmail = recipientInfo.userEmail;
 
-                // Generate unique email ID and R2 path
+                // Generate unique email ID and paths
                 var emailId = uuidv4();
                 var now = new Date();
                 var year = now.getFullYear();
                 var month = String(now.getMonth() + 1).padStart(2, '0');
 
-                var r2Path = userId + "/" + year + "/" + month + "/" + emailId + plugin.fileExtension;
+                var datagramPath = userId + "/" + year + "/" + month + "/" + emailId + ".json.gz";
 
-                plugin.logdebug("Uploading email to R2: " + r2Path);
+                plugin.logdebug("Parsing email " + emailId + " for user " + userEmail);
 
-                // Create stream pipeline
-                var messageStream = transaction.message_stream;
-                var streams = [];
+                // State accumulation
+                var parsedHeaders = null;
+                var textBody = '';
+                var htmlBody = '';
+                var attachmentPromises = [];
+                var attachmentMetadata = [];
 
-                // Add gzip compression
-                if (plugin.zipBeforeUpload) {
-                    streams.push(zlib.createGzip());
-                }
+                // Create MailParser instance
+                var parser = new MailParser({
+                    streamAttachments: true
+                });
 
-                // Add encryption if enabled
-                if (plugin.encryptionEnabled) {
-                    var publicKey = await pgpHandler.getUserPublicKey(userId);
+                // Event: Headers parsed
+                parser.on('headers', function(headers) {
+                    parsedHeaders = extractHeaders(headers);
+                    plugin.logdebug("Headers parsed for email " + emailId);
+                });
 
-                    if (!publicKey) {
-                        if (plugin.requirePGPKeys) {
-                            throw new Error("No PGP key found for user");
-                        } else {
-                            plugin.logwarn("No PGP key found for user " + userEmail + ", storing unencrypted");
+                // Event: Body data (text or HTML)
+                parser.on('data', function(data) {
+                    if (data.type === 'text') {
+                        if (data.html) {
+                            htmlBody += data.html;
                         }
-                    } else {
-                        var encryptStream = await pgpHandler.createEncryptionStream(publicKey);
-                        streams.push(encryptStream);
+                        if (data.text) {
+                            textBody += data.text;
+                        }
                     }
-                }
+                });
 
-                // Build pipeline
-                var currentStream = messageStream;
-                for (var i = 0; i < streams.length; i++) {
-                    currentStream = currentStream.pipe(streams[i]);
-                }
+                // Event: Attachment (streaming)
+                parser.on('data', function(data) {
+                    if (data.type === 'attachment') {
+                        var attachmentId = uuidv4();
+                        var sanitizedFilename = sanitizeFilename(data.filename);
+                        var r2Path = userId + "/" + year + "/" + month + "/" + emailId + "/attachments/" + attachmentId + "_" + sanitizedFilename;
 
-                // Upload to R2
-                var uploadParams = {
-                    Bucket: plugin.r2Bucket,
-                    Key: r2Path,
-                    Body: currentStream
-                };
+                        plugin.logdebug("Processing attachment: " + data.filename + " -> " + r2Path);
 
-                s3.upload(uploadParams)
-                    .on('httpUploadProgress', function (evt) {
-                        plugin.logdebug("Upload progress for " + r2Path + ": " + util.inspect(evt));
-                    })
-                    .send(async function (err, data) {
-                        if (err) {
-                            plugin.logerror("R2 upload error for " + r2Path + ": " + util.inspect(err));
-                            return eachCallback(err);
+                        // Prepare attachment metadata
+                        var metadata = {
+                            id: attachmentId,
+                            filename: data.filename,
+                            mimeType: data.contentType,
+                            sizeBytes: data.size || 0,
+                            contentId: data.contentId || null,
+                            isInline: data.contentDisposition === 'inline',
+                            r2Path: r2Path,
+                            emailId: emailId
+                        };
+                        attachmentMetadata.push(metadata);
+
+                        // Stream attachment to R2
+                        var uploadPromise = uploadAttachmentToR2(
+                            data.content,
+                            r2Path,
+                            metadata,
+                            plugin,
+                            userId
+                        );
+                        attachmentPromises.push(uploadPromise);
+
+                        // Release stream to prevent backpressure
+                        data.release();
+                    }
+                });
+
+                // Event: Parsing complete
+                parser.on('end', async function() {
+                    try {
+                        plugin.logdebug("Parsing complete for email " + emailId);
+
+                        // Wait for all attachments to upload
+                        await Promise.all(attachmentPromises);
+                        plugin.logdebug("All attachments uploaded for email " + emailId);
+
+                        // Build JSON datagram
+                        var datagram = {
+                            version: '1.0',
+                            emailId: emailId,
+                            messageId: parsedHeaders.messageId,
+                            userId: userId,
+                            headers: parsedHeaders,
+                            body: {
+                                html: htmlBody || null,
+                                text: textBody || null,
+                                textAsHtml: null
+                            },
+                            attachments: attachmentMetadata,
+                            sizeBytes: emailSize,
+                            receivedAt: now.toISOString(),
+                            encrypted: plugin.encryptionEnabled,
+                            parsed: {
+                                parserVersion: 'mailparser@4.0.0',
+                                parsedAt: new Date().toISOString(),
+                                warnings: []
+                            }
+                        };
+
+                        // Encrypt datagram if needed
+                        var datagramContent = JSON.stringify(datagram);
+                        if (plugin.encryptionEnabled) {
+                            var publicKey = await pgpHandler.getUserPublicKey(userId);
+                            if (publicKey) {
+                                datagramContent = await pgpHandler.encryptData(datagramContent, publicKey);
+                                plugin.logdebug("Datagram encrypted for email " + emailId);
+                            }
                         }
 
-                        plugin.logdebug("R2 upload successful: " + r2Path);
+                        // Compress and upload datagram
+                        await uploadDatagramToR2(datagramContent, datagramPath, plugin);
+                        plugin.logdebug("Datagram uploaded for email " + emailId);
 
-                        try {
-                            // Store email metadata in database
-                            await prisma.email.create({
+                        // Store in database (atomic transaction)
+                        await prisma.$transaction(async function(tx) {
+                            // Create email record
+                            await tx.email.create({
                                 data: {
                                     id: emailId,
+                                    messageId: parsedHeaders.messageId,
                                     userId: userId,
-                                    fromAddress: fromAddress,
-                                    toAddress: recipientInfo.originalRecipient,
-                                    subject: subject,
-                                    messageId: messageId,
+                                    dateReceived: now,
+                                    dateSent: parsedHeaders.date ? new Date(parsedHeaders.date) : null,
                                     sizeBytes: BigInt(emailSize),
-                                    r2Path: r2Path,
+                                    r2DatagramPath: datagramPath,
+                                    hasHtml: !!htmlBody,
+                                    hasPlainText: !!textBody,
+                                    hasAttachments: attachmentMetadata.length > 0,
+                                    attachmentCount: attachmentMetadata.length,
                                     encrypted: plugin.encryptionEnabled,
-                                    status: 'STORED'
+                                    status: 'STORED',
+                                    folder: 'INBOX',
+                                    isRead: false
                                 }
                             });
 
-                            // Update user's storage usage
-                            await prisma.user.update({
+                            // Create attachment records
+                            if (attachmentMetadata.length > 0) {
+                                await tx.attachment.createMany({
+                                    data: attachmentMetadata.map(function(att) {
+                                        return {
+                                            id: att.id,
+                                            emailId: emailId,
+                                            userId: userId,
+                                            filename: att.filename,
+                                            mimeType: att.mimeType,
+                                            sizeBytes: BigInt(att.sizeBytes),
+                                            contentId: att.contentId,
+                                            isInline: att.isInline,
+                                            r2Path: att.r2Path
+                                        };
+                                    })
+                                });
+                            }
+
+                            // Update user quota
+                            await tx.user.update({
                                 where: { id: userId },
                                 data: {
-                                    usedBytes: {
-                                        increment: BigInt(emailSize)
-                                    }
+                                    usedBytes: { increment: BigInt(emailSize) }
                                 }
                             });
+                        });
 
-                            plugin.loginfo("Email stored successfully for " + userEmail +
-                                " (size: " + emailSize + " bytes, path: " + r2Path + ")");
+                        plugin.loginfo("Email " + emailId + " stored successfully for " + userEmail +
+                            " (size: " + emailSize + " bytes, " + attachmentMetadata.length + " attachments)");
 
-                            eachCallback(null);
+                        eachCallback(null);
 
-                        } catch (dbError) {
-                            plugin.logerror("Database error: " + util.inspect(dbError));
-                            eachCallback(dbError);
-                        }
-                    });
+                    } catch (error) {
+                        plugin.logerror("Error processing email " + emailId + ": " + util.inspect(error));
+                        eachCallback(error);
+                    }
+                });
+
+                // Event: Parser error
+                parser.on('error', function(error) {
+                    plugin.logerror("Parser error for email " + emailId + ": " + util.inspect(error));
+                    eachCallback(error);
+                });
+
+                // Start parsing: pipe message stream into parser
+                transaction.message_stream.pipe(parser);
 
             } catch (error) {
                 plugin.logerror("Error processing recipient " + recipientEmail + ": " + util.inspect(error));
@@ -293,6 +380,193 @@ TransformStream.prototype._transform = function(chunk, encoding, callback) {
     this.push(chunk);
     callback();
 };
+
+/**
+ * Extract headers from MailParser headers object
+ * @param {Map} headers - MailParser headers Map
+ * @returns {Object} Extracted headers in structured format
+ */
+function extractHeaders(headers) {
+    return {
+        from: parseAddress(headers.get('from')),
+        to: parseAddressList(headers.get('to')),
+        cc: parseAddressList(headers.get('cc')),
+        bcc: parseAddressList(headers.get('bcc')),
+        replyTo: parseAddress(headers.get('reply-to')),
+        subject: headers.get('subject') || '(no subject)',
+        date: headers.get('date'),
+        messageId: headers.get('message-id'),
+        inReplyTo: headers.get('in-reply-to'),
+        references: headers.get('references') ? headers.get('references').split(/\s+/) : [],
+        priority: headers.get('priority'),
+        raw: extractRawHeaders(headers)
+    };
+}
+
+/**
+ * Parse single email address
+ * @param {Object} value - MailParser address object
+ * @returns {Object|null} {email, name} or null
+ */
+function parseAddress(value) {
+    if (!value || !value.value || value.value.length === 0) return null;
+    var parsed = value.value[0];
+    return {
+        email: parsed.address,
+        name: parsed.name || null
+    };
+}
+
+/**
+ * Parse list of email addresses
+ * @param {Object} value - MailParser address list object
+ * @returns {Array} Array of {email, name} objects
+ */
+function parseAddressList(value) {
+    if (!value || !value.value) return [];
+    return value.value.map(function(addr) {
+        return {
+            email: addr.address,
+            name: addr.name || null
+        };
+    });
+}
+
+/**
+ * Extract raw headers for storage
+ * @param {Map} headers - MailParser headers Map
+ * @returns {Object} Raw headers object
+ */
+function extractRawHeaders(headers) {
+    var raw = {};
+    headers.forEach(function(value, key) {
+        if (typeof value === 'string') {
+            raw[key] = value;
+        } else if (value && value.text) {
+            raw[key] = value.text;
+        }
+    });
+    return raw;
+}
+
+/**
+ * Sanitize filename for safe storage
+ * @param {String} filename - Original filename
+ * @returns {String} Sanitized filename
+ */
+function sanitizeFilename(filename) {
+    if (!filename) return 'attachment';
+    return filename
+        .replace(/[\/\\]/g, '_')
+        .replace(/[^\w\s\-\.]/g, '_')
+        .substring(0, 200);
+}
+
+/**
+ * Upload attachment to R2
+ * @param {Stream} attachmentStream - Readable stream of attachment data
+ * @param {String} r2Path - R2 storage path
+ * @param {Object} metadata - Attachment metadata
+ * @param {Object} plugin - Haraka plugin instance
+ * @param {String} userId - User ID for encryption lookup
+ * @returns {Promise} Upload promise
+ */
+function uploadAttachmentToR2(attachmentStream, r2Path, metadata, plugin, userId) {
+    return new Promise(async function(resolve, reject) {
+        try {
+            var uploadStream = attachmentStream;
+
+            // Encrypt attachment if enabled
+            if (plugin.encryptionEnabled) {
+                var publicKey = await pgpHandler.getUserPublicKey(userId);
+                if (publicKey) {
+                    var encryptStream = await pgpHandler.createEncryptionStream(publicKey);
+                    uploadStream = attachmentStream.pipe(encryptStream);
+                }
+            }
+
+            // Create S3 client
+            var s3 = new AWS.S3({
+                endpoint: plugin.r2Endpoint,
+                s3ForcePathStyle: true,
+                signatureVersion: 'v4'
+            });
+
+            var uploadParams = {
+                Bucket: plugin.r2Bucket,
+                Key: r2Path,
+                Body: uploadStream,
+                ContentType: metadata.mimeType,
+                Metadata: {
+                    filename: metadata.filename,
+                    emailId: metadata.emailId || ''
+                }
+            };
+
+            s3.upload(uploadParams)
+                .on('httpUploadProgress', function(evt) {
+                    plugin.logdebug("Attachment upload progress: " + r2Path + " - " + evt.loaded + "/" + evt.total);
+                })
+                .send(function(err, data) {
+                    if (err) reject(err);
+                    else resolve(data);
+                });
+
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+/**
+ * Upload JSON datagram to R2
+ * @param {String} jsonContent - JSON string to upload
+ * @param {String} r2Path - R2 storage path
+ * @param {Object} plugin - Haraka plugin instance
+ * @returns {Promise} Upload promise
+ */
+function uploadDatagramToR2(jsonContent, r2Path, plugin) {
+    return new Promise(function(resolve, reject) {
+        try {
+            var gzipStream = zlib.createGzip();
+
+            // Convert string to stream
+            var bufferStream = new stream.Readable();
+            bufferStream.push(jsonContent);
+            bufferStream.push(null);
+
+            // Create S3 client
+            var s3 = new AWS.S3({
+                endpoint: plugin.r2Endpoint,
+                s3ForcePathStyle: true,
+                signatureVersion: 'v4'
+            });
+
+            var uploadParams = {
+                Bucket: plugin.r2Bucket,
+                Key: r2Path,
+                Body: bufferStream.pipe(gzipStream),
+                ContentType: 'application/json',
+                ContentEncoding: 'gzip',
+                Metadata: {
+                    version: '1.0'
+                }
+            };
+
+            s3.upload(uploadParams)
+                .on('httpUploadProgress', function(evt) {
+                    plugin.logdebug("Datagram upload progress: " + r2Path + " - " + evt.loaded + "/" + evt.total);
+                })
+                .send(function(err, data) {
+                    if (err) reject(err);
+                    else resolve(data);
+                });
+
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
 
 exports.shutdown = function () {
     this.loginfo("Shutting down Cloudflare R2 queue plugin.");
