@@ -125,7 +125,7 @@ export async function parseEml(emlContent: string): Promise<Email> {
     timestamp,
     isRead: false, // Default to unread
     isStarred: false,
-    folder: "inbox", // Default to inbox
+    folder: "INBOX", // Default to inbox
     hasAttachments: attachments.length > 0,
     attachments: attachments.length > 0 ? attachments : undefined,
     inReplyTo: parsed.inReplyTo || undefined,

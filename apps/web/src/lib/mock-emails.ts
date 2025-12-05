@@ -105,7 +105,7 @@ function generateMockAttachment(): EmailAttachment {
   };
 }
 
-export function generateMockEmail(index: number, folder: EmailFolder = "inbox"): Email {
+export function generateMockEmail(index: number, folder: EmailFolder = "INBOX"): Email {
   const template = emailTemplates[index % emailTemplates.length];
   const sender = mockSenders[index % mockSenders.length];
   const hasAttachments = Math.random() > 0.7;
@@ -121,7 +121,7 @@ export function generateMockEmail(index: number, folder: EmailFolder = "inbox"):
     bodyText: `${template.bodyText}\n\n${sender.name}`,
     bodyHtml: hasHtml ? template.bodyHtml : undefined,
     timestamp: new Date(Date.now() - index * 10800000).toISOString(),
-    isRead: folder === "sent" ? true : isRead,
+    isRead: folder === "SENT" ? true : isRead,
     isStarred: Math.random() > 0.8,
     folder,
     hasAttachments,
@@ -129,7 +129,7 @@ export function generateMockEmail(index: number, folder: EmailFolder = "inbox"):
   };
 }
 
-export function generateMockEmails(count: number = 20, folder: EmailFolder = "inbox"): Email[] {
+export function generateMockEmails(count: number = 20, folder: EmailFolder = "INBOX"): Email[] {
   return Array.from({ length: count }, (_, i) => generateMockEmail(i, folder));
 }
 
@@ -157,18 +157,18 @@ export function convertLegacyEmail(legacyEmail: LegacyEmail): Email {
     bodyText: legacyEmail.content || "",
     timestamp: new Date().toISOString(),
     isRead: legacyEmail.read || false,
-    folder: "inbox",
+    folder: "INBOX",
     hasAttachments: false,
   };
 }
 
 export const mockEmails = {
-  inbox: generateMockEmails(20, "inbox"),
-  sent: generateMockEmails(15, "sent"),
-  drafts: generateMockEmails(5, "drafts"),
-  spam: generateMockEmails(10, "spam"),
-  trash: generateMockEmails(8, "trash"),
-  archive: generateMockEmails(30, "archive"),
+  inbox: generateMockEmails(20, "INBOX"),
+  sent: generateMockEmails(15, "SENT"),
+  drafts: generateMockEmails(5, "DRAFTS"),
+  spam: generateMockEmails(10, "SPAM"),
+  trash: generateMockEmails(8, "TRASH"),
+  archive: generateMockEmails(30, "ARCHIVE"),
 };
 
 export function getMockEmailById(id: string): Email | undefined {
@@ -178,5 +178,13 @@ export function getMockEmailById(id: string): Email | undefined {
 }
 
 export function getMockEmailsByFolder(folder: EmailFolder): Email[] {
-  return mockEmails[folder] || [];
+  const folderMap: Record<EmailFolder, keyof typeof mockEmails> = {
+    INBOX: "inbox",
+    SENT: "sent",
+    DRAFTS: "drafts",
+    SPAM: "spam",
+    TRASH: "trash",
+    ARCHIVE: "archive",
+  };
+  return mockEmails[folderMap[folder]] || [];
 }

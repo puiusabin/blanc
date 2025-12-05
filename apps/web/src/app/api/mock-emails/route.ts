@@ -74,7 +74,7 @@ export async function GET(_request: NextRequest) {
 
         // Transform HTML to use proxied images with HMAC signatures
         if (email.bodyHtml) {
-          email.bodyHtml = transformEmailHtml(email.bodyHtml);
+          email.bodyHtml = await transformEmailHtml(email.bodyHtml);
         }
 
         emails.push(email);
