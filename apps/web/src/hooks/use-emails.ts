@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
-import type { Email, EmailFolder } from "@/types/email";
-import { getMockEmailsByFolder } from "@/lib/mock-emails";
+"use client";
 
-export type ReadStateMode = "alternating" | "all-read" | "all-unread" | "mixed";
+import { useLiveQuery } from "dexie-react-hooks";
+import type { Email, EmailFolder } from "@/types/email";
+import { db } from "@/lib/db";
+import { useEmailSync } from "./use-email-sync";
+import { performIncrementalSync } from "@/lib/email/sync";
 
 export interface UseEmailsOptions {
   folder: EmailFolder;
   search?: string;
   isRead?: boolean;
-  readStateMode?: ReadStateMode;
 }
 
 export interface UseEmailsResult {
@@ -18,104 +19,45 @@ export interface UseEmailsResult {
   refetch: () => void;
 }
 
-/**
- * Hook to fetch and manage emails
- * In development, loads from .eml files via /api/mock-emails
- * In production, uses hardcoded mock data (or real API when available)
- *
- * @example
- * const { emails, isLoading } = useEmails({ folder: 'inbox' })
- */
-export function useEmails({
-  folder,
-  search,
-  isRead,
-  readStateMode,
-}: UseEmailsOptions): UseEmailsResult {
-  const [emails, setEmails] = useState<Email[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
+export function useEmails({ folder, search, isRead }: UseEmailsOptions): UseEmailsResult {
+  const { isSyncing, error: syncError, userId } = useEmailSync();
 
-  useEffect(() => {
-    const loadEmails = async () => {
-      setIsLoading(true);
-      setError(null);
+  const emails = useLiveQuery(async () => {
+    let query = db.emails.where("folder").equals(folder);
 
-      try {
-        if (process.env.NODE_ENV === "development") {
-          // Development: Load from .eml files
-          const response = await fetch("/api/mock-emails");
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch emails: ${response.statusText}`);
-          }
-
-          const data = (await response.json()) as Email[];
-          setEmails(data);
-        } else {
-          // Production: Use hardcoded mock data (replace with real API later)
-          setEmails(getMockEmailsByFolder(folder));
-        }
-      } catch (err) {
-        console.error("Failed to load emails:", err);
-        setError(err instanceof Error ? err : new Error("Failed to load emails"));
-        setEmails([]); // Show empty inbox on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadEmails();
-  }, [folder, refetchTrigger]);
-
-  // Filter emails based on search and isRead
-  const filteredEmails = useMemo(() => {
-    let filtered = emails;
-
-    // Filter by folder
-    filtered = filtered.filter((email) => email.folder === folder);
-
-    // Apply read state mode if specified
-    if (readStateMode && readStateMode !== "mixed") {
-      filtered = filtered.map((email, index) => ({
-        ...email,
-        isRead:
-          readStateMode === "all-read"
-            ? true
-            : readStateMode === "all-unread"
-              ? false
-              : index % 2 === 0, // alternating
-      }));
+    if (isRead !== undefined) {
+      query = query.filter((e) => e.isRead === isRead);
     }
 
-    // Filter by search
     if (search) {
       const searchLower = search.toLowerCase();
-      filtered = filtered.filter(
-        (email) =>
-          email.subject.toLowerCase().includes(searchLower) ||
-          email.from.name.toLowerCase().includes(searchLower) ||
-          email.bodyText.toLowerCase().includes(searchLower)
+      query = query.filter(
+        (e) =>
+          e.subject.toLowerCase().includes(searchLower) ||
+          e.from.name.toLowerCase().includes(searchLower) ||
+          e.from.email.toLowerCase().includes(searchLower)
       );
     }
 
-    // Filter by isRead
-    if (isRead !== undefined) {
-      filtered = filtered.filter((email) => email.isRead === isRead);
-    }
+    const results = await query.toArray();
 
-    return filtered;
-  }, [emails, folder, search, isRead, readStateMode]);
+    return results.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }, [folder, search, isRead]);
 
   const refetch = () => {
-    setRefetchTrigger((prev) => prev + 1);
+    if (userId) {
+      performIncrementalSync(userId).catch((err) => {
+        console.error("Error during manual refetch:", err);
+      });
+    }
   };
 
   return {
-    emails: filteredEmails,
-    isLoading,
-    error,
+    emails: emails || [],
+    isLoading: emails === undefined || isSyncing,
+    error: syncError,
     refetch,
   };
 }
