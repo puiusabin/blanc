@@ -31,6 +31,16 @@ export async function GET(req: NextRequest) {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
+  console.log("[VALIDATE]", {
+    url: url,
+    urlLength: url.length,
+    receivedSignature: signature,
+    computedSignature: hexSignature,
+    match: signature === hexSignature,
+    secretKeyLength: SECRET_KEY.length,
+    secretKeyPrefix: SECRET_KEY.substring(0, 8),
+  });
+
   if (signature !== hexSignature) {
     return new NextResponse("Invalid signature", { status: 403 });
   }
