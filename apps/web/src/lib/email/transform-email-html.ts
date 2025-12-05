@@ -1,4 +1,4 @@
-import { getProxiedImageUrl } from "@/lib/security/sign-image-url";
+// No longer import getProxiedImageUrl - URL signing now happens server-side via /api/sign-urls
 
 /**
  * Decodes HTML entities in a string
@@ -8,12 +8,12 @@ import { getProxiedImageUrl } from "@/lib/security/sign-image-url";
  */
 export function decodeHtmlEntities(html: string): string {
   // Decode hex numeric entities (&#x2F; → /)
-  let decoded = html.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+  let decoded = html.replace(/&#x([0-9A-Fa-f]+);/g, (_match, hex) => {
     return String.fromCharCode(parseInt(hex, 16));
   });
 
   // Decode decimal numeric entities (&#47; → /)
-  decoded = decoded.replace(/&#([0-9]+);/g, (match, dec) => {
+  decoded = decoded.replace(/&#([0-9]+);/g, (_match, dec) => {
     return String.fromCharCode(parseInt(dec, 10));
   });
 
@@ -35,30 +35,10 @@ export function decodeHtmlEntities(html: string): string {
 }
 
 /**
- * Helper function to transform a single image URL
- * @param url - The original image URL
- * @returns Proxied URL or original if no transformation needed
- */
-function transformImageUrl(url: string): string {
-  // Keep data URIs unchanged
-  if (url.startsWith("data:")) return url;
-
-  // Keep already-proxied URLs unchanged
-  if (url.startsWith("/api/image-proxy")) return url;
-
-  // Proxy external HTTP/HTTPS images
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return getProxiedImageUrl(url);
-  }
-
-  return url;
-}
-
-/**
  * Transforms email HTML by proxying external images through our API route
  * with HMAC-signed URLs for security.
  *
- * This MUST run server-side because it uses Node.js crypto for HMAC signing.
+ * This uses Web Crypto API for HMAC signing (compatible with both Node.js and Edge runtime).
  *
  * Handles multiple image URL formats:
  * - Double quotes: <img src="...">
@@ -70,11 +50,74 @@ function transformImageUrl(url: string): string {
  * @param html - The original email HTML
  * @returns Transformed HTML with proxied image URLs
  */
-export function transformEmailHtml(html: string): string {
+export async function transformEmailHtml(html: string): Promise<string> {
   // CRITICAL: Decode HTML entities BEFORE regex matching
   // PostalMime decodes quoted-printable but NOT HTML entities
   // URLs like "https:&#x2F;&#x2F;cdn.example.com" must become "https://cdn.example.com"
   const decodedHtml = decodeHtmlEntities(html);
+
+  // Collect all unique image URLs
+  const urlsToTransform = new Set<string>();
+
+  // Extract from double-quoted img src
+  decodedHtml.replace(/<img\s+([^>]*?)src="([^"]+)"([^>]*?)>/gi, (match, _before, src) => {
+    if (src.startsWith("http://") || src.startsWith("https://")) {
+      urlsToTransform.add(src);
+    }
+    return match;
+  });
+
+  // Extract from single-quoted img src
+  decodedHtml.replace(/<img\s+([^>]*?)src='([^']+)'([^>]*?)>/gi, (match, _before, src) => {
+    if (src.startsWith("http://") || src.startsWith("https://")) {
+      urlsToTransform.add(src);
+    }
+    return match;
+  });
+
+  // Extract from unquoted img src
+  decodedHtml.replace(/<img\s+([^>]*?)src=([^\s>"']+)([^>]*?)>/gi, (match, _before, src) => {
+    if (src.startsWith("http://") || src.startsWith("https://")) {
+      urlsToTransform.add(src);
+    }
+    return match;
+  });
+
+  // Extract from background-image styles
+  decodedHtml.replace(
+    /style="([^"]*?)background-image:\s*url\((['"]?)([^'")]+)\2\)([^"]*?)"/gi,
+    (match, _beforeBg, _quote, url) => {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        urlsToTransform.add(url);
+      }
+      return match;
+    }
+  );
+
+  // Sign all URLs server-side via API (to keep IMAGE_PROXY_SECRET secure)
+  const urlMap = new Map<string, string>();
+
+  if (urlsToTransform.size > 0) {
+    const response = await fetch("/api/sign-urls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: Array.from(urlsToTransform) }),
+    });
+
+    if (!response.ok) {
+      console.error("[transformEmailHtml] Failed to sign URLs:", response.statusText);
+      // Fallback: return original HTML without transformation
+      return html;
+    }
+
+    const { signatures } = (await response.json()) as {
+      signatures: Array<{ url: string; proxiedUrl: string }>;
+    };
+
+    for (const { url, proxiedUrl } of signatures) {
+      urlMap.set(url, proxiedUrl);
+    }
+  }
 
   let transformedHtml = decodedHtml;
 
@@ -82,8 +125,8 @@ export function transformEmailHtml(html: string): string {
   transformedHtml = transformedHtml.replace(
     /<img\s+([^>]*?)src="([^"]+)"([^>]*?)>/gi,
     (match, before, src, after) => {
-      const proxyUrl = transformImageUrl(src);
-      if (proxyUrl === src) return match; // No transformation needed
+      const proxyUrl = urlMap.get(src);
+      if (!proxyUrl) return match;
       const errorIcon = "/images/broken-image.svg";
       return `<img ${before}src="${proxyUrl}" onerror="this.src='${errorIcon}'; this.onerror=null;"${after}>`;
     }
@@ -93,30 +136,30 @@ export function transformEmailHtml(html: string): string {
   transformedHtml = transformedHtml.replace(
     /<img\s+([^>]*?)src='([^']+)'([^>]*?)>/gi,
     (match, before, src, after) => {
-      const proxyUrl = transformImageUrl(src);
-      if (proxyUrl === src) return match;
+      const proxyUrl = urlMap.get(src);
+      if (!proxyUrl) return match;
       const errorIcon = "/images/broken-image.svg";
       return `<img ${before}src='${proxyUrl}' onerror="this.src='${errorIcon}'; this.onerror=null;"${after}>`;
     }
   );
 
-  // Transform images with no quotes (rare but valid HTML5)
+  // Transform images with no quotes
   transformedHtml = transformedHtml.replace(
     /<img\s+([^>]*?)src=([^\s>"']+)([^>]*?)>/gi,
     (match, before, src, after) => {
-      const proxyUrl = transformImageUrl(src);
-      if (proxyUrl === src) return match;
+      const proxyUrl = urlMap.get(src);
+      if (!proxyUrl) return match;
       const errorIcon = "/images/broken-image.svg";
       return `<img ${before}src="${proxyUrl}" onerror="this.src='${errorIcon}'; this.onerror=null;"${after}>`;
     }
   );
 
-  // Transform background images in inline styles
+  // Transform background images
   transformedHtml = transformedHtml.replace(
     /style="([^"]*?)background-image:\s*url\((['"]?)([^'")]+)\2\)([^"]*?)"/gi,
     (match, beforeBg, quote, url, afterBg) => {
-      const proxyUrl = transformImageUrl(url);
-      if (proxyUrl === url) return match;
+      const proxyUrl = urlMap.get(url);
+      if (!proxyUrl) return match;
       return `style="${beforeBg}background-image: url(${quote}${proxyUrl}${quote})${afterBg}"`;
     }
   );
