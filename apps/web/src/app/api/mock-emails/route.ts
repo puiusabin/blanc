@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { parseEml } from "@/lib/email/eml-parser";
-import { transformEmailHtml } from "@/lib/email/transform-email-html";
 import type { Email } from "@/types/email";
 
 const MOCK_EMAILS_DIR = path.join(process.cwd(), "mock-emails");
@@ -71,11 +70,6 @@ export async function GET(_request: NextRequest) {
 
         // Parse EML
         const email = await parseEml(content);
-
-        // Transform HTML to use proxied images with HMAC signatures
-        if (email.bodyHtml) {
-          email.bodyHtml = await transformEmailHtml(email.bodyHtml);
-        }
 
         emails.push(email);
       } catch (error) {

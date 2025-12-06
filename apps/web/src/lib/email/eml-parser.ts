@@ -1,7 +1,39 @@
 import PostalMime from "postal-mime";
 import type { Email, EmailAddress, EmailAttachment } from "@/types/email";
 import { nanoid } from "nanoid";
-import { decodeHtmlEntities } from "./transform-email-html";
+
+/**
+ * Decodes HTML entities using the browser's native HTML parser
+ * Handles ALL HTML entities correctly (numeric, hex, and named)
+ * @param html - HTML string with potential entities
+ * @returns Decoded HTML string
+ */
+function decodeHtmlEntities(html: string): string {
+  if (typeof document === "undefined") {
+    // Server-side fallback: use manual decoding for numeric entities only
+    // Named entities will pass through unchanged (safer than corrupting them)
+    let decoded = html;
+
+    // Decode hex numeric entities (&#x2F; → /)
+    decoded = decoded.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+      return String.fromCharCode(parseInt(hex, 16));
+    });
+
+    // Decode decimal numeric entities (&#47; → /)
+    decoded = decoded.replace(/&#([0-9]+);/g, (match, dec) => {
+      return String.fromCharCode(parseInt(dec, 10));
+    });
+
+    // Don't attempt named entity decoding server-side
+    // Let the browser handle it during rendering
+    return decoded;
+  }
+
+  // Client-side: use browser's native HTML entity decoder
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = html;
+  return textarea.value;
+}
 
 /**
  * Extracts readable text from HTML content for preview generation

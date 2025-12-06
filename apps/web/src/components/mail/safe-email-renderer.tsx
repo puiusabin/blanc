@@ -21,15 +21,14 @@ export function SafeEmailRenderer({ html, className, onLinkClick }: SafeEmailRen
 
   // Generate iframe HTML with CSP and styles
   const processedHtml = useCallback(() => {
-    // HTML is already transformed server-side with HMAC-signed image URLs
-    // Just wrap it in the iframe structure with CSP
+    // Wrap HTML in iframe structure with CSP
     return `
 <!DOCTYPE html>
 <html>
   <head>
     <base target="_blank">
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${parentOrigin} blob: data:; style-src 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src * blob: data:; style-src 'unsafe-inline' https:; font-src 'self' https: data:; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none';">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <style>

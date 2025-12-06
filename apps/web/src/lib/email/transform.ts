@@ -1,7 +1,6 @@
 import type { R2EmailDatagram, R2EmailAddress } from "@/types/r2-datagram";
 import type { EmailAddress, EmailFolder } from "@/types/email";
 import type { DbEmail } from "@/lib/db";
-import { transformEmailHtml } from "./transform-email-html";
 
 interface EmailMetadata {
   id: string;
@@ -50,7 +49,7 @@ export async function transformDatagramToEmail(
     subject: datagram.headers.subject,
     preview,
     bodyText: datagram.body.text || "",
-    bodyHtml: datagram.body.html ? await transformEmailHtml(datagram.body.html) : undefined,
+    bodyHtml: datagram.body.html || undefined,
     timestamp: datagram.receivedAt,
     isRead: metadata.isRead,
     isStarred: metadata.isStarred,
