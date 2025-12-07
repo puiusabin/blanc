@@ -1117,7 +1117,7 @@ export interface Email {
   folder: EmailFolder;
   hasAttachments: boolean;
   attachments?: EmailAttachment[];
-  threadId?: string;
+  inReplyTo?: string;
 }
 
 export interface EmailAttachment {
