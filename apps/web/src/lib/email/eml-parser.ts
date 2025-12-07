@@ -1,66 +1,14 @@
 import PostalMime from "postal-mime";
 import type { Email, EmailAddress, EmailAttachment } from "@/types/email";
 import { nanoid } from "nanoid";
+import { normalizePriority, extractTextFromHtml } from "./utils";
 
 /**
- * Decodes HTML entities using the browser's native HTML parser
- * Handles ALL HTML entities correctly (numeric, hex, and named)
- * @param html - HTML string with potential entities
- * @returns Decoded HTML string
+ * Type extension for PostalMime parsed email with priority field
+ * PostalMime doesn't officially support priority, but we extract it from headers
  */
-function decodeHtmlEntities(html: string): string {
-  if (typeof document === "undefined") {
-    // Server-side fallback: use manual decoding for numeric entities only
-    // Named entities will pass through unchanged (safer than corrupting them)
-    let decoded = html;
-
-    // Decode hex numeric entities (&#x2F; → /)
-    decoded = decoded.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
-      return String.fromCharCode(parseInt(hex, 16));
-    });
-
-    // Decode decimal numeric entities (&#47; → /)
-    decoded = decoded.replace(/&#([0-9]+);/g, (match, dec) => {
-      return String.fromCharCode(parseInt(dec, 10));
-    });
-
-    // Don't attempt named entity decoding server-side
-    // Let the browser handle it during rendering
-    return decoded;
-  }
-
-  // Client-side: use browser's native HTML entity decoder
-  const textarea = document.createElement("textarea");
-  textarea.innerHTML = html;
-  return textarea.value;
-}
-
-/**
- * Extracts readable text from HTML content for preview generation
- * Removes scripts, styles, comments, and HTML tags
- * @param html - Raw HTML string
- * @returns First 150 characters of extracted text
- */
-function extractTextFromHtml(html: string): string {
-  let text = html;
-
-  // Remove script tags and content
-  text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ");
-
-  // Remove style tags and content
-  text = text.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ");
-
-  // Remove HTML comments (including MSO conditionals)
-  text = text.replace(/<!--[\s\S]*?-->/g, " ");
-
-  // Remove all remaining HTML tags
-  text = text.replace(/<[^>]+>/g, " ");
-
-  // Decode HTML entities
-  text = decodeHtmlEntities(text);
-
-  // Normalize whitespace and limit to 150 characters
-  return text.replace(/\s+/g, " ").trim().substring(0, 150);
+interface PostalMimeWithPriority {
+  priority?: string | null;
 }
 
 export async function parseEml(emlContent: string): Promise<Email> {
@@ -161,7 +109,18 @@ export async function parseEml(emlContent: string): Promise<Email> {
     hasAttachments: attachments.length > 0,
     attachments: attachments.length > 0 ? attachments : undefined,
     inReplyTo: parsed.inReplyTo || undefined,
-    threadId: parsed.messageId || undefined,
+    replyTo:
+      parsed.replyTo && Array.isArray(parsed.replyTo) && parsed.replyTo.length > 0
+        ? {
+            name: parsed.replyTo[0].name || parsed.replyTo[0].address || "Unknown",
+            email: parsed.replyTo[0].address || "unknown@example.com",
+          }
+        : undefined,
+    references:
+      parsed.references && typeof parsed.references === "string"
+        ? parsed.references.split(/\s+/).filter(Boolean)
+        : undefined,
+    priority: normalizePriority((parsed as unknown as PostalMimeWithPriority).priority),
   };
 
   return email;

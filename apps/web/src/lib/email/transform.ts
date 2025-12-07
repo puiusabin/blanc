@@ -1,21 +1,13 @@
 import type { R2EmailDatagram, R2EmailAddress } from "@/types/r2-datagram";
 import type { EmailAddress, EmailFolder } from "@/types/email";
 import type { DbEmail } from "@/lib/db";
+import { normalizePriority, extractTextFromHtmlBasic } from "./utils";
 
 interface EmailMetadata {
   id: string;
   isRead: boolean;
   isStarred: boolean;
   folder: string;
-}
-
-function extractTextFromHtml(html: string): string {
-  return html
-    .replace(/<style[^>]*>.*?<\/style>/gi, "")
-    .replace(/<script[^>]*>.*?<\/script>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function convertR2Address(addr: R2EmailAddress | null): EmailAddress {
@@ -37,7 +29,7 @@ export async function transformDatagramToEmail(
   if (datagram.body.text) {
     preview = datagram.body.text.substring(0, 150);
   } else if (datagram.body.html) {
-    preview = extractTextFromHtml(datagram.body.html).substring(0, 150);
+    preview = extractTextFromHtmlBasic(datagram.body.html).substring(0, 150);
   }
 
   const email: DbEmail = {
@@ -67,7 +59,10 @@ export async function transformDatagramToEmail(
           }))
         : undefined,
     inReplyTo: datagram.headers.inReplyTo || undefined,
-    threadId: datagram.messageId || undefined,
+    replyTo: datagram.headers.replyTo ? convertR2Address(datagram.headers.replyTo) : undefined,
+    references: datagram.headers.references.length > 0 ? datagram.headers.references : undefined,
+    priority: normalizePriority(datagram.headers.priority),
+    customHeaders: Object.keys(datagram.headers.raw).length > 0 ? datagram.headers.raw : undefined,
     syncedAt: Date.now(),
   };
 
