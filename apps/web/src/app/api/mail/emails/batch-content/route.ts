@@ -3,55 +3,49 @@ import { prisma } from "@blanc/database";
 import AWS from "aws-sdk";
 import { gunzipSync } from "zlib";
 import type { R2EmailDatagram } from "@/types/r2-datagram";
-
-const s3 = new AWS.S3({
-  endpoint: process.env.R2_ENDPOINT,
-  accessKeyId: process.env.R2_ACCESS_KEY_ID,
-  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  region: "auto",
-  signatureVersion: "v4",
-  s3ForcePathStyle: true,
-});
-
-const BUCKET_NAME = process.env.R2_BUCKET_NAME || "mail-storage";
+import { validateEmailIds, validateEnvVars } from "@/lib/api/validation";
+import { APIError, handleAPIError } from "@/lib/api/error";
+import { safeValidateR2EmailDatagram } from "@/lib/email/r2-validation";
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate R2 credentials
-    const requiredEnvVars = {
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      throw new APIError(401, "Unauthorized");
+    }
+
+    validateEnvVars({
       R2_ENDPOINT: process.env.R2_ENDPOINT,
       R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
       R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
       R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
-    };
+    });
 
-    const missing = Object.entries(requiredEnvVars)
-      .filter(([_, value]) => !value)
-      .map(([key]) => key);
-
-    if (missing.length > 0) {
-      console.error("Missing R2 environment variables:", missing);
-      return NextResponse.json(
-        { error: `Missing R2 credentials: ${missing.join(", ")}` },
-        { status: 500 }
-      );
-    }
-
-    const body = await request.json();
-    const { emailIds } = body as { emailIds: string[] };
-
-    if (!emailIds || !Array.isArray(emailIds) || emailIds.length === 0) {
-      return NextResponse.json({ error: "emailIds array is required" }, { status: 400 });
-    }
+    const body = (await request.json()) as { emailIds: unknown };
+    const emailIds = validateEmailIds(body.emailIds);
 
     const emails = await prisma.email.findMany({
-      where: { id: { in: emailIds } },
+      where: {
+        id: { in: emailIds },
+        userId: userId,
+      },
       select: { id: true, r2DatagramPath: true },
     });
 
-    if (emails.length === 0) {
-      return NextResponse.json({ error: "No emails found with provided IDs" }, { status: 404 });
+    if (emails.length !== emailIds.length) {
+      throw new APIError(403, "Access denied to one or more emails");
     }
+
+    const s3 = new AWS.S3({
+      endpoint: process.env.R2_ENDPOINT,
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      region: "auto",
+      signatureVersion: "v4",
+      s3ForcePathStyle: true,
+    });
+
+    const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
 
     const results = await Promise.allSettled(
       emails.map(async (email) => {
@@ -78,9 +72,28 @@ export async function POST(request: NextRequest) {
 
         const decompressed = gunzipSync(buffer);
 
-        const datagram = JSON.parse(decompressed.toString("utf-8")) as R2EmailDatagram;
+        // Parse JSON
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(decompressed.toString("utf-8"));
+        } catch (parseError) {
+          throw new Error(
+            `Invalid JSON in R2 object ${email.r2DatagramPath}: ${
+              parseError instanceof Error ? parseError.message : String(parseError)
+            }`
+          );
+        }
 
-        return { id: email.id, datagram };
+        // Validate schema
+        const validation = safeValidateR2EmailDatagram(parsed);
+        if (!validation.success) {
+          const errorDetails = validation.error.issues
+            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+            .join("; ");
+          throw new Error(`Invalid R2EmailDatagram schema for ${email.id}: ${errorDetails}`);
+        }
+
+        return { id: email.id, datagram: validation.data };
       })
     );
 
@@ -107,7 +120,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching batch content:", error);
-    return NextResponse.json({ error: "Failed to fetch batch content" }, { status: 500 });
+    return handleAPIError(error);
   }
 }

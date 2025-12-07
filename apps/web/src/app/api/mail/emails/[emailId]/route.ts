@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder } from "@blanc/database";
+import { prisma, EmailFolder, Prisma } from "@blanc/database";
+import { validateUUID, validateFolder } from "@/lib/api/validation";
+import { APIError, handleAPIError } from "@/lib/api/error";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ emailId: string }> }
 ) {
   try {
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      throw new APIError(401, "Unauthorized");
+    }
+
     const { emailId } = await params;
+
+    if (!validateUUID(emailId)) {
+      throw new APIError(400, "Invalid email ID format");
+    }
+
     const body = await request.json();
     const { isRead, isStarred, folder } = body as {
       isRead?: boolean;
@@ -14,13 +26,42 @@ export async function PATCH(
       folder?: EmailFolder;
     };
 
-    const updateData: any = {};
-    if (isRead !== undefined) updateData.isRead = isRead;
-    if (isStarred !== undefined) updateData.isStarred = isStarred;
-    if (folder !== undefined) updateData.folder = folder;
+    const updateData: Prisma.EmailUpdateInput = {};
+
+    if (isRead !== undefined) {
+      if (typeof isRead !== "boolean") {
+        throw new APIError(400, "isRead must be boolean");
+      }
+      updateData.isRead = isRead;
+    }
+
+    if (isStarred !== undefined) {
+      if (typeof isStarred !== "boolean") {
+        throw new APIError(400, "isStarred must be boolean");
+      }
+      updateData.isStarred = isStarred;
+    }
+
+    if (folder !== undefined) {
+      const validFolder = validateFolder(folder);
+      updateData.folder = validFolder as EmailFolder;
+    }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+      throw new APIError(400, "No valid fields to update");
+    }
+
+    const email = await prisma.email.findUnique({
+      where: { id: emailId },
+      select: { userId: true },
+    });
+
+    if (!email) {
+      throw new APIError(404, "Email not found");
+    }
+
+    if (email.userId !== userId) {
+      throw new APIError(403, "Forbidden");
     }
 
     const updatedEmail = await prisma.email.update({
@@ -39,7 +80,6 @@ export async function PATCH(
       email: updatedEmail,
     });
   } catch (error) {
-    console.error("Error updating email:", error);
-    return NextResponse.json({ error: "Failed to update email" }, { status: 500 });
+    return handleAPIError(error);
   }
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder } from "@blanc/database";
+import { prisma, EmailFolder, Prisma } from "@blanc/database";
+import { validateEmailQueryParams } from "@/lib/api/validation";
+import { APIError, handleAPIError } from "@/lib/api/error";
 
 interface EmailMetadata {
   id: string;
@@ -21,28 +23,35 @@ interface EmailMetadata {
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get("userId");
-    const folder = searchParams.get("folder") as EmailFolder | null;
-    const since = searchParams.get("since");
-    const limit = parseInt(searchParams.get("limit") || "100", 10);
-
+    const userId = request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+      throw new APIError(401, "Unauthorized");
     }
 
-    const where: any = {
+    const searchParams = request.nextUrl.searchParams;
+
+    const rawParams = {
+      folder: searchParams.get("folder") || undefined,
+      since: searchParams.get("since") || undefined,
+      limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 100,
+    };
+
+    const params = validateEmailQueryParams(rawParams);
+
+    const where: Prisma.EmailWhereInput = {
       userId,
       status: "STORED",
     };
 
-    if (folder) {
-      where.folder = folder;
+    if (params.folder) {
+      where.folder = params.folder;
     }
 
-    if (since) {
-      where.dateReceived = { gt: new Date(since) };
+    if (params.since) {
+      where.dateReceived = { gt: new Date(params.since) };
     }
+
+    const limit = params.limit || 100;
 
     const emails = await prisma.email.findMany({
       where,
@@ -79,7 +88,6 @@ export async function GET(request: NextRequest) {
       hasMore: emails.length === limit,
     });
   } catch (error) {
-    console.error("Error fetching email metadata:", error);
-    return NextResponse.json({ error: "Failed to fetch email metadata" }, { status: 500 });
+    return handleAPIError(error);
   }
 }
