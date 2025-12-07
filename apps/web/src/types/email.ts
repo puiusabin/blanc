@@ -18,12 +18,14 @@ export interface Email {
   timestamp: string;
   isRead: boolean;
   isStarred?: boolean;
-  labels?: string[];
   folder: EmailFolder;
   hasAttachments: boolean;
   attachments?: EmailAttachment[];
   inReplyTo?: string;
-  threadId?: string;
+  replyTo?: EmailAddress;
+  references?: string[];
+  priority?: "high" | "normal" | "low";
+  customHeaders?: Record<string, string>;
 }
 
 export interface EmailAttachment {
@@ -37,28 +39,10 @@ export interface EmailAttachment {
 
 export type EmailFolder = "INBOX" | "SENT" | "DRAFTS" | "SPAM" | "TRASH" | "ARCHIVE";
 
-export interface EmailFilters {
-  folder: EmailFolder;
-  isRead?: boolean;
-  isStarred?: boolean;
-  search?: string;
-  labels?: string[];
-  from?: string;
-  to?: string;
-  hasAttachments?: boolean;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-export interface EmailThread {
-  id: string;
-  subject: string;
-  participants: EmailAddress[];
-  emailCount: number;
-  lastEmailTimestamp: string;
-  isRead: boolean;
-  labels?: string[];
-  emails: Email[];
+export interface EmailQueryParams {
+  folder?: EmailFolder;
+  since?: string;
+  limit?: number;
 }
 
 export interface DraftEmail {
