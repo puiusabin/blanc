@@ -17,6 +17,17 @@ export function useEmailSync(pollingInterval = 60000) {
         }
         const data = (await response.json()) as { userId: string };
         console.log("[useEmailSync] Got userId:", data.userId);
+
+        const sessionResponse = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: data.userId }),
+        });
+
+        if (!sessionResponse.ok) {
+          throw new Error("Failed to create session");
+        }
+
         setUserId(data.userId);
       } catch (err) {
         console.error("Error fetching user:", err);
