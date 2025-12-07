@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { EmailDetail } from "./email-detail";
-import { generateMockEmail } from "@/lib/mock-emails";
+import type { Email } from "@/types/email";
 
 const meta: Meta<typeof EmailDetail> = {
   title: "Mail/EmailDetail",
@@ -14,13 +14,38 @@ const meta: Meta<typeof EmailDetail> = {
 export default meta;
 type Story = StoryObj<typeof EmailDetail>;
 
-const mockEmail = generateMockEmail(0, "inbox");
-const emailWithAttachment = {
-  ...generateMockEmail(1, "inbox"),
-  hasAttachments: true,
+const mockEmail: Email = {
+  id: "email-1",
+  from: { name: "Alice Johnson", email: "alice@example.com" },
+  to: [{ name: "You", email: "you@blanc.is" }],
+  subject: "Meeting Tomorrow",
+  preview: "Hi, just wanted to confirm our meeting...",
+  bodyText: "Hi,\n\nJust wanted to confirm our meeting scheduled for tomorrow at 2 PM.",
+  timestamp: new Date().toISOString(),
+  isRead: false,
+  isStarred: false,
+  folder: "INBOX",
+  hasAttachments: false,
 };
-const starredEmail = {
-  ...generateMockEmail(2, "inbox"),
+
+const emailWithAttachment: Email = {
+  ...mockEmail,
+  id: "email-2",
+  hasAttachments: true,
+  attachments: [
+    {
+      id: "att-1",
+      filename: "document.pdf",
+      mimeType: "application/pdf",
+      size: 1024000,
+      r2Key: "attachments/document.pdf",
+    },
+  ],
+};
+
+const starredEmail: Email = {
+  ...mockEmail,
+  id: "email-3",
   isStarred: true,
 };
 

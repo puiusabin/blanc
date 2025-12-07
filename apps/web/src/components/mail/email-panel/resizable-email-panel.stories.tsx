@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ResizableEmailPanel } from "./resizable-email-panel";
 import { EmailDetail } from "../email-detail/email-detail";
-import { generateMockEmail } from "@/lib/mock-emails";
+import type { Email } from "@/types/email";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -26,7 +26,21 @@ const meta: Meta<typeof ResizableEmailPanel> = {
 export default meta;
 type Story = StoryObj<typeof ResizableEmailPanel>;
 
-const mockEmail = generateMockEmail(0, "inbox");
+const generateMockEmail = (index: number): Email => ({
+  id: `email-${index + 1}`,
+  from: { name: "Alice Johnson", email: "alice@example.com" },
+  to: [{ name: "You", email: "you@blanc.is" }],
+  subject: "Meeting Tomorrow",
+  preview: "Hi, just wanted to confirm our meeting...",
+  bodyText: "Hi,\n\nJust wanted to confirm our meeting scheduled for tomorrow at 2 PM.",
+  timestamp: new Date().toISOString(),
+  isRead: false,
+  isStarred: false,
+  folder: "INBOX",
+  hasAttachments: false,
+});
+
+const mockEmail = generateMockEmail(0);
 
 export const Default: Story = {
   render: () => {
@@ -102,13 +116,9 @@ export const CustomContent: Story = {
 export const PersistentPanel: Story = {
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmail, setSelectedEmail] = useState(generateMockEmail(0, "inbox"));
+    const [selectedEmail, setSelectedEmail] = useState(generateMockEmail(0));
 
-    const mockEmails = [
-      generateMockEmail(0, "inbox"),
-      generateMockEmail(1, "inbox"),
-      generateMockEmail(2, "inbox"),
-    ];
+    const mockEmails = [generateMockEmail(0), generateMockEmail(1), generateMockEmail(2)];
 
     return (
       <div className="h-screen flex bg-accent/20">

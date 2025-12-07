@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { EmailListItem } from "./email-list-item";
-import { generateMockEmail } from "@/lib/mock-emails";
+import type { Email } from "@/types/email";
 
 const meta: Meta<typeof EmailListItem> = {
   title: "Mail/EmailListItem",
@@ -16,39 +16,52 @@ const meta: Meta<typeof EmailListItem> = {
     isHovered: {
       control: "boolean",
     },
-    separatorVariant: {
-      control: "select",
-      options: ["none", "bullet", "em-dash", "pipe"],
-      description: "Separator variant to use",
-    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof EmailListItem>;
 
-const mockEmail = generateMockEmail(0, "inbox");
-const readEmail = { ...generateMockEmail(1, "inbox"), isRead: true };
-const emailWithAttachment = {
-  ...generateMockEmail(2, "inbox"),
+const baseMockEmail: Email = {
+  id: "email-1",
+  from: { name: "Alice Johnson", email: "alice@example.com" },
+  to: [{ name: "You", email: "you@blanc.is" }],
+  subject: "Meeting Tomorrow",
+  preview: "Hi, just wanted to confirm our meeting...",
+  bodyText: "Meeting content",
+  timestamp: new Date().toISOString(),
+  isRead: false,
+  isStarred: false,
+  folder: "INBOX",
+  hasAttachments: false,
+};
+
+const mockEmail = baseMockEmail;
+const readEmail: Email = { ...baseMockEmail, id: "email-2", isRead: true };
+const emailWithAttachment: Email = {
+  ...baseMockEmail,
+  id: "email-3",
   hasAttachments: true,
 };
 
-const shortSubjectEmail = {
-  ...generateMockEmail(3, "inbox"),
+const shortSubjectEmail: Email = {
+  ...baseMockEmail,
+  id: "email-4",
   subject: "Hi",
   preview:
     "This is a very long preview text that should take up most of the available space since the subject is extremely short",
 };
 
-const longSubjectEmail = {
-  ...generateMockEmail(4, "inbox"),
+const longSubjectEmail: Email = {
+  ...baseMockEmail,
+  id: "email-5",
   subject: "Re: Q4 Budget Proposal Review Meeting Follow-up Discussion Points and Action Items",
   preview: "Let's discuss the key points from yesterday's meeting and plan next steps",
 };
 
-const mediumSubjectEmail = {
-  ...generateMockEmail(5, "inbox"),
+const mediumSubjectEmail: Email = {
+  ...baseMockEmail,
+  id: "email-6",
   subject: "Project Update",
   preview: "The latest updates on the project are looking great and we're ahead of schedule",
 };
@@ -142,45 +155,28 @@ export const LongSubject: Story = {
   },
 };
 
-export const SeparatorComparison: Story = {
+export const ReadAndUnread: Story = {
   render: () => (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-4xl">
       <div>
-        <h2 className="text-lg font-semibold mb-4">Separator Variants Comparison</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Compare all separator styles with medium-length subject/preview
-        </p>
+        <h2 className="text-lg font-semibold mb-4">Read vs Unread States</h2>
+        <p className="text-sm text-muted-foreground mb-6">Compare read and unread email styling</p>
       </div>
 
-      {(["none", "bullet", "em-dash", "pipe"] as const).map((variant) => (
-        <div key={variant} className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground capitalize">
-            {variant === "none"
-              ? "No Separator"
-              : variant === "em-dash"
-                ? "Em Dash (—)"
-                : variant === "bullet"
-                  ? "Bullet (•)"
-                  : "Pipe (|)"}
-          </h3>
-          <div className="border rounded-lg overflow-hidden">
-            <EmailListItem
-              email={mediumSubjectEmail}
-              isSelected={false}
-              onSelect={() => {}}
-              onClick={() => {}}
-              separatorVariant={variant}
-            />
-            <EmailListItem
-              email={{ ...mediumSubjectEmail, isRead: true }}
-              isSelected={false}
-              onSelect={() => {}}
-              onClick={() => {}}
-              separatorVariant={variant}
-            />
-          </div>
-        </div>
-      ))}
+      <div className="border rounded-lg overflow-hidden">
+        <EmailListItem
+          email={mediumSubjectEmail}
+          isSelected={false}
+          onSelect={() => {}}
+          onClick={() => {}}
+        />
+        <EmailListItem
+          email={{ ...mediumSubjectEmail, isRead: true }}
+          isSelected={false}
+          onSelect={() => {}}
+          onClick={() => {}}
+        />
+      </div>
     </div>
   ),
 };
@@ -196,7 +192,6 @@ export const TruncationTest: Story = {
         isSelected={false}
         onSelect={() => {}}
         onClick={() => {}}
-        separatorVariant="bullet"
       />
 
       <div className="border-b px-4 py-2 bg-muted/30 text-xs font-mono">
@@ -207,7 +202,6 @@ export const TruncationTest: Story = {
         isSelected={false}
         onSelect={() => {}}
         onClick={() => {}}
-        separatorVariant="bullet"
       />
 
       <div className="border-b px-4 py-2 bg-muted/30 text-xs font-mono">
@@ -218,7 +212,6 @@ export const TruncationTest: Story = {
         isSelected={false}
         onSelect={() => {}}
         onClick={() => {}}
-        separatorVariant="bullet"
       />
     </div>
   ),
