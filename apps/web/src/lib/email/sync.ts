@@ -1,6 +1,5 @@
-import { db } from "@/lib/db";
-import { transformDatagramToEmail } from "./transform";
-import type { R2EmailDatagram } from "@/types/r2-datagram";
+import { db } from "@/lib/db/schema";
+import { fetchEmailMetadata, fetchAndTransformEmails, findNewestTimestamp } from "./sync-helpers";
 
 export async function performInitialSync(userId: string): Promise<void> {
   try {
@@ -10,14 +9,7 @@ export async function performInitialSync(userId: string): Promise<void> {
       return performIncrementalSync(userId);
     }
 
-    const response = await fetch(`/api/mail/emails?userId=${userId}&limit=100`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch emails: ${response.statusText}`);
-    }
-
-    const { emails: metadata } = (await response.json()) as { emails: any[] };
-    console.log("[sync] Fetched metadata:", metadata.length, "emails");
+    const metadata = await fetchEmailMetadata();
 
     if (metadata.length === 0) {
       await db.syncCursor.put({
@@ -29,32 +21,7 @@ export async function performInitialSync(userId: string): Promise<void> {
       return;
     }
 
-    const emailIds = metadata.map((m: any) => m.id);
-    const batchResponse = await fetch("/api/mail/emails/batch-content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emailIds }),
-    });
-
-    if (!batchResponse.ok) {
-      throw new Error(`Failed to fetch batch content: ${batchResponse.statusText}`);
-    }
-
-    const { emails: datagrams } = (await batchResponse.json()) as {
-      emails: Record<string, R2EmailDatagram>;
-    };
-    console.log("[sync] Fetched datagrams for", Object.keys(datagrams).length, "emails");
-
-    const emailsToCache = (
-      await Promise.all(
-        metadata.map(async (meta: any) => {
-          const datagram = datagrams[meta.id];
-          if (!datagram) return null;
-          return await transformDatagramToEmail(datagram, meta);
-        })
-      )
-    ).filter((email: any) => email !== null);
-    console.log("[sync] Transformed", emailsToCache.length, "emails for caching");
+    const emailsToCache = await fetchAndTransformEmails(metadata);
 
     if (emailsToCache.length === 0) {
       console.warn("[sync] No emails to cache - all R2 fetches may have failed");
@@ -70,10 +37,7 @@ export async function performInitialSync(userId: string): Promise<void> {
     await db.transaction("rw", db.emails, db.syncCursor, async () => {
       await db.emails.bulkPut(emailsToCache);
 
-      const newest = emailsToCache.reduce(
-        (latest: string, email: any) => (email.timestamp > latest ? email.timestamp : latest),
-        emailsToCache[0].timestamp
-      );
+      const newest = findNewestTimestamp(emailsToCache, emailsToCache[0].timestamp);
 
       await db.syncCursor.put({
         id: "lastSync",
@@ -96,47 +60,14 @@ export async function performIncrementalSync(userId: string): Promise<void> {
       return performInitialSync(userId);
     }
 
-    const response = await fetch(
-      `/api/mail/emails?userId=${userId}&since=${cursor.lastSyncDate}&limit=100`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch emails: ${response.statusText}`);
-    }
-
-    const { emails: metadata } = (await response.json()) as { emails: any[] };
+    const metadata = await fetchEmailMetadata(cursor.lastSyncDate);
 
     if (metadata.length === 0) {
       await db.syncCursor.update("lastSync", { lastSyncTime: Date.now() });
       return;
     }
 
-    const emailIds = metadata.map((m: any) => m.id);
-    const batchResponse = await fetch("/api/mail/emails/batch-content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emailIds }),
-    });
-
-    if (!batchResponse.ok) {
-      throw new Error(`Failed to fetch batch content: ${batchResponse.statusText}`);
-    }
-
-    const { emails: datagrams } = (await batchResponse.json()) as {
-      emails: Record<string, R2EmailDatagram>;
-    };
-    console.log("[sync] Fetched datagrams for", Object.keys(datagrams).length, "emails");
-
-    const emailsToCache = (
-      await Promise.all(
-        metadata.map(async (meta: any) => {
-          const datagram = datagrams[meta.id];
-          if (!datagram) return null;
-          return await transformDatagramToEmail(datagram, meta);
-        })
-      )
-    ).filter((email: any) => email !== null);
-    console.log("[sync] Transformed", emailsToCache.length, "emails for caching");
+    const emailsToCache = await fetchAndTransformEmails(metadata);
 
     if (emailsToCache.length === 0) {
       console.warn("[sync] No new emails to cache - all R2 fetches may have failed");
@@ -147,10 +78,7 @@ export async function performIncrementalSync(userId: string): Promise<void> {
     await db.transaction("rw", db.emails, db.syncCursor, async () => {
       await db.emails.bulkPut(emailsToCache);
 
-      const newest = emailsToCache.reduce(
-        (latest: string, email: any) => (email.timestamp > latest ? email.timestamp : latest),
-        cursor.lastSyncDate
-      );
+      const newest = findNewestTimestamp(emailsToCache, cursor.lastSyncDate);
 
       await db.syncCursor.put({
         id: "lastSync",
