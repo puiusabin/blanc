@@ -43,6 +43,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   emails        Email[]
+  threads       Thread[]
   aliases       Alias[]   @relation("AliasTarget")
   pgpKeys       PGPKey[]
 
@@ -50,10 +51,32 @@ model User {
   @@index([active])
 }
 
+model Thread {
+  id              String      @id @default(uuid())
+  userId          String
+  subject         String      @db.VarChar(500)  // Root email's subject
+  messageCount    Int         @default(1)
+  unreadCount     Int         @default(1)
+  lastMessageDate DateTime
+  participants    Json        // Array of {email: string, name: string}
+  folder          EmailFolder @default(INBOX)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails          Email[]
+
+  @@index([userId, folder, lastMessageDate(sort: Desc)])
+  @@index([userId, lastMessageDate(sort: Desc)])
+}
+
 model Email {
   id            String       @id @default(uuid())
   messageId     String?      // RFC Message-ID header for deduplication
   userId        String
+  threadId      String?      // Thread this email belongs to (nullable for migration)
+  inReplyTo     String?      // Message-ID of parent email
+  references    String[]     // Full conversation chain Message-IDs
 
   // Timestamps
   dateReceived  DateTime     @default(now())
@@ -81,6 +104,7 @@ model Email {
 
   // Relations
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread        Thread?      @relation(fields: [threadId], references: [id], onDelete: Cascade)
   attachments   Attachment[]
 
   // Indexes
@@ -88,6 +112,7 @@ model Email {
   @@index([userId, folder, isRead])
   @@index([userId, folder, dateReceived(sort: Desc)])
   @@index([messageId])
+  @@index([threadId, dateReceived(sort: Desc)])
 }
 
 model Alias {
