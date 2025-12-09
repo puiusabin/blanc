@@ -282,14 +282,27 @@ exports.hook_queue = function (next, connection) {
                         await uploadDatagramToR2(datagramContent, datagramPath, plugin);
                         plugin.logdebug("Datagram uploaded for email " + emailId);
 
+                        // Compute threadId before transaction
+                        var threadId = await computeThreadId(
+                            userId,
+                            parsedHeaders.messageId,
+                            parsedHeaders.inReplyTo,
+                            parsedHeaders.references,
+                            parsedHeaders
+                        );
+                        plugin.logdebug("Thread ID computed: " + threadId);
+
                         // Store in database (atomic transaction)
                         await prisma.$transaction(async function(tx) {
-                            // Create email record
+                            // Create email record with threading fields
                             await tx.email.create({
                                 data: {
                                     id: emailId,
                                     messageId: parsedHeaders.messageId,
                                     userId: userId,
+                                    threadId: threadId,
+                                    inReplyTo: parsedHeaders.inReplyTo || null,
+                                    references: parsedHeaders.references || [],
                                     dateReceived: now,
                                     dateSent: parsedHeaders.date ? new Date(parsedHeaders.date) : null,
                                     sizeBytes: BigInt(emailSize),
@@ -304,6 +317,35 @@ exports.hook_queue = function (next, connection) {
                                     isRead: false
                                 }
                             });
+
+                            // Update thread metadata
+                            var existingThread = await tx.thread.findUnique({
+                                where: { id: threadId }
+                            });
+
+                            if (existingThread) {
+                                // Merge new participant with existing ones
+                                var participants = existingThread.participants || [];
+                                var newParticipant = parsedHeaders.from;
+                                var participantExists = participants.some(function(p) {
+                                    return p.email === newParticipant.email;
+                                });
+
+                                if (!participantExists && newParticipant) {
+                                    participants.push(newParticipant);
+                                }
+
+                                // Update thread counts and metadata
+                                await tx.thread.update({
+                                    where: { id: threadId },
+                                    data: {
+                                        messageCount: { increment: 1 },
+                                        unreadCount: { increment: 1 },
+                                        lastMessageDate: now,
+                                        participants: participants
+                                    }
+                                });
+                            }
 
                             // Create attachment records
                             if (attachmentMetadata.length > 0) {
@@ -380,6 +422,64 @@ TransformStream.prototype._transform = function(chunk, encoding, callback) {
     this.push(chunk);
     callback();
 };
+
+/**
+ * Compute thread ID for email (finds parent thread or creates new one)
+ * @param {String} userId - User ID
+ * @param {String} messageId - Message-ID of current email
+ * @param {String|null} inReplyTo - In-Reply-To header
+ * @param {Array} references - References header array
+ * @param {Object} parsedHeaders - All parsed headers
+ * @returns {Promise<String>} Thread ID
+ */
+async function computeThreadId(userId, messageId, inReplyTo, references, parsedHeaders) {
+    // Try to find parent by inReplyTo
+    if (inReplyTo) {
+        var parentEmail = await prisma.email.findFirst({
+            where: {
+                userId: userId,
+                messageId: inReplyTo
+            },
+            select: { threadId: true }
+        });
+
+        if (parentEmail && parentEmail.threadId) {
+            return parentEmail.threadId;
+        }
+    }
+
+    // Try references array (walk backward from most recent)
+    if (references && references.length > 0) {
+        for (var i = references.length - 1; i >= 0; i--) {
+            var refEmail = await prisma.email.findFirst({
+                where: {
+                    userId: userId,
+                    messageId: references[i]
+                },
+                select: { threadId: true }
+            });
+
+            if (refEmail && refEmail.threadId) {
+                return refEmail.threadId;
+            }
+        }
+    }
+
+    // No parent found - create new thread
+    var thread = await prisma.thread.create({
+        data: {
+            userId: userId,
+            subject: parsedHeaders.subject || '(no subject)',
+            messageCount: 1,
+            unreadCount: 1,
+            lastMessageDate: new Date(),
+            participants: [parsedHeaders.from || { email: 'unknown@example.com', name: 'Unknown' }],
+            folder: 'INBOX'
+        }
+    });
+
+    return thread.id;
+}
 
 /**
  * Extract headers from MailParser headers object
