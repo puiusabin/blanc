@@ -43,6 +43,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   emails        Email[]
+  threads       Thread[]
   aliases       Alias[]   @relation("AliasTarget")
   pgpKeys       PGPKey[]
 
@@ -50,10 +51,46 @@ model User {
   @@index([active])
 }
 
+model Thread {
+  id              String       @id @default(uuid())
+  userId          String
+
+  // Thread metadata
+  subject         String       @db.VarChar(998)
+  rootMessageId   String?      // First Message-ID in thread
+
+  // Denormalized counts
+  messageCount    Int          @default(1)
+  unreadCount     Int          @default(1)
+
+  // Thread-level state
+  folder          EmailFolder  @default(INBOX)
+  hasAttachments  Boolean      @default(false)
+  isStarred       Boolean      @default(false)
+
+  // Participants JSONB: [{ email: string, name: string | null }]
+  participants    Json         @default("[]")
+
+  // Timestamps
+  lastMessageAt   DateTime     @default(now())
+  firstMessageAt  DateTime     @default(now())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails          Email[]
+
+  // Indexes
+  @@index([userId, folder, lastMessageAt(sort: Desc)])
+  @@index([rootMessageId])
+}
+
 model Email {
   id            String       @id @default(uuid())
   messageId     String?      // RFC Message-ID header for deduplication
   userId        String
+  threadId      String?      // Thread relationship (nullable for migration)
 
   // Timestamps
   dateReceived  DateTime     @default(now())
@@ -81,6 +118,7 @@ model Email {
 
   // Relations
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread        Thread?      @relation(fields: [threadId], references: [id], onDelete: SetNull)
   attachments   Attachment[]
 
   // Indexes
@@ -88,6 +126,7 @@ model Email {
   @@index([userId, folder, isRead])
   @@index([userId, folder, dateReceived(sort: Desc)])
   @@index([messageId])
+  @@index([threadId, dateReceived(sort: Desc)])
 }
 
 model Alias {

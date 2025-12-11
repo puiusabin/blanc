@@ -11,7 +11,8 @@ var AWS = require("aws-sdk"),
     { PrismaClient } = require("@blanc/database/generated/prisma"),
     { withAccelerate } = require("@prisma/extension-accelerate"),
     { MailParser } = require('mailparser'),
-    pgpHandler = require("./pgp_handler");
+    pgpHandler = require("./pgp_handler"),
+    threading = require("./threading");
 
 // Initialize Prisma client with Accelerate extension
 var prisma = new PrismaClient().$extends(withAccelerate());
@@ -282,14 +283,76 @@ exports.hook_queue = function (next, connection) {
                         await uploadDatagramToR2(datagramContent, datagramPath, plugin);
                         plugin.logdebug("Datagram uploaded for email " + emailId);
 
+                        // Compute thread ID using threading algorithm
+                        var threadId = await threading.computeThreadId(parsedHeaders, userId, prisma);
+                        var isNewThread = false;
+                        var threadSubject = parsedHeaders.subject || '(no subject)';
+
+                        if (!threadId) {
+                            // No existing thread found - create new one
+                            isNewThread = true;
+                            threadId = uuidv4();
+                            plugin.logdebug("Creating new thread " + threadId + " for email " + emailId);
+                        } else {
+                            plugin.logdebug("Email " + emailId + " belongs to existing thread " + threadId);
+                        }
+
+                        // Build participants list
+                        var participants = [];
+                        if (!isNewThread) {
+                            var existingThread = await prisma.thread.findUnique({
+                                where: { id: threadId },
+                                select: { participants: true }
+                            });
+                            participants = threading.mergeParticipants(
+                                parsedHeaders,
+                                existingThread ? existingThread.participants : []
+                            );
+                        } else {
+                            participants = threading.mergeParticipants(parsedHeaders, []);
+                        }
+
                         // Store in database (atomic transaction)
                         await prisma.$transaction(async function(tx) {
+                            // Create or update thread
+                            if (isNewThread) {
+                                await tx.thread.create({
+                                    data: {
+                                        id: threadId,
+                                        userId: userId,
+                                        subject: threadSubject,
+                                        rootMessageId: parsedHeaders.messageId,
+                                        messageCount: 1,
+                                        unreadCount: 1,
+                                        hasAttachments: attachmentMetadata.length > 0,
+                                        participants: participants,
+                                        folder: 'INBOX',
+                                        lastMessageAt: now,
+                                        firstMessageAt: now
+                                    }
+                                });
+                                plugin.logdebug("Created new thread " + threadId);
+                            } else {
+                                await tx.thread.update({
+                                    where: { id: threadId },
+                                    data: {
+                                        messageCount: { increment: 1 },
+                                        unreadCount: { increment: 1 },
+                                        hasAttachments: attachmentMetadata.length > 0 || undefined,
+                                        participants: participants,
+                                        lastMessageAt: now
+                                    }
+                                });
+                                plugin.logdebug("Updated existing thread " + threadId);
+                            }
+
                             // Create email record
                             await tx.email.create({
                                 data: {
                                     id: emailId,
                                     messageId: parsedHeaders.messageId,
                                     userId: userId,
+                                    threadId: threadId,
                                     dateReceived: now,
                                     dateSent: parsedHeaders.date ? new Date(parsedHeaders.date) : null,
                                     sizeBytes: BigInt(emailSize),
