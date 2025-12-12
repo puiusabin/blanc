@@ -1,94 +1,77 @@
 import { db } from "@/lib/db/schema";
-import { fetchEmailMetadata, fetchAndTransformEmails, findNewestTimestamp } from "./sync-helpers";
 
-export async function performInitialSync(userId: string): Promise<void> {
+/**
+ * Sync threads from API to local Dexie database
+ * No race pattern needed - Dexie live queries handle reactivity
+ */
+export async function syncThreads(userId: string, folder: string = "INBOX") {
   try {
-    console.log("[sync] Starting initial sync for userId:", userId);
-    const localCount = await db.emails.count();
-    if (localCount > 0) {
-      return performIncrementalSync(userId);
-    }
-
-    const metadata = await fetchEmailMetadata();
-
-    if (metadata.length === 0) {
-      await db.syncCursor.put({
-        id: "lastSync",
-        userId,
-        lastSyncDate: new Date().toISOString(),
-        lastSyncTime: Date.now(),
-      });
-      return;
-    }
-
-    const emailsToCache = await fetchAndTransformEmails(metadata);
-
-    if (emailsToCache.length === 0) {
-      console.warn("[sync] No emails to cache - all R2 fetches may have failed");
-      await db.syncCursor.put({
-        id: "lastSync",
-        userId,
-        lastSyncDate: new Date().toISOString(),
-        lastSyncTime: Date.now(),
-      });
-      return;
-    }
-
-    await db.transaction("rw", db.emails, db.syncCursor, async () => {
-      await db.emails.bulkPut(emailsToCache);
-
-      const newest = findNewestTimestamp(emailsToCache, emailsToCache[0].timestamp);
-
-      await db.syncCursor.put({
-        id: "lastSync",
-        userId,
-        lastSyncDate: newest,
-        lastSyncTime: Date.now(),
-      });
+    const response = await fetch(`/api/mail/threads?folder=${folder}&limit=50`, {
+      headers: { "x-user-id": userId },
     });
-    console.log("[sync] Successfully wrote to IndexedDB");
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch threads: ${response.statusText}`);
+    }
+
+    const { threads } = (await response.json()) as { threads: any[] };
+
+    // Bulk upsert into Dexie
+    await db.threads.bulkPut(
+      threads.map((t: any) => ({
+        ...t,
+        syncedAt: Date.now(),
+      }))
+    );
+
+    return threads;
   } catch (error) {
-    console.error("Error performing initial sync:", error);
+    console.error("Failed to sync threads:", error);
     throw error;
   }
 }
 
-export async function performIncrementalSync(userId: string): Promise<void> {
+/**
+ * Sync messages for a specific thread
+ */
+export async function syncThreadMessages(userId: string, threadId: string) {
   try {
-    const cursor = await db.syncCursor.get("lastSync");
-    if (!cursor) {
-      return performInitialSync(userId);
-    }
-
-    const metadata = await fetchEmailMetadata(cursor.lastSyncDate);
-
-    if (metadata.length === 0) {
-      await db.syncCursor.update("lastSync", { lastSyncTime: Date.now() });
-      return;
-    }
-
-    const emailsToCache = await fetchAndTransformEmails(metadata);
-
-    if (emailsToCache.length === 0) {
-      console.warn("[sync] No new emails to cache - all R2 fetches may have failed");
-      await db.syncCursor.update("lastSync", { lastSyncTime: Date.now() });
-      return;
-    }
-
-    await db.transaction("rw", db.emails, db.syncCursor, async () => {
-      await db.emails.bulkPut(emailsToCache);
-
-      const newest = findNewestTimestamp(emailsToCache, cursor.lastSyncDate);
-
-      await db.syncCursor.put({
-        id: "lastSync",
-        userId,
-        lastSyncDate: newest,
-        lastSyncTime: Date.now(),
-      });
+    const response = await fetch(`/api/mail/threads/${threadId}`, {
+      headers: { "x-user-id": userId },
     });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch thread: ${response.statusText}`);
+    }
+
+    const { emails } = (await response.json()) as { emails: any[] };
+
+    // Bulk upsert emails
+    await db.emails.bulkPut(
+      emails.map((e: any) => ({
+        ...e,
+        from: e.from || null,
+        syncedAt: Date.now(),
+      }))
+    );
+
+    return emails;
   } catch (error) {
-    console.error("Error performing incremental sync:", error);
+    console.error("Failed to sync thread messages:", error);
     throw error;
   }
+}
+
+/**
+ * Mark email as read (optimistic update)
+ */
+export async function markEmailRead(emailId: string, isRead: boolean) {
+  await db.emails.update(emailId, { isRead });
+}
+
+/**
+ * Update thread folder (optimistic update)
+ */
+export async function updateThreadFolder(threadId: string, folder: string) {
+  await db.threads.update(threadId, { folder });
 }

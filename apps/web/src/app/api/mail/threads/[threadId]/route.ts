@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@blanc/database";
+import { prisma, EmailFolder } from "@blanc/database";
 import { APIError, handleAPIError } from "@/lib/api/error";
 import { S3 } from "aws-sdk";
 import { gunzipSync } from "zlib";
@@ -156,7 +156,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { thread
     }
 
     const { threadId } = params;
-    const body = await request.json();
+    const body = (await request.json()) as { folder?: string; isStarred?: boolean };
 
     // Verify thread ownership
     const thread = await prisma.thread.findUnique({
@@ -176,7 +176,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { thread
     const updated = await prisma.thread.update({
       where: { id: threadId },
       data: {
-        folder: body.folder,
+        folder: body.folder as EmailFolder | undefined,
         isStarred: body.isStarred,
       },
     });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder, Prisma } from "@blanc/database";
+import { prisma, EmailFolder } from "@blanc/database";
 import { APIError, handleAPIError } from "@/lib/api/error";
 import { S3 } from "aws-sdk";
 import { gunzipSync } from "zlib";
