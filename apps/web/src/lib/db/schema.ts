@@ -46,9 +46,9 @@ export class EmailDatabase extends Dexie {
   constructor() {
     super("BlancEmailDB");
 
-    // Version 1: Initial schema
-    this.version(1).stores({
-      threads: "id, userId, [folder+lastMessageAt], lastMessageAt",
+    // Version 2: Fixed compound index (removed redundant lastMessageAt)
+    this.version(2).stores({
+      threads: "id, userId, [folder+lastMessageAt]",
       emails: "id, threadId, userId, [folder+dateReceived]",
       syncCursor: "id",
     });

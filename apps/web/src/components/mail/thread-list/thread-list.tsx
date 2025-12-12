@@ -1,66 +1,41 @@
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
-import { useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Dexie from "dexie";
-import { db } from "@/lib/db/schema";
-import { syncThreads } from "@/lib/email/sync";
+import type { DbThread } from "@/lib/db/schema";
 import { ThreadListItem } from "./thread-list-item";
 
 export interface ThreadListProps {
-  folder: string;
-  userId: string;
+  threads: DbThread[];
+  selectedIds: Set<string>;
+  onSelect: (id: string, selected: boolean) => void;
+  className?: string;
 }
 
-export function ThreadList({ folder, userId }: ThreadListProps) {
+export function ThreadList({ threads, selectedIds, onSelect, className }: ThreadListProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const router = useRouter();
-
-  // Live query - automatically updates when Dexie data changes
-  const threads = useLiveQuery(
-    () =>
-      db.threads
-        .where("[folder+lastMessageAt]")
-        .between([folder, Dexie.minKey], [folder, Dexie.maxKey], true, true)
-        .reverse()
-        .toArray(),
-    [folder]
-  );
-
-  // Background sync on mount and every 60s
-  useEffect(() => {
-    syncThreads(userId, folder);
-
-    const interval = setInterval(() => {
-      syncThreads(userId, folder);
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [folder, userId]);
-
-  if (!threads) {
-    return (
-      <div className="flex items-center justify-center text-muted-foreground py-12">
-        <p>Loading...</p>
-      </div>
-    );
-  }
 
   if (threads.length === 0) {
     return (
       <div className="flex items-center justify-center text-muted-foreground py-12">
-        <p>No threads in {folder}</p>
+        <p>No threads to display</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y">
+    <div className={`w-full flex flex-col relative ${className || ""}`}>
       {threads.map((thread) => (
         <ThreadListItem
           key={thread.id}
           thread={thread}
+          isSelected={selectedIds.has(thread.id)}
+          isHovered={hoveredId === thread.id}
+          onSelect={(selected) => onSelect(thread.id, selected)}
           onClick={() => router.push(`/mail/thread/${thread.id}`)}
+          onMouseEnter={() => setHoveredId(thread.id)}
+          onMouseLeave={() => setHoveredId(null)}
         />
       ))}
     </div>
