@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { BlancLogo } from "./blanc-logo";
 
 interface BrandHeaderProps {
   className?: string;
@@ -27,21 +27,8 @@ export function BrandHeader({ className, showName = true, size = "md" }: BrandHe
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <Image
-        src="/blancicow.svg"
-        alt="blanc logo"
-        width={config.image}
-        height={config.image}
-        className="hidden dark:block"
-      />
-      <Image
-        src="/blancicob.svg"
-        alt="blanc logo"
-        width={config.image}
-        height={config.image}
-        className="dark:hidden"
-      />
-      {showName && <span className={cn(config.text)}>blanc</span>}
+      <BlancLogo width={config.image} height={config.image} className="text-primary" />
+      {showName && <span className={cn(config.text, "text-primary")}>blanc</span>}
     </div>
   );
 }

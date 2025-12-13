@@ -1,6 +1,5 @@
 import { ConnectWalletButton } from "@/components/walletkit";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandHeader } from "@/components/brand-header";
 import Link from "next/link";
 
@@ -10,9 +9,6 @@ export default function Home() {
       {/* Header with logo */}
       <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
         <BrandHeader size="md" />
-        <div className="ml-auto">
-          <ThemeToggle />
-        </div>
       </header>
 
       {/* Main content */}
