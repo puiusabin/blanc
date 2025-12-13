@@ -22,8 +22,23 @@ export default async function RootLayout(props: { children: ReactNode }) {
       <body className={GeistMono.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="blanc-light"
+          themes={[
+            "blanc-light",
+            "blanc-dark",
+            "catppuccin-latte",
+            "catppuccin-frappe",
+            "catppuccin-macchiato",
+            "catppuccin-mocha",
+            "gruvbox-light",
+            "gruvbox-dark",
+            "tokyo-night-storm",
+            "tokyo-night-night",
+            "tokyo-night-moon",
+            "tokyo-night-day",
+            "vesper-dark",
+            "vesper-light",
+          ]}
           disableTransitionOnChange
         >
           <Web3Provider initialState={initialState}>
