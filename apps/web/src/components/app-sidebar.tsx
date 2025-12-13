@@ -44,6 +44,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Appearance } from "./settings/appearance";
+import { cn } from "@/lib/utils";
 
 // Navigation data
 const data = {
@@ -93,6 +95,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [activeSettingsTab, setActiveSettingsTab] = React.useState<string>("appearance");
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -167,7 +170,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <CreditCard className="size-4" />
                         Plans
                       </button>
-                      <button className="w-full flex items-center gap-2 text-left px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
+                      <button
+                        onClick={() => setActiveSettingsTab("appearance")}
+                        className={cn(
+                          "w-full flex items-center gap-2 text-left px-2 py-1.5 text-sm rounded-md transition-colors",
+                          activeSettingsTab === "appearance"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
                         <Palette className="size-4" />
                         Appearance
                       </button>
@@ -212,10 +223,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {/* Settings Content */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-auto p-6">
-                  {/* Settings content will be added here later */}
-                  <p className="text-sm text-muted-foreground">
-                    Settings functionality coming soon...
-                  </p>
+                  {activeSettingsTab === "appearance" && <Appearance />}
+                  {activeSettingsTab !== "appearance" && (
+                    <p className="text-sm text-muted-foreground">
+                      {activeSettingsTab.charAt(0).toUpperCase() + activeSettingsTab.slice(1)}{" "}
+                      settings coming soon...
+                    </p>
+                  )}
                 </div>
               </div>
 
