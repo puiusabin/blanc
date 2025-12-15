@@ -9,7 +9,7 @@ import {
   WalletKitModalDescription,
   WalletKitModalHeader,
   WalletKitModalTitle,
-} from "@/components/walletkit-modal";
+} from "@/components/wallet-kit/walletkit-modal";
 import { Button } from "@/components/ui/button";
 import {
   type Connector,
@@ -23,7 +23,7 @@ import {
 import { formatEther } from "viem";
 import { Check, ChevronLeft, Copy, RotateCcw, Plus, XIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { WalletKitModalClose } from "@/components/walletkit-modal";
+import { WalletKitModalClose } from "@/components/wallet-kit/walletkit-modal";
 import Link from "next/link";
 
 const MODAL_CLOSE_DURATION = 320;
