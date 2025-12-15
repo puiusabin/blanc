@@ -23,6 +23,18 @@ import {
   XIcon,
   Plus,
 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Notification03Icon,
+  QuillWrite02Icon,
+  Search02Icon,
+  Settings01Icon,
+  Settings02Icon,
+  InboxIcon,
+  Sent02Icon,
+  LicenseDraftIcon,
+  MailRemove02Icon,
+} from "@hugeicons/core-free-icons";
 
 import {
   Sidebar,
@@ -70,22 +82,22 @@ const data = {
         {
           title: "Inbox",
           url: "/mail/inbox",
-          icon: Inbox,
+          icon: InboxIcon,
         },
         {
           title: "Sent",
           url: "#",
-          icon: Send,
+          icon: Sent02Icon,
         },
         {
           title: "Drafts",
           url: "#",
-          icon: FilePenLine,
+          icon: LicenseDraftIcon,
         },
         {
           title: "Spam",
           url: "#",
-          icon: MailWarning,
+          icon: MailRemove02Icon,
         },
       ],
     },
@@ -266,7 +278,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={button.title}>
                     {button.title === "Search" ? (
                       <SidebarMenuButton onClick={() => setSearchOpen(true)}>
-                        <Search />
+                        <HugeiconsIcon icon={Search02Icon} strokeWidth={2.2} />
                         {button.title}
                         <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
                           <span className="text-xs">⌘</span>K
@@ -274,13 +286,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </SidebarMenuButton>
                     ) : button.title === "Settings" ? (
                       <SidebarMenuButton onClick={() => setSettingsOpen(true)}>
-                        <Settings />
+                        <HugeiconsIcon icon={Settings01Icon} strokeWidth={2.2} />
                         {button.title}
                       </SidebarMenuButton>
                     ) : (
                       <SidebarMenuButton asChild>
                         <a href={button.url}>
-                          {button.title === "Compose" && <SquarePen />}
+                          {button.title === "Compose" && (
+                            <HugeiconsIcon icon={QuillWrite02Icon} strokeWidth={2.2} />
+                          )}
                           {button.title}
                         </a>
                       </SidebarMenuButton>
@@ -301,7 +315,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <a href={item.url}>
-                          {item.icon && <item.icon />}
+                          {item.icon && <HugeiconsIcon icon={item.icon} strokeWidth={2.2} />}
                           {item.title}
                         </a>
                       </SidebarMenuButton>
