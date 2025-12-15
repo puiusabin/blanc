@@ -7,8 +7,8 @@ import { cookieToInitialState } from "wagmi";
 import { Plus } from "lucide-react";
 
 import { getConfig } from "@/lib/wagmi";
-import { Web3Provider } from "@/components/web3-provider";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Web3Provider } from "@/components/wallet-kit/web3-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 export const metadata: Metadata = {
   title: "Blanc: Protect Your Inbox",

@@ -5,7 +5,7 @@ import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, State } from "wagmi";
 import { getConfig } from "@/lib/wagmi";
-import { WalletKitProvider } from "@/components/walletkit";
+import { WalletKitProvider } from "@/components/wallet-kit/walletkit";
 
 // 2. Define your Wagmi config
 const config = getConfig();

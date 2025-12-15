@@ -1,6 +1,6 @@
-import { ConnectWalletButton } from "@/components/walletkit";
+import { ConnectWalletButton } from "@/components/wallet-kit/walletkit";
 import { Button } from "@/components/ui/button";
-import { BrandHeader } from "@/components/brand-header";
+import { BrandHeader } from "@/components/branding/brand-header";
 import Link from "next/link";
 
 export default function Home() {

@@ -1,10 +1,10 @@
-import { Plus, XIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Plus, XIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DecorativeBorderLayoutProps {
-  children: React.ReactNode
-  onClose?: () => void
-  className?: string
+  children: React.ReactNode;
+  onClose?: () => void;
+  className?: string;
 }
 
 export function DecorativeBorderLayout({
@@ -60,5 +60,5 @@ export function DecorativeBorderLayout({
         <div className="w-16 border-l relative" />
       </div>
     </div>
-  )
+  );
 }
