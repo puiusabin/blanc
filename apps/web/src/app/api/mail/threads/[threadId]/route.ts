@@ -26,6 +26,13 @@ function getR2Client() {
   });
 }
 
+interface EmailAttachment {
+  filename: string;
+  contentType: string;
+  size: number;
+  contentId?: string;
+}
+
 interface EmailInThread {
   id: string;
   messageId: string | null;
@@ -39,17 +46,20 @@ interface EmailInThread {
   isRead: boolean;
   isStarred: boolean;
   hasAttachments: boolean;
-  attachments?: any[];
+  attachments?: EmailAttachment[];
 }
 
-export async function GET(request: NextRequest, { params }: { params: { threadId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ threadId: string }> }
+) {
   try {
     const userId = request.headers.get("x-user-id");
     if (!userId) {
       throw new APIError(401, "Unauthorized");
     }
 
-    const { threadId } = params;
+    const { threadId } = await params;
 
     // Fetch thread with all emails
     const thread = await prisma.thread.findUnique({
@@ -148,14 +158,17 @@ export async function GET(request: NextRequest, { params }: { params: { threadId
 }
 
 // PATCH endpoint to update thread state
-export async function PATCH(request: NextRequest, { params }: { params: { threadId: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ threadId: string }> }
+) {
   try {
     const userId = request.headers.get("x-user-id");
     if (!userId) {
       throw new APIError(401, "Unauthorized");
     }
 
-    const { threadId } = params;
+    const { threadId } = await params;
     const body = (await request.json()) as { folder?: string; isStarred?: boolean };
 
     // Verify thread ownership

@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@blanc/database";
 
-export async function GET(request: NextRequest, { params }: { params: { threadId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ threadId: string }> }
+) {
   const userId = request.headers.get("x-user-id");
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { threadId } = params;
+  const { threadId } = await params;
 
   try {
     // Verify thread belongs to user

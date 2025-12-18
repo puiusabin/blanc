@@ -1,35 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db/schema";
 import { syncThreadMessages } from "@/lib/email/sync";
 import { EmailCard } from "@/components/mail/email-card";
+import type { EmailFolder } from "@/types/email";
 
-export default function ThreadPage({ params }: { params: { threadId: string } }) {
-  const [userId, setUserId] = useState<string | null>(null);
+export default function ThreadPage({ params }: { params: Promise<{ threadId: string }> }) {
+  const { threadId } = use(params);
+  // TODO: Replace with actual session logic
+  const [userId] = useState<string>("test-user-id");
 
   // Live query for emails in this thread
   const emails = useLiveQuery(
-    () => db.emails.where("threadId").equals(params.threadId).sortBy("dateReceived"),
-    [params.threadId]
+    () => db.emails.where("threadId").equals(threadId).sortBy("dateReceived"),
+    [threadId]
   );
-
-  // Get userId from session/cookie (placeholder)
-  useEffect(() => {
-    // TODO: Replace with actual session logic
-    // For now, using a placeholder userId
-    setUserId("test-user-id");
-  }, []);
 
   // Sync thread messages
   useEffect(() => {
     if (!userId) return;
 
-    syncThreadMessages(userId, params.threadId).catch((error) => {
+    syncThreadMessages(userId, threadId).catch((error) => {
       console.error("Failed to sync thread messages:", error);
     });
-  }, [params.threadId, userId]);
+  }, [threadId, userId]);
 
   if (!emails) {
     return (
@@ -64,7 +60,7 @@ export default function ThreadPage({ params }: { params: { threadId: string } })
             bodyHtml: email.bodyHtml || undefined,
             timestamp: email.dateReceived,
             isRead: email.isRead,
-            folder: email.folder as any,
+            folder: email.folder as EmailFolder,
             hasAttachments: false, // TODO: Add attachments support
             attachments: [],
           }}

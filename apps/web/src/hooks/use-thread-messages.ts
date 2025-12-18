@@ -2,8 +2,23 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
 import { useEffect, useState } from "react";
 
+interface ApiMessage {
+  id: string;
+  threadId: string | null;
+  messageId: string | null;
+  userId: string;
+  folder: string;
+  isRead: boolean;
+  isStarred: boolean;
+  dateReceived: string;
+  from: { email: string; name: string | null } | null;
+  subject: string;
+  bodyText: string | null;
+  bodyHtml: string | null;
+}
+
 export function useThreadMessages(threadId: string | null) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Live query for messages in thread
   const messages = useLiveQuery(async () => {
@@ -21,7 +36,6 @@ export function useThreadMessages(threadId: string | null) {
 
     const userId = "testuser"; // TODO: Get from auth context
 
-    setIsLoading(true);
     fetch(`/api/mail/threads/${threadId}/messages`, {
       headers: {
         "x-user-id": userId,
@@ -31,12 +45,12 @@ export function useThreadMessages(threadId: string | null) {
         if (!res.ok) {
           throw new Error(`Failed to fetch messages: ${res.statusText}`);
         }
-        return res.json();
+        return res.json() as Promise<{ messages: ApiMessage[] }>;
       })
       .then(async ({ messages }) => {
         if (messages && messages.length > 0) {
           await db.emails.bulkPut(
-            messages.map((msg: any) => ({
+            messages.map((msg) => ({
               ...msg,
               syncedAt: Date.now(),
               timestamp: new Date(msg.dateReceived).getTime(),

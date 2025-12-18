@@ -94,6 +94,7 @@ export function Appearance() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for hydration safety
     setMounted(true);
   }, []);
 

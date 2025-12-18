@@ -3,6 +3,43 @@ import { db } from "@/lib/db";
 import type { EmailFolder } from "@/types/email";
 import { useEffect } from "react";
 
+interface ApiEmail {
+  id: string;
+  threadId: string | null;
+  messageId: string | null;
+  userId: string;
+  folder: string;
+  isRead: boolean;
+  isStarred: boolean;
+  dateReceived: string;
+  from: { email: string; name: string | null } | null;
+  subject: string;
+  bodyText: string | null;
+  bodyHtml: string | null;
+}
+
+interface ApiThread {
+  id: string;
+  userId: string;
+  subject: string;
+  participants: { email: string; name: string | null }[];
+  messageCount: number;
+  unreadCount: number;
+  hasAttachments: boolean;
+  isStarred: boolean;
+  folder: string;
+  lastMessageAt: string;
+  firstMessageAt: string;
+  lastMessageDate: string;
+}
+
+interface SyncResponse {
+  newEmails: ApiEmail[];
+  newThreads: ApiThread[];
+  updatedThreads: ApiThread[];
+  cursor: number;
+}
+
 export interface UseThreadsOptions {
   folder: EmailFolder;
   search?: string;
@@ -13,7 +50,7 @@ export function useThreads({ folder, search }: UseThreadsOptions) {
   const threads = useLiveQuery(async () => {
     const userId = "testuser"; // TODO: Get from auth context
 
-    let query = db.threads
+    const query = db.threads
       .where("[userId+folder+lastMessageDate]")
       .between([userId, folder, 0], [userId, folder, Date.now()], true, true)
       .reverse(); // Latest first
@@ -53,7 +90,7 @@ async function syncThreads() {
 
   try {
     const cursor = await db.syncCursor.get("threads");
-    const response = await fetch(`/api/mail/sync?since=${cursor?.value || 0}`, {
+    const response = await fetch(`/api/mail/sync?since=${cursor?.lastSyncTime || 0}`, {
       headers: {
         "x-user-id": userId,
       },
@@ -64,13 +101,18 @@ async function syncThreads() {
       return;
     }
 
-    const { newEmails, newThreads, updatedThreads, cursor: newCursor } = await response.json();
+    const {
+      newEmails,
+      newThreads,
+      updatedThreads,
+      cursor: newCursor,
+    } = (await response.json()) as SyncResponse;
 
     await db.transaction("rw", [db.emails, db.threads, db.syncCursor], async () => {
       // Insert new emails
       if (newEmails && newEmails.length > 0) {
         await db.emails.bulkPut(
-          newEmails.map((email: any) => ({
+          newEmails.map((email) => ({
             ...email,
             syncedAt: Date.now(),
           }))
@@ -80,7 +122,7 @@ async function syncThreads() {
       // Insert new threads
       if (newThreads && newThreads.length > 0) {
         await db.threads.bulkPut(
-          newThreads.map((thread: any) => ({
+          newThreads.map((thread) => ({
             ...thread,
             lastMessageDate: new Date(thread.lastMessageDate).getTime(),
           }))
@@ -90,7 +132,7 @@ async function syncThreads() {
       // Update existing threads
       if (updatedThreads && updatedThreads.length > 0) {
         await db.threads.bulkPut(
-          updatedThreads.map((thread: any) => ({
+          updatedThreads.map((thread) => ({
             ...thread,
             lastMessageDate: new Date(thread.lastMessageDate).getTime(),
           }))
@@ -98,7 +140,12 @@ async function syncThreads() {
       }
 
       // Update cursor
-      await db.syncCursor.put({ id: "threads", value: newCursor });
+      await db.syncCursor.put({
+        id: "threads",
+        userId: "testuser",
+        lastSyncDate: new Date().toISOString(),
+        lastSyncTime: newCursor,
+      });
     });
   } catch (error) {
     console.error("Error syncing threads:", error);

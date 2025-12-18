@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useThreadMessages } from "@/hooks/use-thread-messages";
 import { EmailCard } from "./email-card";
 
@@ -10,15 +10,13 @@ export interface ThreadDetailProps {
 
 export function ThreadDetail({ threadId }: ThreadDetailProps) {
   const { messages, isLoading } = useThreadMessages(threadId);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
   // Expand the most recent message by default
-  useEffect(() => {
-    if (messages.length > 0 && expandedIds.size === 0) {
-      const latestMessageId = messages[messages.length - 1].id;
-      setExpandedIds(new Set([latestMessageId]));
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    if (messages.length > 0) {
+      return new Set([messages[messages.length - 1].id]);
     }
-  }, [messages, expandedIds.size]);
+    return new Set();
+  });
 
   const toggleExpanded = (emailId: string) => {
     setExpandedIds((prev) => {

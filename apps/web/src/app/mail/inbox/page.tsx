@@ -10,15 +10,9 @@ import { ThreadListHeader } from "@/components/mail/thread-list/thread-list-head
 import { ThreadList } from "@/components/mail/thread-list/thread-list";
 
 export default function InboxPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  // TODO: Replace with actual session logic
+  const [userId] = useState<string>("test-user-id");
   const selection = useThreadSelection();
-
-  // Get userId from session/cookie (placeholder)
-  useEffect(() => {
-    // TODO: Replace with actual session logic
-    // For now, using a placeholder userId
-    setUserId("test-user-id");
-  }, []);
 
   // Live query for threads
   const threads = useLiveQuery(

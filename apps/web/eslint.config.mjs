@@ -1,20 +1,54 @@
-// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from "eslint-plugin-storybook";
+import js from "@eslint/js";
+import nextPlugin from "@next/eslint-plugin-next";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
+import tseslint from "typescript-eslint";
 
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+export default [
+  // Base ESLint recommended config
+  js.configs.recommended,
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+  // TypeScript config
+  ...tseslint.configs.recommended,
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    plugins: {
+      "@next/next": nextPlugin,
+      "react-hooks": reactHooksPlugin,
+    },
+    rules: {
+      // Next.js rules
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  ...storybook.configs["flat/recommended"]
+      // React Hooks rules
+      ...reactHooksPlugin.configs.recommended.rules,
+
+      // TypeScript rules adjustments
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+    },
+    settings: {
+      next: {
+        rootDir: "./",
+      },
+    },
+  },
+
+  {
+    ignores: [
+      ".next/**",
+      ".open-next/**",
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "*.config.{js,ts,mjs}",
+    ],
+  },
 ];
-
-export default eslintConfig;

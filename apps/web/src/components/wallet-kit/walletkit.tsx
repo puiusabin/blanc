@@ -120,6 +120,7 @@ function ConnectWalletButton() {
     <Button onClick={walletkit.toggleModal} className="">
       {walletkit.isConnected ? (
         <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           {ensAvatar && <img src={ensAvatar} alt="ENS Avatar" />}
           {address && <span>{ensName ? `${ensName}` : walletkit.formattedAddress}</span>}
         </>
@@ -160,6 +161,7 @@ function Account() {
       <WalletKitModalBody className="py-6">
         <div className="flex w-full flex-col items-center justify-center gap-8">
           <div className="size-24 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`https://avatar.vercel.sh/${address}?size=150`} alt="User gradient avatar" />
           </div>
 
@@ -264,6 +266,7 @@ function WalletConnecting() {
     <div className="flex w-full flex-col items-center justify-center gap-3 py-6">
       {context.pendingConnector?.icon && (
         <div className="size-20 md:size-[116px] relative flex items-center justify-center border p-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={context.pendingConnector?.icon}
             alt={context.pendingConnector?.name}
@@ -359,6 +362,7 @@ function WalletOption(props: { connector: Connector; onClick: () => void }) {
         >
           {props.connector.icon && (
             <div className="relative w-full aspect-square max-w-[40px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={props.connector.icon}
                 alt={props.connector.name}

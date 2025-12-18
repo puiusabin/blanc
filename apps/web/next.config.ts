@@ -13,6 +13,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Ignore optional dependencies that are not needed in browser builds
+    if (!isServer) {
+      config.resolve = config.resolve || {};
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        "@react-native-async-storage/async-storage": false,
+        "pino-pretty": false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
