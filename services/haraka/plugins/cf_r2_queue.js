@@ -280,7 +280,7 @@ exports.hook_queue = function (next, connection) {
                         plugin.logdebug("Datagram uploaded for email " + emailId);
 
                         // Compute thread ID using threading algorithm
-                        var threadId = await threading.computeThreadId(parsedHeaders, userId, prisma);
+                        var threadId = await threading.computeThreadId(parsedHeaders, userId, db);
                         var isNewThread = false;
                         var threadSubject = parsedHeaders.subject || '(no subject)';
 
@@ -458,7 +458,14 @@ function extractHeaders(headers) {
         date: headers.get('date'),
         messageId: headers.get('message-id'),
         inReplyTo: headers.get('in-reply-to'),
-        references: headers.get('references') ? headers.get('references').split(/\s+/) : [],
+        references: (() => {
+            const ref = headers.get('references');
+            if (!ref) return [];
+            if (typeof ref === 'string') return ref.split(/\s+/);
+            if (Array.isArray(ref)) return ref;
+            if (ref.value) return Array.isArray(ref.value) ? ref.value : [ref.value];
+            return [];
+        })(),
         priority: headers.get('priority'),
         raw: extractRawHeaders(headers)
     };

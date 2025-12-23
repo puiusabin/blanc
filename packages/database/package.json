@@ -2,10 +2,16 @@
   "name": "@blanc/database",
   "version": "0.1.0",
   "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -13,6 +19,7 @@
     "db:drop": "drizzle-kit drop"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "drizzle-kit": "^0.30.0",
     "typescript": "^5"
   },

@@ -1,10 +1,20 @@
 {
-  "extends": "@blanc/typescript-config/base.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "composite": true
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*", "prisma/schema.prisma"],
-  "exclude": ["node_modules", "dist", "generated"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "generated", "drizzle"]
 }
