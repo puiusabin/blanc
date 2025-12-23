@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@blanc/database";
+import { db, threads, emails, eq, and, asc } from "@blanc/database";
 
 export async function GET(
   request: NextRequest,
@@ -15,11 +15,8 @@ export async function GET(
 
   try {
     // Verify thread belongs to user
-    const thread = await prisma.thread.findFirst({
-      where: {
-        id: threadId,
-        userId,
-      },
+    const thread = await db.query.threads.findFirst({
+      where: and(eq(threads.id, threadId), eq(threads.userId, userId)),
     });
 
     if (!thread) {
@@ -27,14 +24,9 @@ export async function GET(
     }
 
     // Fetch all emails in thread
-    const messages = await prisma.email.findMany({
-      where: {
-        threadId,
-        userId,
-      },
-      orderBy: {
-        dateReceived: "asc",
-      },
+    const messages = await db.query.emails.findMany({
+      where: and(eq(emails.threadId, threadId), eq(emails.userId, userId)),
+      orderBy: [asc(emails.dateReceived)],
     });
 
     return NextResponse.json({ messages });

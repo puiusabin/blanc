@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@blanc/database";
+import { db, emails, threads, eq, and, gt, asc, inArray } from "@blanc/database";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -14,16 +14,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   try {
     // Fetch new emails since last sync
-    const newEmails = await prisma.email.findMany({
-      where: {
-        userId,
-        dateReceived: {
-          gt: sinceDate,
-        },
-      },
-      orderBy: {
-        dateReceived: "asc",
-      },
+    const newEmails = await db.query.emails.findMany({
+      where: and(eq(emails.userId, userId), gt(emails.dateReceived, sinceDate)),
+      orderBy: [asc(emails.dateReceived)],
     });
 
     // Get affected thread IDs
@@ -32,23 +25,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ] as string[];
 
     // Fetch updated thread metadata for affected threads
-    const updatedThreads = await prisma.thread.findMany({
-      where: {
-        userId,
-        id: {
-          in: affectedThreadIds,
-        },
-      },
-    });
+    const updatedThreads =
+      affectedThreadIds.length > 0
+        ? await db.query.threads.findMany({
+            where: and(eq(threads.userId, userId), inArray(threads.id, affectedThreadIds)),
+          })
+        : [];
 
     // Find new threads created since last sync
-    const newThreads = await prisma.thread.findMany({
-      where: {
-        userId,
-        createdAt: {
-          gt: sinceDate,
-        },
-      },
+    const newThreads = await db.query.threads.findMany({
+      where: and(eq(threads.userId, userId), gt(threads.createdAt, sinceDate)),
     });
 
     // Calculate new cursor (latest email timestamp)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@blanc/database";
+import { db, emails, eq, and, inArray } from "@blanc/database";
 import AWS from "aws-sdk";
 import { gunzipSync } from "zlib";
 import type { R2EmailDatagram } from "@/types/r2-datagram";
@@ -24,15 +24,12 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as { emailIds: unknown };
     const emailIds = validateEmailIds(body.emailIds);
 
-    const emails = await prisma.email.findMany({
-      where: {
-        id: { in: emailIds },
-        userId: userId,
-      },
-      select: { id: true, r2DatagramPath: true },
+    const emailsData = await db.query.emails.findMany({
+      where: and(inArray(emails.id, emailIds), eq(emails.userId, userId)),
+      columns: { id: true, r2DatagramPath: true },
     });
 
-    if (emails.length !== emailIds.length) {
+    if (emailsData.length !== emailIds.length) {
       throw new APIError(403, "Access denied to one or more emails");
     }
 
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest) {
     const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
 
     const results = await Promise.allSettled(
-      emails.map(async (email) => {
+      emailsData.map(async (email) => {
         console.log("[R2] Fetching:", {
           bucket: BUCKET_NAME,
           key: email.r2DatagramPath,
@@ -104,7 +101,7 @@ export async function POST(request: NextRequest) {
       if (result.status === "fulfilled") {
         datagrams[result.value.id] = result.value.datagram;
       } else {
-        const email = emails[index];
+        const email = emailsData[index];
         errors.push({ emailId: email.id, error: result.reason.message });
         console.error(`Error fetching datagram for email ${email.id}:`, result.reason);
       }
@@ -114,7 +111,7 @@ export async function POST(request: NextRequest) {
       emails: datagrams,
       errors: errors.length > 0 ? errors : undefined,
       stats: {
-        total: emails.length,
+        total: emailsData.length,
         success: Object.keys(datagrams).length,
         failed: errors.length,
       },

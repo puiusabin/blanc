@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder, Prisma } from "@blanc/database";
+import { db, emails, eq, and, gt, desc, emailFolderEnum } from "@blanc/database";
 import { validateEmailQueryParams } from "@/lib/api/validation";
 import { APIError, handleAPIError } from "@/lib/api/error";
+
+type EmailFolder = (typeof emailFolderEnum.enumValues)[number];
 
 interface EmailMetadata {
   id: string;
@@ -38,26 +40,23 @@ export async function GET(request: NextRequest) {
 
     const params = validateEmailQueryParams(rawParams);
 
-    const where: Prisma.EmailWhereInput = {
-      userId,
-      status: "STORED",
-    };
+    const whereConditions = [eq(emails.userId, userId), eq(emails.status, "STORED")];
 
     if (params.folder) {
-      where.folder = params.folder;
+      whereConditions.push(eq(emails.folder, params.folder as EmailFolder));
     }
 
     if (params.since) {
-      where.dateReceived = { gt: new Date(params.since) };
+      whereConditions.push(gt(emails.dateReceived, new Date(params.since)));
     }
 
     const limit = params.limit || 100;
 
-    const emails = await prisma.email.findMany({
-      where,
-      orderBy: { dateReceived: "desc" },
-      take: limit,
-      select: {
+    const emailsData = await db.query.emails.findMany({
+      where: and(...whereConditions),
+      orderBy: [desc(emails.dateReceived)],
+      limit,
+      columns: {
         id: true,
         messageId: true,
         userId: true,
@@ -76,7 +75,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const metadata: EmailMetadata[] = emails.map((email) => ({
+    const metadata: EmailMetadata[] = emailsData.map((email) => ({
       ...email,
       dateReceived: email.dateReceived.toISOString(),
       dateSent: email.dateSent ? email.dateSent.toISOString() : null,
@@ -85,7 +84,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       emails: metadata,
-      hasMore: emails.length === limit,
+      hasMore: emailsData.length === limit,
     });
   } catch (error) {
     return handleAPIError(error);

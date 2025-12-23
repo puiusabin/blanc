@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import Dexie from "dexie";
 import { db } from "@/lib/db/schema";
@@ -10,8 +10,6 @@ import { ThreadListHeader } from "@/components/mail/thread-list/thread-list-head
 import { ThreadList } from "@/components/mail/thread-list/thread-list";
 
 export default function InboxPage() {
-  // TODO: Replace with actual session logic
-  const [userId] = useState<string>("test-user-id");
   const selection = useThreadSelection();
 
   // Live query for threads
@@ -27,16 +25,14 @@ export default function InboxPage() {
 
   // Background sync on mount and every 60s
   useEffect(() => {
-    if (!userId) return;
-
-    syncThreads(userId, "INBOX");
+    syncThreads("INBOX");
 
     const interval = setInterval(() => {
-      syncThreads(userId, "INBOX");
+      syncThreads("INBOX");
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [userId]);
+  }, []);
 
   const handleSelectAll = (selected: boolean) => {
     selection.selectAll(selected);
@@ -48,18 +44,8 @@ export default function InboxPage() {
   };
 
   const handleRefresh = () => {
-    if (userId) {
-      syncThreads(userId, "INBOX");
-    }
+    syncThreads("INBOX");
   };
-
-  if (!userId) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full flex flex-col h-svh">

@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder } from "@blanc/database";
+import { db, threads, emails, EmailFolder, eq, and, desc, count } from "@blanc/database";
 import { APIError, handleAPIError } from "@/lib/api/error";
 import { S3 } from "aws-sdk";
 import { gunzipSync } from "zlib";
 
 // Environment validation
 function validateEnvVars() {
-  const required = ["R2_ENDPOINT", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"];
-  for (const envVar of required) {
-    if (!process.env[envVar]) {
-      throw new Error(`Missing required environment variable: ${envVar}`);
-    }
+  const required = {
+    R2_ENDPOINT: "Cloudflare R2 endpoint URL",
+    R2_ACCESS_KEY_ID: "R2 access key ID",
+    R2_SECRET_ACCESS_KEY: "R2 secret access key",
+    R2_BUCKET_NAME: "R2 bucket name",
+  };
+
+  const missing = Object.entries(required)
+    .filter(([key]) => !process.env[key])
+    .map(([key, description]) => `${key} (${description})`);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables:\n${missing.join("\n")}\n\n` +
+        `Get credentials from: https://dash.cloudflare.com → R2 → Manage R2 API Tokens`
+    );
   }
 }
 
@@ -35,7 +46,7 @@ interface ThreadResponse {
   unreadCount: number;
   hasAttachments: boolean;
   isStarred: boolean;
-  folder: EmailFolder;
+  folder: (typeof EmailFolder.enumValues)[number];
   lastMessageAt: string;
   firstMessageAt: string;
   preview?: {
@@ -53,31 +64,23 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const folder = (searchParams.get("folder") || "INBOX") as EmailFolder;
+    const folder = (searchParams.get("folder") ||
+      "INBOX") as (typeof EmailFolder.enumValues)[number];
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     // Query threads with latest email for preview
-    const threads = await prisma.thread.findMany({
-      where: {
-        userId,
-        folder,
-      },
-      orderBy: {
-        lastMessageAt: "desc",
-      },
-      take: limit,
-      skip: offset,
-      include: {
+    const threadsData = await db.query.threads.findMany({
+      where: and(eq(threads.userId, userId), eq(threads.folder, folder)),
+      orderBy: [desc(threads.lastMessageAt)],
+      limit,
+      offset,
+      with: {
         emails: {
-          where: {
-            status: "STORED",
-          },
-          orderBy: {
-            dateReceived: "desc",
-          },
-          take: 1, // Latest message for preview
-          select: {
+          where: eq(emails.status, "STORED"),
+          orderBy: [desc(emails.dateReceived)],
+          limit: 1,
+          columns: {
             id: true,
             r2DatagramPath: true,
             dateReceived: true,
@@ -88,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch R2 datagrams for previews
     const s3 = getR2Client();
-    const previewPromises = threads.map(async (thread) => {
+    const previewPromises = threadsData.map(async (thread) => {
       if (!thread.emails[0]) {
         return null;
       }
@@ -124,7 +127,7 @@ export async function GET(request: NextRequest) {
     const previewMap = new Map(previews.filter((p) => p !== null).map((p) => [p!.threadId, p!]));
 
     // Build response
-    const threadsResponse: ThreadResponse[] = threads.map((thread) => {
+    const threadsResponse: ThreadResponse[] = threadsData.map((thread) => {
       const preview = previewMap.get(thread.id);
       return {
         id: thread.id,
@@ -148,9 +151,10 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    const total = await prisma.thread.count({
-      where: { userId, folder },
-    });
+    const [{ value: total }] = await db
+      .select({ value: count() })
+      .from(threads)
+      .where(and(eq(threads.userId, userId), eq(threads.folder, folder)));
 
     return NextResponse.json({
       threads: threadsResponse,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder } from "@blanc/database";
+import { db, threads, emails, eq, and, asc } from "@blanc/database";
 import { APIError, handleAPIError } from "@/lib/api/error";
 import { S3 } from "aws-sdk";
 import { gunzipSync } from "zlib";
@@ -62,17 +62,13 @@ export async function GET(
     const { threadId } = await params;
 
     // Fetch thread with all emails
-    const thread = await prisma.thread.findUnique({
-      where: { id: threadId },
-      include: {
+    const thread = await db.query.threads.findFirst({
+      where: eq(threads.id, threadId),
+      with: {
         emails: {
-          where: {
-            status: "STORED",
-          },
-          orderBy: {
-            dateReceived: "asc", // Chronological order
-          },
-          select: {
+          where: eq(emails.status, "STORED"),
+          orderBy: [asc(emails.dateReceived)],
+          columns: {
             id: true,
             messageId: true,
             r2DatagramPath: true,
@@ -135,7 +131,7 @@ export async function GET(
       }
     });
 
-    const emails = await Promise.all(emailPromises);
+    const emailsData = await Promise.all(emailPromises);
 
     return NextResponse.json({
       thread: {
@@ -150,7 +146,7 @@ export async function GET(
         lastMessageAt: thread.lastMessageAt.toISOString(),
         firstMessageAt: thread.firstMessageAt.toISOString(),
       },
-      emails,
+      emails: emailsData,
     });
   } catch (error) {
     return handleAPIError(error);
@@ -172,9 +168,9 @@ export async function PATCH(
     const body = (await request.json()) as { folder?: string; isStarred?: boolean };
 
     // Verify thread ownership
-    const thread = await prisma.thread.findUnique({
-      where: { id: threadId },
-      select: { userId: true },
+    const thread = await db.query.threads.findFirst({
+      where: eq(threads.id, threadId),
+      columns: { userId: true },
     });
 
     if (!thread) {
@@ -186,13 +182,19 @@ export async function PATCH(
     }
 
     // Update thread
-    const updated = await prisma.thread.update({
-      where: { id: threadId },
-      data: {
-        folder: body.folder as EmailFolder | undefined,
-        isStarred: body.isStarred,
-      },
-    });
+    const updateData: Record<string, unknown> = {};
+    if (body.folder !== undefined) updateData.folder = body.folder;
+    if (body.isStarred !== undefined) updateData.isStarred = body.isStarred;
+
+    const [updated] = await db
+      .update(threads)
+      .set(updateData)
+      .where(eq(threads.id, threadId))
+      .returning({
+        id: threads.id,
+        folder: threads.folder,
+        isStarred: threads.isStarred,
+      });
 
     return NextResponse.json({
       thread: {

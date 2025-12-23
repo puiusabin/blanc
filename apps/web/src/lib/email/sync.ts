@@ -32,12 +32,11 @@ interface ApiEmail {
 /**
  * Sync threads from API to local Dexie database
  * No race pattern needed - Dexie live queries handle reactivity
+ * Session cookie is automatically sent, middleware adds x-user-id header
  */
-export async function syncThreads(userId: string, folder: string = "INBOX") {
+export async function syncThreads(folder: string = "INBOX") {
   try {
-    const response = await fetch(`/api/mail/threads?folder=${folder}&limit=50`, {
-      headers: { "x-user-id": userId },
-    });
+    const response = await fetch(`/api/mail/threads?folder=${folder}&limit=50`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch threads: ${response.statusText}`);
@@ -62,12 +61,11 @@ export async function syncThreads(userId: string, folder: string = "INBOX") {
 
 /**
  * Sync messages for a specific thread
+ * Session cookie is automatically sent, middleware adds x-user-id header
  */
-export async function syncThreadMessages(userId: string, threadId: string) {
+export async function syncThreadMessages(threadId: string) {
   try {
-    const response = await fetch(`/api/mail/threads/${threadId}`, {
-      headers: { "x-user-id": userId },
-    });
+    const response = await fetch(`/api/mail/threads/${threadId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch thread: ${response.statusText}`);

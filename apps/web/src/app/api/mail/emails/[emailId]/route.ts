@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, EmailFolder, Prisma } from "@blanc/database";
+import { db, emails, eq, emailFolderEnum } from "@blanc/database";
 import { validateUUID, validateFolder } from "@/lib/api/validation";
 import { APIError, handleAPIError } from "@/lib/api/error";
+
+type EmailFolder = (typeof emailFolderEnum.enumValues)[number];
 
 export async function PATCH(
   request: NextRequest,
@@ -26,7 +28,7 @@ export async function PATCH(
       folder?: EmailFolder;
     };
 
-    const updateData: Prisma.EmailUpdateInput = {};
+    const updateData: Record<string, unknown> = {};
 
     if (isRead !== undefined) {
       if (typeof isRead !== "boolean") {
@@ -51,9 +53,9 @@ export async function PATCH(
       throw new APIError(400, "No valid fields to update");
     }
 
-    const email = await prisma.email.findUnique({
-      where: { id: emailId },
-      select: { userId: true },
+    const email = await db.query.emails.findFirst({
+      where: eq(emails.id, emailId),
+      columns: { userId: true },
     });
 
     if (!email) {
@@ -64,16 +66,16 @@ export async function PATCH(
       throw new APIError(403, "Forbidden");
     }
 
-    const updatedEmail = await prisma.email.update({
-      where: { id: emailId },
-      data: updateData,
-      select: {
-        id: true,
-        isRead: true,
-        isStarred: true,
-        folder: true,
-      },
-    });
+    const [updatedEmail] = await db
+      .update(emails)
+      .set(updateData)
+      .where(eq(emails.id, emailId))
+      .returning({
+        id: emails.id,
+        isRead: emails.isRead,
+        isStarred: emails.isStarred,
+        folder: emails.folder,
+      });
 
     return NextResponse.json({
       success: true,
