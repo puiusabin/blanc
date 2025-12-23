@@ -11,10 +11,13 @@
     "restart": "docker compose restart",
     "logs": "docker compose logs -f haraka",
     "logs:tail": "docker compose logs --tail=100 haraka",
-    "seed": "node scripts/seed.js",
+    "seed": "tsx scripts/seed.js",
     "shell": "docker compose exec haraka sh",
     "build": "docker compose build",
     "clean": "docker compose down -v && rm -rf queue/* logs/*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
   },
   "keywords": [
     "haraka",
@@ -30,6 +33,7 @@
     "@prisma/client": "^6.18.0",
     "@prisma/extension-accelerate": "^2.0.2",
     "aws-sdk": "^2.1692.0",
+    "dotenv": "^16.6.1",
     "mailparser": "^3.9.0",
     "openpgp": "^5.11.0",
     "uuid": "^10.0.0"

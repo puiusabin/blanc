@@ -8,14 +8,10 @@ var AWS = require("aws-sdk"),
     stream = require('stream'),
     Transform = require('stream').Transform,
     { v4: uuidv4 } = require('uuid'),
-    { PrismaClient } = require("@blanc/database/generated/prisma"),
-    { withAccelerate } = require("@prisma/extension-accelerate"),
+    { db, users, aliases, threads, emails, attachments, eq } = require("@blanc/database"),
     { MailParser } = require('mailparser'),
     pgpHandler = require("./pgp_handler"),
     threading = require("./threading");
-
-// Initialize Prisma client with Accelerate extension
-var prisma = new PrismaClient().$extends(withAccelerate());
 
 exports.register = function () {
     var plugin = this;
@@ -61,12 +57,12 @@ exports.hook_rcpt_ok = function (next, connection, rcpt) {
     (async function() {
         try {
             // First check if this is an alias
-            var alias = await prisma.alias.findUnique({
-                where: {
-                    aliasAddress: recipientEmail,
-                    active: true
-                },
-                include: {
+            var alias = await db.query.aliases.findFirst({
+                where: (aliases, { eq, and }) => and(
+                    eq(aliases.aliasAddress, recipientEmail),
+                    eq(aliases.active, true)
+                ),
+                with: {
                     targetUser: true
                 }
             });
@@ -77,11 +73,11 @@ exports.hook_rcpt_ok = function (next, connection, rcpt) {
                 plugin.loginfo("Alias resolved: " + recipientEmail + " -> " + user.email);
             } else {
                 // Not an alias, check direct user
-                user = await prisma.user.findUnique({
-                    where: {
-                        email: recipientEmail,
-                        active: true
-                    }
+                user = await db.query.users.findFirst({
+                    where: (users, { eq, and }) => and(
+                        eq(users.email, recipientEmail),
+                        eq(users.active, true)
+                    )
                 });
             }
 
@@ -300,9 +296,9 @@ exports.hook_queue = function (next, connection) {
                         // Build participants list
                         var participants = [];
                         if (!isNewThread) {
-                            var existingThread = await prisma.thread.findUnique({
-                                where: { id: threadId },
-                                select: { participants: true }
+                            var existingThread = await db.query.threads.findFirst({
+                                where: eq(threads.id, threadId),
+                                columns: { participants: true }
                             });
                             participants = threading.mergeParticipants(
                                 parsedHeaders,
@@ -313,65 +309,66 @@ exports.hook_queue = function (next, connection) {
                         }
 
                         // Store in database (atomic transaction)
-                        await prisma.$transaction(async function(tx) {
+                        await db.transaction(async function(tx) {
+                            var { sql } = require("drizzle-orm");
+
                             // Create or update thread
                             if (isNewThread) {
-                                await tx.thread.create({
-                                    data: {
-                                        id: threadId,
-                                        userId: userId,
-                                        subject: threadSubject,
-                                        rootMessageId: parsedHeaders.messageId,
-                                        messageCount: 1,
-                                        unreadCount: 1,
-                                        hasAttachments: attachmentMetadata.length > 0,
-                                        participants: participants,
-                                        folder: 'INBOX',
-                                        lastMessageAt: now,
-                                        firstMessageAt: now
-                                    }
+                                await tx.insert(threads).values({
+                                    id: threadId,
+                                    userId: userId,
+                                    subject: threadSubject,
+                                    rootMessageId: parsedHeaders.messageId,
+                                    messageCount: 1,
+                                    unreadCount: 1,
+                                    hasAttachments: attachmentMetadata.length > 0,
+                                    participants: participants,
+                                    folder: 'INBOX',
+                                    lastMessageAt: now,
+                                    firstMessageAt: now
                                 });
                                 plugin.logdebug("Created new thread " + threadId);
                             } else {
-                                await tx.thread.update({
-                                    where: { id: threadId },
-                                    data: {
-                                        messageCount: { increment: 1 },
-                                        unreadCount: { increment: 1 },
-                                        hasAttachments: attachmentMetadata.length > 0 || undefined,
+                                var existingThread = await tx.query.threads.findFirst({
+                                    where: eq(threads.id, threadId),
+                                    columns: { messageCount: true, unreadCount: true }
+                                });
+                                await tx.update(threads)
+                                    .set({
+                                        messageCount: existingThread.messageCount + 1,
+                                        unreadCount: existingThread.unreadCount + 1,
+                                        hasAttachments: attachmentMetadata.length > 0,
                                         participants: participants,
                                         lastMessageAt: now
-                                    }
-                                });
+                                    })
+                                    .where(eq(threads.id, threadId));
                                 plugin.logdebug("Updated existing thread " + threadId);
                             }
 
                             // Create email record
-                            await tx.email.create({
-                                data: {
-                                    id: emailId,
-                                    messageId: parsedHeaders.messageId,
-                                    userId: userId,
-                                    threadId: threadId,
-                                    dateReceived: now,
-                                    dateSent: parsedHeaders.date ? new Date(parsedHeaders.date) : null,
-                                    sizeBytes: BigInt(emailSize),
-                                    r2DatagramPath: datagramPath,
-                                    hasHtml: !!htmlBody,
-                                    hasPlainText: !!textBody,
-                                    hasAttachments: attachmentMetadata.length > 0,
-                                    attachmentCount: attachmentMetadata.length,
-                                    encrypted: plugin.encryptionEnabled,
-                                    status: 'STORED',
-                                    folder: 'INBOX',
-                                    isRead: false
-                                }
+                            await tx.insert(emails).values({
+                                id: emailId,
+                                messageId: parsedHeaders.messageId,
+                                userId: userId,
+                                threadId: threadId,
+                                dateReceived: now,
+                                dateSent: parsedHeaders.date ? new Date(parsedHeaders.date) : null,
+                                sizeBytes: BigInt(emailSize),
+                                r2DatagramPath: datagramPath,
+                                hasHtml: !!htmlBody,
+                                hasPlainText: !!textBody,
+                                hasAttachments: attachmentMetadata.length > 0,
+                                attachmentCount: attachmentMetadata.length,
+                                encrypted: plugin.encryptionEnabled,
+                                status: 'STORED',
+                                folder: 'INBOX',
+                                isRead: false
                             });
 
                             // Create attachment records
                             if (attachmentMetadata.length > 0) {
-                                await tx.attachment.createMany({
-                                    data: attachmentMetadata.map(function(att) {
+                                await tx.insert(attachments).values(
+                                    attachmentMetadata.map(function(att) {
                                         return {
                                             id: att.id,
                                             emailId: emailId,
@@ -384,16 +381,17 @@ exports.hook_queue = function (next, connection) {
                                             r2Path: att.r2Path
                                         };
                                     })
-                                });
+                                );
                             }
 
                             // Update user quota
-                            await tx.user.update({
-                                where: { id: userId },
-                                data: {
-                                    usedBytes: { increment: BigInt(emailSize) }
-                                }
+                            var currentUser = await tx.query.users.findFirst({
+                                where: eq(users.id, userId),
+                                columns: { usedBytes: true }
                             });
+                            await tx.update(users)
+                                .set({ usedBytes: currentUser.usedBytes + BigInt(emailSize) })
+                                .where(eq(users.id, userId));
                         });
 
                         plugin.loginfo("Email " + emailId + " stored successfully for " + userEmail +

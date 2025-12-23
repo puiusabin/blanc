@@ -4,11 +4,7 @@
 
 const openpgp = require('openpgp');
 const { Transform } = require('stream');
-const { PrismaClient } = require('@blanc/database/generated/prisma');
-const { withAccelerate } = require('@prisma/extension-accelerate');
-
-// Initialize Prisma client with Accelerate extension
-const prisma = new PrismaClient().$extends(withAccelerate());
+const { db, pgpKeys, eq, and, desc } = require('@blanc/database');
 
 /**
  * Get active PGP public key for a user
@@ -17,14 +13,10 @@ const prisma = new PrismaClient().$extends(withAccelerate());
  */
 async function getUserPublicKey(userId) {
     try {
-        const pgpKey = await prisma.pGPKey.findFirst({
-            where: {
-                userId: userId,
-                active: true
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
+        const pgpKey = await db.query.pgpKeys.findFirst({
+            where: and(eq(pgpKeys.userId, userId), eq(pgpKeys.active, true)),
+            orderBy: [desc(pgpKeys.createdAt)],
+            columns: { publicKey: true }
         });
 
         if (!pgpKey) {
