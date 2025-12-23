@@ -35,13 +35,24 @@ blanc/
 
 ### Prerequisites
 
+**Required Software:**
+
 - Node.js 18+
+- npm 10.9.2+
 - PostgreSQL database (local or hosted via Prisma Postgres)
 - Git
+
+**Required Services:**
+
+- [Cloudflare](https://dash.cloudflare.com) account (for R2 storage and Workers deployment)
+- [WalletConnect](https://cloud.walletconnect.com) project (for Web3 wallet integration)
+
+**Important:** For detailed setup instructions including environment variables, Cloudflare R2 configuration, and troubleshooting, see [apps/web/SETUP.md](apps/web/SETUP.md).
 
 ### Setup
 
 1. **Clone and install**
+
    ```bash
    git clone <repository-url>
    cd blanc
@@ -49,6 +60,7 @@ blanc/
    ```
 
 2. **Configure environment**
+
    ```bash
    # Root database URL
    cp .env.example .env
@@ -58,6 +70,7 @@ blanc/
    ```
 
 3. **Set up database**
+
    ```bash
    # Generate Prisma Client
    npm run db:generate
@@ -123,6 +136,7 @@ npm run clean:deep       # Deep clean (all node_modules, build artifacts)
 ### @blanc/web (apps/web)
 
 Next.js 15 application with:
+
 - **Framework**: App Router, React 19, Turbopack
 - **Deployment**: Cloudflare Workers via OpenNext
 - **Web3**: wagmi 2.x + viem for wallet integration
@@ -131,6 +145,7 @@ Next.js 15 application with:
 - **Database**: Integrated with `@blanc/database`
 
 **Development:**
+
 ```bash
 cd apps/web
 npm run dev              # Start dev server
@@ -142,18 +157,21 @@ npm run clean            # Clean build artifacts
 ### @blanc/database (packages/database)
 
 Prisma ORM package with:
+
 - **Version**: Prisma 6.x
 - **Database**: PostgreSQL
 - **Extensions**: Prisma Accelerate for connection pooling
 - **Output**: `packages/database/generated/prisma` (gitignored)
 
 **Exports:**
+
 ```typescript
-import { prisma } from "@blanc/database";        // PrismaClient singleton
+import { prisma } from "@blanc/database"; // PrismaClient singleton
 import type { User, Post } from "@blanc/database"; // Generated types
 ```
 
 **Usage in apps:**
+
 ```typescript
 // Add to package.json dependencies
 {
@@ -169,6 +187,7 @@ const users = await prisma.user.findMany();
 ```
 
 **Scripts:**
+
 ```bash
 cd packages/database
 npm run db:generate      # Generate client
@@ -180,11 +199,13 @@ npm run db:studio        # Open Studio
 ### @blanc/typescript-config (packages/typescript-config)
 
 Shared TypeScript configurations:
+
 - `base.json` - Base configuration
 - `nextjs.json` - Next.js specific (extends base)
 - `react.json` - React specific (extends base)
 
 **Usage:**
+
 ```json
 {
   "extends": "@blanc/typescript-config/nextjs.json",
@@ -199,12 +220,14 @@ Shared TypeScript configurations:
 ### @blanc/mail-server (services/haraka)
 
 Haraka SMTP server with:
+
 - **Authentication**: Wallet-based (custom plugin)
 - **Database**: PostgreSQL via `@blanc/database`
 - **Encryption**: PGP support
 - **Ports**: 25 (SMTP), 587 (Submission), 465 (SMTPS)
 
 **Scripts:**
+
 ```bash
 cd services/haraka
 npm run dev              # Development mode
@@ -259,6 +282,7 @@ model User {
 ```
 
 After changes:
+
 ```bash
 npm run db:generate      # Regenerate client
 npm run db:push          # Apply to database
@@ -267,30 +291,52 @@ npm run db:push          # Apply to database
 ## Environment Variables
 
 ### Root `.env`
+
 ```bash
+# Database
 DATABASE_URL="postgresql://user:password@localhost:5432/blanc"
+
+# Cloudflare R2 Storage (shared with web app and Haraka)
+R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET_NAME=mail-storage
+R2_ACCOUNT_ID=your_cloudflare_account_id
 ```
 
-### `apps/web/.env.development`
+### `apps/web/.env.local`
+
 ```bash
+# Session Secret (minimum 32 characters)
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+SESSION_SECRET=your_64_character_session_secret
+
 # WalletConnect (get from https://cloud.walletconnect.com)
 NEXT_PUBLIC_WC_PROJECT_ID=your_project_id
 
-# Database (optional, inherits from root)
-DATABASE_URL="postgresql://user:password@localhost:5432/blanc"
+# Cloudflare R2 Storage
+R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET_NAME=mail-storage
+R2_ACCOUNT_ID=your_cloudflare_account_id
 ```
+
+**Note:** For detailed setup instructions, see [apps/web/SETUP.md](apps/web/SETUP.md).
 
 ## Monorepo Workflow
 
 ### Adding Dependencies
 
 **To a specific workspace:**
+
 ```bash
 npm install <package> --workspace=@blanc/web
 npm install -D <package> --workspace=@blanc/database
 ```
 
 **To root (shared dev tools):**
+
 ```bash
 npm install -D <package> -w
 ```
@@ -298,6 +344,7 @@ npm install -D <package> -w
 ### Inter-package Dependencies
 
 Packages reference each other using workspace protocol:
+
 ```json
 {
   "dependencies": {
@@ -321,6 +368,7 @@ npm run dev:mail
 ### Development Best Practices
 
 1. **Always generate Prisma Client first:**
+
    ```bash
    npm run db:generate
    ```
@@ -330,6 +378,7 @@ npm run dev:mail
    - Use `"*"` version for workspace packages
 
 3. **Run quality checks before committing:**
+
    ```bash
    npm run check          # Type-check + lint
    npm run format         # Format code
@@ -349,12 +398,14 @@ npm run deploy
 ```
 
 **Requirements:**
+
 - Cloudflare account with Workers
 - Set environment variables:
   - `CLOUDFLARE_API_TOKEN`
   - `CLOUDFLARE_ACCOUNT_ID`
 
 **Or use GitHub Actions:**
+
 - Workflow: `.github/workflows/deploy-app.yml`
 - Triggers on push to main
 
@@ -370,6 +421,7 @@ npm run deploy
 ## Package Naming Convention
 
 All packages use the `@blanc` scope:
+
 - `@blanc/web` - Web application
 - `@blanc/database` - Database/ORM layer
 - `@blanc/typescript-config` - Shared TypeScript configs
