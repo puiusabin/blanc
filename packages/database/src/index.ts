@@ -1,2 +1,3 @@
-export { prisma } from './client'
-export * from "../generated/prisma"
+export { db } from "./db";
+export * from "./schema";
+export * from "drizzle-orm";

@@ -3,23 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "exports": {
-    ".": "./src/index.ts",
-    "./generated/prisma": "./generated/prisma/index.js"
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev --skip-generate",
-    "db:deploy": "prisma migrate deploy",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:seed": "prisma db seed"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:drop": "drizzle-kit drop"
   },
   "devDependencies": {
-    "prisma": "^6.18.0",
+    "drizzle-kit": "^0.30.0",
     "typescript": "^5"
   },
   "dependencies": {
-    "@prisma/client": "^6.18.0",
-    "@prisma/extension-accelerate": "^2.0.2"
+    "dotenv": "^16.6.1",
+    "drizzle-orm": "^0.38.3",
+    "postgres": "^3.4.5"
   }
 }
