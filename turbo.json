@@ -9,7 +9,7 @@
       "env": ["DATABASE_URL", "NEXT_PUBLIC_*"]
     },
     "dev": {
-      "dependsOn": ["^db:generate"],
+      "dependsOn": ["^build", "^db:generate"],
       "cache": false,
       "persistent": true
     },
