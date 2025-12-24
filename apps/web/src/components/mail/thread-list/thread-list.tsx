@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { DbThread } from "@/lib/db/schema";
 import { ThreadListItem } from "./thread-list-item";
 
@@ -9,12 +8,18 @@ export interface ThreadListProps {
   threads: DbThread[];
   selectedIds: Set<string>;
   onSelect: (id: string, selected: boolean) => void;
+  onThreadClick: (threadId: string) => void;
   className?: string;
 }
 
-export function ThreadList({ threads, selectedIds, onSelect, className }: ThreadListProps) {
+export function ThreadList({
+  threads,
+  selectedIds,
+  onSelect,
+  onThreadClick,
+  className,
+}: ThreadListProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const router = useRouter();
 
   if (threads.length === 0) {
     return (
@@ -33,7 +38,7 @@ export function ThreadList({ threads, selectedIds, onSelect, className }: Thread
           isSelected={selectedIds.has(thread.id)}
           isHovered={hoveredId === thread.id}
           onSelect={(selected) => onSelect(thread.id, selected)}
-          onClick={() => router.push(`/mail/thread/${thread.id}`)}
+          onClick={() => onThreadClick(thread.id)}
           onMouseEnter={() => setHoveredId(thread.id)}
           onMouseLeave={() => setHoveredId(null)}
         />

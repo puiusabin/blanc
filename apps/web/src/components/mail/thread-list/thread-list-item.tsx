@@ -49,8 +49,9 @@ export function ThreadListItem({
 
   const isRead = thread.unreadCount === 0;
   const participantNames = thread.participants
+    .filter((p) => p.name !== null)
     .slice(0, 3)
-    .map((p) => p.name || p.email)
+    .map((p) => p.name)
     .join(", ");
 
   const preview =

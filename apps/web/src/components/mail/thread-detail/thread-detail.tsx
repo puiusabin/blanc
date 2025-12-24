@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useThreadMessages } from "@/hooks/use-thread-messages";
 import { EmailCard } from "./email-card";
 
@@ -10,25 +9,6 @@ export interface ThreadDetailProps {
 
 export function ThreadDetail({ threadId }: ThreadDetailProps) {
   const { messages, isLoading } = useThreadMessages(threadId);
-  // Expand the most recent message by default
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
-    if (messages.length > 0) {
-      return new Set([messages[messages.length - 1].id]);
-    }
-    return new Set();
-  });
-
-  const toggleExpanded = (emailId: string) => {
-    setExpandedIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(emailId)) {
-        newSet.delete(emailId);
-      } else {
-        newSet.add(emailId);
-      }
-      return newSet;
-    });
-  };
 
   if (isLoading) {
     return (
@@ -61,12 +41,7 @@ export function ThreadDetail({ threadId }: ThreadDetailProps) {
       {/* Messages list */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (
-          <EmailCard
-            key={message.id}
-            email={message}
-            isExpanded={expandedIds.has(message.id)}
-            onToggle={() => toggleExpanded(message.id)}
-          />
+          <EmailCard key={message.id} email={message} />
         ))}
       </div>
     </div>

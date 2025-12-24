@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import Dexie from "dexie";
 import { db } from "@/lib/db/schema";
 import { syncThreads } from "@/lib/email/sync";
 import { useThreadSelection } from "@/hooks/use-thread-selection";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ThreadListHeader } from "@/components/mail/thread-list/thread-list-header";
 import { ThreadList } from "@/components/mail/thread-list/thread-list";
+import { ThreadDetail } from "@/components/mail/thread-detail/thread-detail";
+import { ResizableEmailPanel } from "@/components/mail/email-panel/resizable-email-panel";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 
 export default function InboxPage() {
   const selection = useThreadSelection();
+  const isMobile = useIsMobile();
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
   // Live query for threads
   const threads = useLiveQuery(
@@ -47,6 +53,37 @@ export default function InboxPage() {
     syncThreads("INBOX");
   };
 
+  const handleThreadClick = (threadId: string) => {
+    setSelectedThreadId(threadId);
+  };
+
+  const handleClosePanel = () => {
+    setSelectedThreadId(null);
+  };
+
+  const handleNavigateToThread = (direction: "prev" | "next") => {
+    if (!threads || !selectedThreadId) return;
+
+    const currentIndex = threads.findIndex((t) => t.id === selectedThreadId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === "prev" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex >= 0 && newIndex < threads.length) {
+      setSelectedThreadId(threads[newIndex].id);
+    }
+  };
+
+  const selectedThreadIndex = threads?.findIndex((t) => t.id === selectedThreadId) ?? -1;
+  const hasPrevious = selectedThreadIndex > 0;
+  const hasNext = threads ? selectedThreadIndex < threads.length - 1 : false;
+
+  // Close panel if selected thread is deleted
+  useEffect(() => {
+    if (selectedThreadId && threads && !threads.find((t) => t.id === selectedThreadId)) {
+      setSelectedThreadId(null);
+    }
+  }, [threads, selectedThreadId]);
+
   return (
     <div className="w-full flex flex-col h-svh">
       <ThreadListHeader
@@ -65,6 +102,7 @@ export default function InboxPage() {
             threads={threads}
             selectedIds={selection.selectedIds}
             onSelect={selection.selectOne}
+            onThreadClick={handleThreadClick}
           />
         ) : (
           <div className="flex items-center justify-center text-muted-foreground py-12">
@@ -72,6 +110,36 @@ export default function InboxPage() {
           </div>
         )}
       </div>
+
+      {/* Desktop: Resizable Panel */}
+      {!isMobile && selectedThreadId && (
+        <ResizableEmailPanel
+          isOpen={selectedThreadId !== null}
+          onClose={handleClosePanel}
+          contentKey={selectedThreadId}
+          onNavigatePrevious={() => handleNavigateToThread("prev")}
+          onNavigateNext={() => handleNavigateToThread("next")}
+          hasPrevious={hasPrevious}
+          hasNext={hasNext}
+        >
+          <ThreadDetail threadId={selectedThreadId} />
+        </ResizableEmailPanel>
+      )}
+
+      {/* Mobile: Drawer */}
+      {isMobile && (
+        <Drawer
+          open={selectedThreadId !== null}
+          onOpenChange={(open) => {
+            if (!open) handleClosePanel();
+          }}
+          direction="right"
+        >
+          <DrawerContent>
+            {selectedThreadId && <ThreadDetail threadId={selectedThreadId} />}
+          </DrawerContent>
+        </Drawer>
+      )}
     </div>
   );
 }
