@@ -46,10 +46,10 @@ export class EmailDatabase extends Dexie {
   constructor() {
     super("BlancEmailDB");
 
-    // Version 2: Fixed compound index (removed redundant lastMessageAt)
-    this.version(2).stores({
+    // Version 3: Added threadId+dateReceived compound index for thread message queries
+    this.version(3).stores({
       threads: "id, userId, [folder+lastMessageAt]",
-      emails: "id, threadId, userId, [folder+dateReceived]",
+      emails: "id, threadId, userId, [folder+dateReceived], [threadId+dateReceived]",
       syncCursor: "id",
     });
   }
