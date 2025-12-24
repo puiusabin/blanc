@@ -29,7 +29,13 @@ export async function GET(
       orderBy: [asc(emails.dateReceived)],
     });
 
-    return NextResponse.json({ messages });
+    // Convert BigInt fields to strings for JSON serialization
+    const serializedMessages = messages.map((msg) => ({
+      ...msg,
+      sizeBytes: msg.sizeBytes.toString(),
+    }));
+
+    return NextResponse.json({ messages: serializedMessages });
   } catch (error) {
     console.error("Error fetching thread messages:", error);
     return NextResponse.json({ error: "Failed to fetch thread messages" }, { status: 500 });

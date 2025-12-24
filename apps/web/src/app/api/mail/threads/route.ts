@@ -117,8 +117,11 @@ export async function GET(request: NextRequest) {
           snippet: (datagram.body.text || datagram.body.html || "").substring(0, 150),
           timestamp: thread.emails[0].dateReceived.toISOString(),
         };
-      } catch (error) {
-        console.error(`Failed to fetch preview for thread ${thread.id}:`, error);
+      } catch (error: any) {
+        // Only log if it's not a NoSuchKey error (expected for empty bucket)
+        if (error?.code !== "NoSuchKey") {
+          console.error(`Failed to fetch preview for thread ${thread.id}:`, error);
+        }
         return null;
       }
     });

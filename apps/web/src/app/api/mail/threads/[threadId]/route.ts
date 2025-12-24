@@ -125,8 +125,11 @@ export async function GET(
         };
 
         return emailData;
-      } catch (error) {
-        console.error(`Failed to fetch email ${email.id}:`, error);
+      } catch (error: any) {
+        // Only log if it's not a NoSuchKey error (expected for empty bucket)
+        if (error?.code !== "NoSuchKey") {
+          console.error(`Failed to fetch email ${email.id}:`, error);
+        }
         throw error;
       }
     });
