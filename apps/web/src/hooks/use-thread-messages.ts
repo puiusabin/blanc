@@ -1,69 +1,81 @@
 import { useLiveQuery } from "dexie-react-hooks";
+import Dexie from "dexie";
 import { db } from "@/lib/db";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ApiMessage {
   id: string;
-  threadId: string | null;
   messageId: string | null;
-  userId: string;
-  folder: string;
-  isRead: boolean;
-  isStarred: boolean;
-  dateReceived: string;
   from: { email: string; name: string | null } | null;
+  to: { email: string; name: string | null }[];
+  cc?: { email: string; name: string | null }[];
   subject: string;
+  timestamp: string;
   bodyText: string | null;
   bodyHtml: string | null;
+  isRead: boolean;
+  isStarred: boolean;
+  hasAttachments: boolean;
+  attachments?: any[];
 }
 
 export function useThreadMessages(threadId: string | null) {
   const [isLoading, setIsLoading] = useState(true);
+  const { userId } = useAuth();
 
   // Live query for messages in thread
   const messages = useLiveQuery(async () => {
     if (!threadId) return [];
 
     return db.emails
-      .where("[threadId+timestamp]")
-      .between([threadId, 0], [threadId, Date.now()], true, true)
+      .where("[threadId+dateReceived]")
+      .between([threadId, Dexie.minKey], [threadId, Dexie.maxKey], true, true)
       .toArray();
   }, [threadId]);
 
   // Fetch from API if not in IndexedDB
   useEffect(() => {
-    if (!threadId || messages?.length) return;
+    if (!threadId || messages?.length || !userId) return;
 
-    const userId = "testuser"; // TODO: Get from auth context
-
-    fetch(`/api/mail/threads/${threadId}/messages`, {
+    fetch(`/api/mail/threads/${threadId}`, {
       headers: {
         "x-user-id": userId,
       },
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error(`Failed to fetch messages: ${res.statusText}`);
+          throw new Error(`Failed to fetch thread: ${res.statusText}`);
         }
-        return res.json() as Promise<{ messages: ApiMessage[] }>;
+        return res.json() as Promise<{ thread: any; emails: ApiMessage[] }>;
       })
-      .then(async ({ messages }) => {
-        if (messages && messages.length > 0) {
+      .then(async ({ emails }) => {
+        if (emails && emails.length > 0) {
           await db.emails.bulkPut(
-            messages.map((msg) => ({
-              ...msg,
+            emails.map((email) => ({
+              id: email.id,
+              threadId,
+              messageId: email.messageId,
+              userId,
+              folder: "INBOX",
+              isRead: email.isRead,
+              isStarred: email.isStarred,
+              dateReceived: email.timestamp,
+              from: email.from,
+              subject: email.subject,
+              bodyText: email.bodyText,
+              bodyHtml: email.bodyHtml,
               syncedAt: Date.now(),
-              timestamp: new Date(msg.dateReceived).getTime(),
             }))
           );
         }
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to fetch thread messages:", err);
+        console.error("Failed to fetch thread:", err);
         setIsLoading(false);
       });
-  }, [threadId, messages?.length]);
+  }, [threadId, messages?.length, userId]);
 
   return { messages: messages || [], isLoading };
 }
