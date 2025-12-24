@@ -61,6 +61,7 @@ next-env.d.ts
 packages/database/generated/
 
 # Haraka
+services/haraka/config/cf_r2_queue.json
 services/haraka/config/dkim/*.key
 services/haraka/config/dkim/*.private
 services/haraka/queue/
