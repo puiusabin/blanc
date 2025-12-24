@@ -8,6 +8,13 @@
       "when": 1766240594631,
       "tag": "0000_broken_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766532239880,
+      "tag": "0001_flimsy_hairball",
+      "breakpoints": true
     }
   ]
 }

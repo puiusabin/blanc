@@ -33,7 +33,7 @@ export const users = pgTable(
     email: text("email").notNull().unique(),
     planType: planTypeEnum("planType").notNull().default("FREE"),
     quotaBytes: bigint("quotaBytes", { mode: "bigint" }).notNull(),
-    usedBytes: bigint("usedBytes", { mode: "bigint" }).notNull().default(0n),
+    usedBytes: bigint("usedBytes", { mode: "bigint" }).notNull(),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt")
